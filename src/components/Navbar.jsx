@@ -46,9 +46,9 @@ export function Navbar({ onOpenBooking }) {
           <button onClick={() => scrollTo('services')} className="hover:text-[#FF4D00] transition-colors">
             Services
           </button>
-          <button onClick={() => scrollTo('workshop')} className="hover:text-[#FF4D00] text-[#FF4D00] flex items-center gap-1.5 transition-colors font-bold">
+          <button onClick={() => scrollTo('showroom-plane')} className="hover:text-[#FF4D00] text-[#FF4D00] flex items-center gap-1.5 transition-colors font-bold">
             <Car className="w-3.5 h-3.5" />
-            <span>3D Garage Bay</span>
+            <span>3D Studio Plane</span>
           </button>
           <button onClick={() => scrollTo('contact')} className="hover:text-[#FF4D00] transition-colors">
             Contact
@@ -100,11 +100,11 @@ export function Navbar({ onOpenBooking }) {
             Services
           </button>
           <button
-            onClick={() => scrollTo('workshop')}
+            onClick={() => scrollTo('showroom-plane')}
             className="block w-full text-left text-sm font-heading font-bold uppercase tracking-wider text-[#FF4D00] flex items-center gap-2"
           >
             <Car className="w-4 h-4" />
-            <span>3D Garage Bay</span>
+            <span>3D Studio Plane</span>
           </button>
           <button
             onClick={() => scrollTo('contact')}
