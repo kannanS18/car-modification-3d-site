@@ -15,7 +15,7 @@ export default function App() {
 
   // Vehicle Customization States for the 3D Showroom Plane
   const [carModel, setCarModel] = useState('thar'); // 'thar' (new Meshy Thar) or 'ferrari'
-  const [carColor, setCarColor] = useState('#C2A382'); // Desert Sand default (classic Thar color)
+  const [carColor, setCarColor] = useState('#FFFFFF'); // Factory Dual-Tone default (shows authentic photorealistic red & black textures)
   const [wheelFinish, setWheelFinish] = useState('black');
   const [underglow, setUnderglow] = useState(true);
   const [headlights, setHeadlights] = useState(true);

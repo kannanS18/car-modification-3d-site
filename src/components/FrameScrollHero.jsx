@@ -1,8 +1,8 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
-import { ChevronDown, ArrowRight, Wrench, Sparkles, CheckCircle } from 'lucide-react';
+import { ChevronDown, ArrowRight, Wrench, Sparkles, CheckCircle, RotateCcw } from 'lucide-react';
 
-const TOTAL_FRAMES = 240; // Full 24fps 10-second sequence (240 frames)
-const SCROLL_SENSITIVITY = 14; // Smooth wheel delta per frame
+const TOTAL_FRAMES = 300; // 30fps 10-second sequence (300 frames)
+const SCROLL_SENSITIVITY = 18; // Silky-smooth wheel delta per frame
 
 export function FrameScrollHero({ onEnterShowroom }) {
   const canvasRef = useRef(null);
@@ -114,8 +114,8 @@ export function FrameScrollHero({ onEnterShowroom }) {
       const diff = targetFrameRef.current - currentFrameRef.current;
 
       if (Math.abs(diff) > 0.01) {
-        // Silky-smooth easing lerp (0.16)
-        currentFrameRef.current += diff * 0.16;
+        // Silky-smooth easing lerp (0.14)
+        currentFrameRef.current += diff * 0.14;
       }
 
       const frameInt = Math.min(
@@ -159,10 +159,26 @@ export function FrameScrollHero({ onEnterShowroom }) {
     let touchStartY = 0;
 
     const advanceByDelta = (deltaY) => {
-      // Advance target frame continuously
+      if (deltaY < 0) {
+        // SCROLL UP: DO NOT PLAY IN REVERSE!
+        // Instantly return to the start of the video (frame 0) with the video banner!
+        targetFrameRef.current = 0;
+        currentFrameRef.current = 0;
+        hasTriggeredRef.current = false;
+        setIsTransitioning(false);
+        const firstImg = imagesRef.current[0];
+        if (firstImg && (firstImg.complete || firstImg.naturalWidth > 0)) {
+          drawFrame(firstImg);
+          lastDrawnFrameRef.current = 0;
+        }
+        setDisplayPercent(0);
+        return;
+      }
+
+      // SCROLL DOWN: Advance forward smoothly
       const nextTarget = Math.min(
         TOTAL_FRAMES - 1,
-        Math.max(0, targetFrameRef.current + deltaY / SCROLL_SENSITIVITY)
+        targetFrameRef.current + deltaY / SCROLL_SENSITIVITY
       );
       targetFrameRef.current = nextTarget;
     };
@@ -233,10 +249,14 @@ export function FrameScrollHero({ onEnterShowroom }) {
       <div className="absolute inset-0 bg-gradient-to-t from-[#0B0B0C]/80 via-transparent to-black/50 pointer-events-none" />
 
       {/* Top HUD Banner */}
-      <div className="absolute top-24 left-0 right-0 max-w-7xl mx-auto px-4 sm:px-6 pointer-events-none z-20 flex flex-col items-center text-center">
+      <div
+        className={`absolute top-24 left-0 right-0 max-w-7xl mx-auto px-4 sm:px-6 pointer-events-none z-20 flex flex-col items-center text-center transition-all duration-500 ${
+          displayPercent < 40 ? 'opacity-100 translate-y-0' : 'opacity-30 -translate-y-2'
+        }`}
+      >
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass-panel text-xs font-mono font-bold tracking-wider text-[#FF4D00] uppercase mb-2 border border-[#FF4D00]/40 backdrop-blur-md shadow-2xl">
           <span className="w-2 h-2 rounded-full bg-[#FF4D00] animate-ping" />
-          <span>Mahindra Thar 4x4 • 24fps Smooth Wheel Driving Experience</span>
+          <span>Mahindra Thar 4x4 • 30fps Ultra-Smooth Video Drive</span>
         </div>
 
         <h1 className="text-3xl sm:text-5xl md:text-6xl font-extrabold font-heading text-white uppercase tracking-tight drop-shadow-2xl">
@@ -244,7 +264,7 @@ export function FrameScrollHero({ onEnterShowroom }) {
         </h1>
 
         <p className="mt-2 text-xs sm:text-sm text-gray-300 max-w-lg font-body drop-shadow">
-          Scroll down continuously. The screen stays locked while the car rolls through the workshop doors and automatically transforms into the 3D plane.
+          Scroll down to drive the Thar into the workshop. Scroll up returns to the start banner without reverse playback.
         </p>
       </div>
 
@@ -276,8 +296,19 @@ export function FrameScrollHero({ onEnterShowroom }) {
             </div>
           </div>
 
-          {/* Direct Transition Action Button */}
+          {/* Action Buttons */}
           <div className="flex items-center gap-2 shrink-0">
+            {displayPercent > 5 && (
+              <button
+                onClick={() => advanceByDelta(-100)}
+                className="px-3.5 py-2.5 rounded-xl glass-panel text-gray-300 hover:text-white hover:border-[#FF4D00]/50 text-xs font-mono flex items-center gap-1.5 transition-all cursor-pointer"
+                title="Return to start video banner"
+              >
+                <RotateCcw className="w-3.5 h-3.5 text-[#FF4D00]" />
+                <span className="hidden sm:inline">Start Banner</span>
+              </button>
+            )}
+
             <button
               onClick={() => {
                 setIsTransitioning(true);
