@@ -199,7 +199,7 @@ function VehicleShowroom({
         style={{ transition: 'all 0.5s ease-out' }}
       >
         {carModel === 'thar' ? (
-          <group scale={1.0} position={[0, 0.38, 0]}>
+          <group scale={1.0} position={[0, 0.62, 0]}>
             <primitive object={tharScene} />
             <SubwooferBox active={subwooferActive} />
           </group>

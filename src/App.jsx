@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Navbar } from './components/Navbar';
-import { VideoScrollHero } from './components/VideoScrollHero';
+import { FrameScrollHero } from './components/FrameScrollHero';
 import { StudioShowroomCanvas } from './3d/StudioShowroomCanvas';
 import { AboutSection } from './components/AboutSection';
 import { ServicesSection } from './components/ServicesSection';
@@ -33,8 +33,8 @@ export default function App() {
       {/* Global Navigation Bar */}
       <Navbar onOpenBooking={scrollToContact} />
 
-      {/* Page 1: Scroll-Driven Video of SUV Driving into the Garage Shed */}
-      <VideoScrollHero
+      {/* Page 1: Scroll-Driven Frame-by-Frame SUV Driving into the Garage Shed (starts at 5s) */}
+      <FrameScrollHero
         onEnterShowroom={scrollToShowroom}
       />
 
