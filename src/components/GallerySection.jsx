@@ -4,7 +4,7 @@ import { Eye, ExternalLink } from 'lucide-react';
 
 export function GallerySection({ onOpenBooking }) {
   const [filter, setFilter] = useState('All');
-  const categories = ['All', 'Widebody', 'Track Spec', 'Twin Turbo'];
+  const categories = ['All', '4x4 Off-Road', 'Motorsport GT', 'Urban Stealth'];
 
   const filtered = filter === 'All' ? carData.gallery : carData.gallery.filter(i => i.category === filter);
 

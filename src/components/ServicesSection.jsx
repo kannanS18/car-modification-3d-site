@@ -1,8 +1,8 @@
 import React from 'react';
 import { carData } from '../data/carData';
-import { Gauge, Flame, Shield, Disc, Sparkles, Layers, ArrowRight } from 'lucide-react';
+import { Gauge, Flame, Shield, Disc, Sparkles, Layers, ArrowRight, Volume2, Lightbulb } from 'lucide-react';
 
-const icons = { Gauge, Flame, Shield, Disc, Sparkles, Layers };
+const icons = { Gauge, Flame, Shield, Disc, Sparkles, Layers, Volume2, Lightbulb };
 
 export function ServicesSection({ onOpenBooking }) {
   return (
