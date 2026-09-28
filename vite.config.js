@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig({
   plugins: [react()],
+  base: '/car-modification-3d-site/',
   assetsInclude: ['**/*.glb', '**/*.gltf', '**/*.hdr'],
   server: { port: 3001 }
 });

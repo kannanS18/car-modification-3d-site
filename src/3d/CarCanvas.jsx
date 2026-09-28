@@ -6,7 +6,7 @@ import { Sliders, RotateCw, Lightbulb, Sparkles } from 'lucide-react';
 
 function FerrariModel({ color, wheelFinish, headlights, underglow, autoRotate }) {
   const groupRef = useRef();
-  const { scene } = useGLTF('/models/ferrari.glb');
+  const { scene } = useGLTF((import.meta.env.BASE_URL + 'models/ferrari.glb'));
   const carScene = useMemo(() => scene.clone(true), [scene]);
 
   const bodyMaterial = useMemo(() => new THREE.MeshPhysicalMaterial({
@@ -120,7 +120,7 @@ function FerrariModel({ color, wheelFinish, headlights, underglow, autoRotate })
   );
 }
 
-useGLTF.preload('/models/ferrari.glb');
+// useGLTF.preload handled at runtime;
 
 export function CarCanvas() {
   const [color, setColor] = useState('#FF4D00');
