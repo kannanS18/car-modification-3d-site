@@ -96,7 +96,7 @@ function VehicleShowroom({
   const baseUrl = import.meta.env.BASE_URL || '/';
 
   const ferrariGLTF = useGLTF(`${baseUrl}models/ferrari.glb`);
-  const tharGLTF = useGLTF(`${baseUrl}models/thar_4x4.glb`);
+  const tharGLTF = useGLTF(`${baseUrl}models/thar.glb`);
 
   const ferrariScene = useMemo(() => ferrariGLTF.scene.clone(true), [ferrariGLTF.scene]);
   const tharScene = useMemo(() => tharGLTF.scene.clone(true), [tharGLTF.scene]);
@@ -167,20 +167,19 @@ function VehicleShowroom({
     });
   }, [ferrariScene, paintMat, wheelMat, glassMat, headlightMat]);
 
-  // Apply materials to Thar
+  // Apply materials to New Thar model
   useEffect(() => {
     tharScene.traverse((child) => {
       if (child.isMesh) {
+        if (!child.geometry.attributes.normal) {
+          child.geometry.computeVertexNormals();
+        }
         child.castShadow = true;
         child.receiveShadow = true;
-        if (child.name.toLowerCase().includes('body') && !child.name.toLowerCase().includes('glass')) {
-          child.material = paintMat;
-        } else if (child.name.toLowerCase().includes('wheel') || child.name.toLowerCase().includes('rim')) {
-          child.material = wheelMat;
-        }
+        child.material = paintMat;
       }
     });
-  }, [tharScene, paintMat, wheelMat]);
+  }, [tharScene, paintMat]);
 
   useFrame((state, delta) => {
     if (autoRotate && groupRef.current) {
@@ -199,9 +198,8 @@ function VehicleShowroom({
         style={{ transition: 'all 0.5s ease-out' }}
       >
         {carModel === 'thar' ? (
-          <group scale={1.0} position={[0, 0.62, 0]}>
+          <group scale={1.8} position={[0, 0.77, 0]} rotation={[0, -Math.PI / 2, 0]}>
             <primitive object={tharScene} />
-            <SubwooferBox active={subwooferActive} />
           </group>
         ) : (
           <group scale={0.9} position={[0, 0.05, 0]}>

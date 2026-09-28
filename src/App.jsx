@@ -14,7 +14,7 @@ export default function App() {
   const [currentPage, setCurrentPage] = useState('home');
 
   // Vehicle Customization States for the 3D Showroom Plane
-  const [carModel, setCarModel] = useState('ferrari'); // 'ferrari' or 'thar'
+  const [carModel, setCarModel] = useState('thar'); // 'thar' (new Meshy Thar) or 'ferrari'
   const [carColor, setCarColor] = useState('#FF4D00'); // Rosso Corsa Red default
   const [wheelFinish, setWheelFinish] = useState('gold');
   const [underglow, setUnderglow] = useState(true);
