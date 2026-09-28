@@ -16,6 +16,7 @@ export function FrameScrollHero({ onEnterShowroom }) {
   const targetFrameRef = useRef(0);
   const currentFrameRef = useRef(0);
   const hasTriggeredRef = useRef(false);
+  const lastDrawnFrameRef = useRef(-1);
 
   const baseUrl = import.meta.env.BASE_URL || '/';
 
@@ -34,7 +35,7 @@ export function FrameScrollHero({ onEnterShowroom }) {
   // Draw image to canvas with 'cover' aspect ratio
   const drawFrame = useCallback((img) => {
     const canvas = canvasRef.current;
-    if (!canvas || !img || !img.complete) return;
+    if (!canvas || !img) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
@@ -42,6 +43,7 @@ export function FrameScrollHero({ onEnterShowroom }) {
     const ch = canvas.height;
     const iw = img.naturalWidth || img.width;
     const ih = img.naturalHeight || img.height;
+    if (!iw || !ih) return;
 
     const scale = Math.max(cw / iw, ch / ih);
     const nw = iw * scale;
@@ -63,13 +65,21 @@ export function FrameScrollHero({ onEnterShowroom }) {
       const numStr = String(i).padStart(3, '0');
       img.src = `${baseUrl}frames/${folder}/frame_${numStr}.jpg`;
 
-      img.onload = () => {
+      const handleDone = () => {
         loaded++;
         setImagesLoaded(loaded);
         if (i === 1 && canvasRef.current) {
           drawFrame(img);
+          lastDrawnFrameRef.current = 0;
         }
       };
+
+      if (img.complete) {
+        handleDone();
+      } else {
+        img.onload = handleDone;
+        img.onerror = handleDone;
+      }
       imgs.push(img);
     }
     imagesRef.current = imgs;
@@ -86,7 +96,7 @@ export function FrameScrollHero({ onEnterShowroom }) {
 
       const idx = Math.min(TOTAL_FRAMES - 1, Math.max(0, Math.round(currentFrameRef.current)));
       const currentImg = imagesRef.current[idx];
-      if (currentImg) {
+      if (currentImg && (currentImg.complete || currentImg.naturalWidth > 0)) {
         drawFrame(currentImg);
       }
     };
@@ -103,35 +113,38 @@ export function FrameScrollHero({ onEnterShowroom }) {
     const animateLoop = () => {
       const diff = targetFrameRef.current - currentFrameRef.current;
 
-      if (Math.abs(diff) > 0.02) {
+      if (Math.abs(diff) > 0.01) {
         // Silky-smooth easing lerp (0.16)
         currentFrameRef.current += diff * 0.16;
+      }
 
-        const frameInt = Math.min(
-          TOTAL_FRAMES - 1,
-          Math.max(0, Math.round(currentFrameRef.current))
-        );
+      const frameInt = Math.min(
+        TOTAL_FRAMES - 1,
+        Math.max(0, Math.round(currentFrameRef.current))
+      );
 
+      if (frameInt !== lastDrawnFrameRef.current || Math.abs(diff) > 0.01) {
         const img = imagesRef.current[frameInt];
-        if (img) {
+        if (img && (img.complete || img.naturalWidth > 0)) {
           drawFrame(img);
+          lastDrawnFrameRef.current = frameInt;
         }
+      }
 
-        const pct = Math.round(((frameInt + 1) / TOTAL_FRAMES) * 100);
-        setDisplayPercent(pct);
+      const pct = Math.round(((frameInt + 1) / TOTAL_FRAMES) * 100);
+      setDisplayPercent(pct);
 
-        // AUTOMATIC SMOOTH TRANSFORMATION TO 3D PLANE AT END OF VIDEO
-        if (frameInt >= TOTAL_FRAMES - 3 && !hasTriggeredRef.current) {
-          hasTriggeredRef.current = true;
-          setIsTransitioning(true);
+      // AUTOMATIC SMOOTH TRANSFORMATION TO 3D PLANE AT END OF VIDEO
+      if (frameInt >= TOTAL_FRAMES - 4 && !hasTriggeredRef.current) {
+        hasTriggeredRef.current = true;
+        setIsTransitioning(true);
 
-          // Smooth 500ms cross-fade into 3D Studio Plane
-          setTimeout(() => {
-            if (onEnterShowroom) {
-              onEnterShowroom();
-            }
-          }, 600);
-        }
+        // Smooth 600ms cross-fade into 3D Studio Plane
+        setTimeout(() => {
+          if (onEnterShowroom) {
+            onEnterShowroom();
+          }
+        }, 600);
       }
 
       animId = requestAnimationFrame(animateLoop);
@@ -187,11 +200,11 @@ export function FrameScrollHero({ onEnterShowroom }) {
   return (
     <div className="fixed inset-0 w-full h-full bg-[#0B0B0C] overflow-hidden select-none z-0">
       {/* Loading Overlay */}
-      {imagesLoaded < 25 && (
+      {imagesLoaded < 3 && (
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-black z-40 gap-3">
           <div className="w-12 h-12 border-3 border-[#FF4D00] border-t-transparent rounded-full animate-spin" />
           <span className="text-xs font-mono uppercase tracking-widest text-[#FF4D00] font-bold">
-            Caching 24fps Ultra-Smooth Sequence ({loadPercent}%)...
+            Preparing 24fps Driving Experience ({loadPercent}%)...
           </span>
         </div>
       )}

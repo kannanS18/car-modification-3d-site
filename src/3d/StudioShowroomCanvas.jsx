@@ -167,19 +167,102 @@ function VehicleShowroom({
     });
   }, [ferrariScene, paintMat, wheelMat, glassMat, headlightMat]);
 
-  // Apply materials to New Thar model
+  // Hardtop Roof Material (Matte Black Composite)
+  const roofMat = useMemo(() => new THREE.MeshStandardMaterial({
+    color: new THREE.Color('#17181A'),
+    roughness: 0.85,
+    metalness: 0.1,
+  }), []);
+
+  // Bumpers & 7-Slot Grille Material (Rugged ABS)
+  const bumperMat = useMemo(() => new THREE.MeshStandardMaterial({
+    color: new THREE.Color('#141416'),
+    roughness: 0.8,
+    metalness: 0.2,
+  }), []);
+
+  // Rugged All-Terrain Wheels & Tires Material for Thar (Deep Vulcanized Rubber + Alloy Beadlock Rim)
+  const tharWheelMat = useMemo(() => {
+    let rimHex = '#161719'; // Deep rugged vulcanized off-road black
+    if (wheelFinish === 'silver') rimHex = '#2E3238';
+    if (wheelFinish === 'gold') rimHex = '#28231A';
+    return new THREE.MeshStandardMaterial({
+      color: new THREE.Color(rimHex),
+      roughness: 0.82,
+      metalness: 0.25,
+    });
+  }, [wheelFinish]);
+
+  // Apply materials to New Thar model with 5 discrete parts
   useEffect(() => {
     tharScene.traverse((child) => {
-      if (child.isMesh) {
-        if (!child.geometry.attributes.normal) {
-          child.geometry.computeVertexNormals();
+      if (child.isMesh && child.geometry) {
+        const geo = child.geometry;
+        if (!geo.attributes.normal) {
+          geo.computeVertexNormals();
         }
+
+        const pos = geo.attributes.position.array;
+        const idx = geo.index ? geo.index.array : null;
+
+        if (idx && !child.userData.partitioned) {
+          child.userData.partitioned = true;
+
+          const g0 = [], g1 = [], g2 = [], g3 = [], g4 = [];
+
+          for (let i = 0; i < idx.length; i += 3) {
+            const i1 = idx[i], i2 = idx[i + 1], i3 = idx[i + 2];
+            const cx = (pos[i1 * 3] + pos[i2 * 3] + pos[i3 * 3]) / 3;
+            const cy = (pos[i1 * 3 + 1] + pos[i2 * 3 + 1] + pos[i3 * 3 + 1]) / 3;
+            const cz = (pos[i1 * 3 + 2] + pos[i2 * 3 + 2] + pos[i3 * 3 + 2]) / 3;
+
+            if (cy < -0.16) {
+              g3.push(i1, i2, i3); // 3: Wheels & tires
+            } else if (cy > 0.28 && cx > -0.25 && cx < 0.78) {
+              g1.push(i1, i2, i3); // 1: Roof / hardtop
+            } else if (cy > 0.08 && cy <= 0.28 && cx > -0.3 && cx < 0.75 && Math.abs(cz) > 0.35) {
+              g2.push(i1, i2, i3); // 2: Side windows
+            } else if (cy > 0.06 && cy <= 0.28 && cx >= -0.35 && cx <= -0.15 && Math.abs(cz) < 0.4) {
+              g2.push(i1, i2, i3); // 2: Windshield
+            } else if (cx < -0.82 || (cx > 0.88 && cy < 0.1)) {
+              g4.push(i1, i2, i3); // 4: Bumpers & grille
+            } else {
+              g0.push(i1, i2, i3); // 0: Body panels
+            }
+          }
+
+          const sorted = new Uint32Array(idx.length);
+          let offset = 0;
+
+          sorted.set(g0, offset);
+          geo.addGroup(offset, g0.length, 0); // 0: Body Paint
+          offset += g0.length;
+
+          sorted.set(g1, offset);
+          geo.addGroup(offset, g1.length, 1); // 1: Hardtop Roof
+          offset += g1.length;
+
+          sorted.set(g2, offset);
+          geo.addGroup(offset, g2.length, 2); // 2: Tinted Glass
+          offset += g2.length;
+
+          sorted.set(g3, offset);
+          geo.addGroup(offset, g3.length, 3); // 3: Wheels & Tires
+          offset += g3.length;
+
+          sorted.set(g4, offset);
+          geo.addGroup(offset, g4.length, 4); // 4: Bumpers & Grille
+          offset += g4.length;
+
+          geo.setIndex(new THREE.BufferAttribute(sorted, 1));
+        }
+
+        child.material = [paintMat, roofMat, glassMat, tharWheelMat, bumperMat];
         child.castShadow = true;
         child.receiveShadow = true;
-        child.material = paintMat;
       }
     });
-  }, [tharScene, paintMat]);
+  }, [tharScene, paintMat, roofMat, glassMat, tharWheelMat, bumperMat]);
 
   useFrame((state, delta) => {
     if (autoRotate && groupRef.current) {

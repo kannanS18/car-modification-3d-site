@@ -10,13 +10,13 @@ import { ContactSection } from './components/ContactSection';
 import { FooterSection } from './components/FooterSection';
 
 export default function App() {
-  // Multi-Page Navigation State: 'home' | 'showroom' | 'services' | 'about' | 'gallery' | 'contact'
+  // Default to 'home' so the driving video entry is ALWAYS shown first
   const [currentPage, setCurrentPage] = useState('home');
 
   // Vehicle Customization States for the 3D Showroom Plane
   const [carModel, setCarModel] = useState('thar'); // 'thar' (new Meshy Thar) or 'ferrari'
-  const [carColor, setCarColor] = useState('#FF4D00'); // Rosso Corsa Red default
-  const [wheelFinish, setWheelFinish] = useState('gold');
+  const [carColor, setCarColor] = useState('#C2A382'); // Desert Sand default (classic Thar color)
+  const [wheelFinish, setWheelFinish] = useState('black');
   const [underglow, setUnderglow] = useState(true);
   const [headlights, setHeadlights] = useState(true);
   const [autoRotate, setAutoRotate] = useState(true);
@@ -32,7 +32,15 @@ export default function App() {
       }
     };
 
-    handleHashChange();
+    // On initial mount/refresh, ALWAYS default to 'home' so the driving video is seen first!
+    const initialHash = window.location.hash.replace('#/', '').replace('#', '');
+    if (!initialHash || initialHash === 'showroom' || initialHash === 'home') {
+      setCurrentPage('home');
+      window.location.hash = '#/home';
+    } else if (['services', 'about', 'gallery', 'contact'].includes(initialHash)) {
+      setCurrentPage(initialHash);
+    }
+
     window.addEventListener('hashchange', handleHashChange);
     return () => window.removeEventListener('hashchange', handleHashChange);
   }, []);
