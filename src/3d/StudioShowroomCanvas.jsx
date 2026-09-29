@@ -159,7 +159,7 @@ function MiniWheelTurntable({ wheelType, onOpenSandbox }) {
 
       {/* 3D Mini Viewport */}
       <div className="w-full h-28 rounded-lg bg-black/80 border border-white/10 relative overflow-hidden flex items-center justify-center">
-        <Canvas camera={{ position: [0, 0, 0.46], fov: 45 }} gl={{ antialias: true, alpha: true }}>
+        <Canvas camera={{ position: [0, 0, 0.46], fov: 45 }} gl={{ antialias: false, alpha: true, powerPreference: 'low-power' }} dpr={1}>
           <ambientLight intensity={1.2} />
           <directionalLight position={[2, 3, 3]} intensity={2.5} />
           <directionalLight position={[-2, -2, -2]} intensity={0.9} color="#FF6B2B" />
@@ -445,8 +445,15 @@ export function StudioShowroomCanvas({
       {/* 3D WebGL Canvas */}
       <Canvas
         shadows
+        dpr={[1, 1.5]}
         camera={{ position: [3.8, 2.2, 4.6], fov: 45 }}
-        gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
+        gl={{
+          antialias: true,
+          alpha: true,
+          powerPreference: 'high-performance',
+          stencil: false,
+          depth: true,
+        }}
       >
         <Suspense
           fallback={

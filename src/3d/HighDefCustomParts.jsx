@@ -75,16 +75,17 @@ export function TharFittedWheelSet({ wheelType }) {
     return null;
   }
 
-  // 5 Axle Hub Coordinates on Thar local coordinate space (calculated from OEM geometry)
+  // 5 Axle Hub Coordinates on Thar local coordinate space (measured exactly from OEM wheels in thar.glb)
   const hubs = [
-    { id: 'FL', pos: [-0.530, -0.170, -0.320], rotY: Math.PI, isSpare: false },
-    { id: 'FR', pos: [-0.530, -0.170, 0.320], rotY: 0, isSpare: false },
-    { id: 'RL', pos: [0.455, -0.170, -0.320], rotY: Math.PI, isSpare: false },
-    { id: 'RR', pos: [0.455, -0.170, 0.320], rotY: 0, isSpare: false },
-    { id: 'Spare', pos: [0.872, 0.080, 0.000], rotY: Math.PI / 2, isSpare: true },
+    { id: 'FL', pos: [-0.668, -0.216, -0.357], rotY: Math.PI, isSpare: false },
+    { id: 'FR', pos: [-0.668, -0.216, 0.355], rotY: 0, isSpare: false },
+    { id: 'RL', pos: [0.550, -0.216, -0.361], rotY: Math.PI, isSpare: false },
+    { id: 'RR', pos: [0.550, -0.216, 0.359], rotY: 0, isSpare: false },
+    { id: 'Spare', pos: [0.849, 0.129, -0.002], rotY: Math.PI / 2, isSpare: true },
   ];
 
-  const wheelScale = 0.148;
+  // Scale matching OEM wheel (0.227) + slightly larger for aggressive off-road tyre (0.235)
+  const wheelScale = 0.235;
 
   return (
     <group>
