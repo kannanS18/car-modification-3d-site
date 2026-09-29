@@ -74,20 +74,10 @@ export default function App() {
       {currentPage === 'showroom' && (
         <div className="pt-20 min-h-screen flex flex-col justify-between">
           <StudioShowroomCanvas
-            carModel={carModel}
-            setCarModel={setCarModel}
             carColor={carColor}
             setCarColor={setCarColor}
             wheelType={wheelType}
             setWheelType={setWheelType}
-            bumperLights={bumperLights}
-            setBumperLights={setBumperLights}
-            roofLights={roofLights}
-            setRoofLights={setRoofLights}
-            bullBar={bullBar}
-            setBullBar={setBullBar}
-            roofRack={roofRack}
-            setRoofRack={setRoofRack}
             underglow={underglow}
             setUnderglow={setUnderglow}
             headlights={headlights}
@@ -96,8 +86,6 @@ export default function App() {
             setAutoRotate={setAutoRotate}
             liftActive={liftActive}
             setLiftActive={setLiftActive}
-            subwooferActive={subwooferActive}
-            setSubwooferActive={setSubwooferActive}
             onOpenBooking={() => navigateTo('contact')}
             onOpenSandbox={() => navigateTo('sandbox')}
           />

@@ -5,5 +5,8 @@ export default defineConfig({
   plugins: [react()],
   base: '/car-modification-3d-site/',
   assetsInclude: ['**/*.glb', '**/*.gltf', '**/*.hdr'],
-  server: { port: 3001 }
+  server: { port: 3001 },
+  build: {
+    chunkSizeWarningLimit: 1500,
+  },
 });
