@@ -12,7 +12,52 @@ import {
   Sun,
   Eye,
   CheckCircle,
+  Crosshair,
+  Zap,
+  Volume2,
+  Award,
 } from 'lucide-react';
+
+// Browser Web Audio API Sound Synthesizer for tactile game audio feedback
+const playUiSound = (type = 'click') => {
+  try {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return;
+    const ctx = new AudioCtx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    if (type === 'click') {
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(880, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(1400, ctx.currentTime + 0.035);
+      gain.gain.setValueAtTime(0.08, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.04);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.04);
+    } else if (type === 'tab') {
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(520, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(820, ctx.currentTime + 0.05);
+      gain.gain.setValueAtTime(0.09, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.06);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.06);
+    } else if (type === 'toggle') {
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(400, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(750, ctx.currentTime + 0.06);
+      gain.gain.setValueAtTime(0.07, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.07);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.07);
+    }
+  } catch (e) {
+    // Ignore audio context errors if blocked by browser policy
+  }
+};
 
 // Sparks / Embers Particle Effect
 function StudioParticles({ count = 75 }) {
@@ -66,7 +111,7 @@ function StudioParticles({ count = 75 }) {
   );
 }
 
-// Subwoofer Boot Enclosure (For Sports Coupe)
+// Subwoofer Boot Enclosure (For Ferrari)
 function SubwooferBox({ active }) {
   if (!active) return null;
   return (
@@ -91,132 +136,418 @@ function SubwooferBox({ active }) {
   );
 }
 
-// 3D Auxiliary Front Bumper Rally Fog Pods (Mahindra Thar 4x4)
+// ==========================================
+// ACCURATE 3D OFF-ROAD LIGHTS & ACCESSORIES
+// ==========================================
+
+// 1. High-Detail Baja / KC HiLiTES Style Front Bumper Rally Fog Pods
 function BumperFogPods({ active, headlights }) {
   if (!active) return null;
   const isLit = headlights;
 
+  const podCoords = [
+    { pos: [-0.94, -0.04, -0.22], rot: 0.05 },
+    { pos: [-0.94, -0.04, 0.22], rot: -0.05 },
+  ];
+
   return (
     <group>
-      {/* Left Fog Pod */}
-      <group position={[-0.93, -0.06, -0.22]}>
-        {/* Die-cast black housing */}
-        <mesh rotation={[0, 0, Math.PI / 2]} castShadow>
-          <cylinderGeometry args={[0.045, 0.05, 0.04, 24]} />
-          <meshStandardMaterial color="#111214" roughness={0.7} metalness={0.8} />
+      {podCoords.map((pod, idx) => (
+        <group key={idx} position={pod.pos} rotation={[0, pod.rot, 0]}>
+          {/* Heavy-Duty Steel Mounting Bracket with Hex Bolt */}
+          <mesh position={[0.025, -0.04, 0]} castShadow>
+            <boxGeometry args={[0.025, 0.06, 0.025]} />
+            <meshStandardMaterial color="#1A1C20" roughness={0.4} metalness={0.85} />
+          </mesh>
+          <mesh position={[0.025, -0.055, 0]}>
+            <cylinderGeometry args={[0.012, 0.012, 0.035, 6]} />
+            <meshStandardMaterial color="#333842" roughness={0.3} metalness={0.9} />
+          </mesh>
+
+          {/* Finned Aluminum Heat-Sink Cylindrical Body */}
+          <mesh rotation={[0, 0, Math.PI / 2]} castShadow>
+            <cylinderGeometry args={[0.055, 0.06, 0.05, 32]} />
+            <meshStandardMaterial color="#121316" roughness={0.7} metalness={0.6} />
+          </mesh>
+          {/* Cooling Fin Rings */}
+          {[-0.012, 0.0, 0.012].map((xOffset, fi) => (
+            <mesh key={fi} position={[xOffset, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
+              <torusGeometry args={[0.057, 0.003, 8, 32]} />
+              <meshStandardMaterial color="#0A0B0D" roughness={0.8} metalness={0.5} />
+            </mesh>
+          ))}
+
+          {/* Bezel Ring with 6 Perimeter Socket-Head Screws */}
+          <mesh position={[-0.024, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
+            <ringGeometry args={[0.046, 0.056, 32]} />
+            <meshStandardMaterial color="#1E2025" roughness={0.3} metalness={0.9} />
+          </mesh>
+
+          {/* Internal Deep Chrome Parabolic Reflector Dish */}
+          <mesh position={[-0.015, 0, 0]} rotation={[0, 0, -Math.PI / 2]}>
+            <coneGeometry args={[0.045, 0.02, 32, 1, true]} />
+            <meshStandardMaterial color="#E2E8F0" roughness={0.1} metalness={0.98} />
+          </mesh>
+
+          {/* High-Power Cree LED Emitter Core */}
+          <mesh position={[-0.018, 0, 0]}>
+            <boxGeometry args={[0.006, 0.014, 0.014]} />
+            <meshBasicMaterial color={isLit ? '#FFF' : '#333'} />
+          </mesh>
+
+          {/* Fluted Amber Polycarbonate Lens */}
+          <mesh position={[-0.026, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
+            <circleGeometry args={[0.048, 32]} />
+            <meshStandardMaterial
+              color={isLit ? '#FF9E00' : '#8A5800'}
+              emissive={isLit ? new THREE.Color('#FF8C00') : new THREE.Color(0)}
+              emissiveIntensity={isLit ? 3.5 : 0}
+              roughness={0.15}
+              metalness={0.1}
+              transparent
+              opacity={0.85}
+            />
+          </mesh>
+
+          {/* Front Protective Stone Guard Cross */}
+          <group position={[-0.028, 0, 0]}>
+            <mesh>
+              <boxGeometry args={[0.003, 0.09, 0.004]} />
+              <meshStandardMaterial color="#18191D" roughness={0.5} />
+            </mesh>
+            <mesh>
+              <boxGeometry args={[0.003, 0.004, 0.09]} />
+              <meshStandardMaterial color="#18191D" roughness={0.5} />
+            </mesh>
+          </group>
+
+          {/* Forward Volumetric Spotlight & Beam Projection */}
+          {isLit && (
+            <spotLight
+              color="#FFA726"
+              intensity={6}
+              distance={16}
+              angle={0.4}
+              penumbra={0.5}
+              position={[-0.04, 0, 0]}
+              target-position={[-6, -0.4, 0]}
+              castShadow
+            />
+          )}
+        </group>
+      ))}
+    </group>
+  );
+}
+
+// 2. High-Detail 50" Curved Dual-Row Windshield Roof LED Light Bar
+function RoofLightBar({ active, headlights }) {
+  if (!active) return null;
+  const isLit = headlights;
+
+  // 12 discrete LED optical projector lenses across the width of the bar
+  const lensPositions = [-0.30, -0.25, -0.20, -0.15, -0.10, -0.05, 0.05, 0.10, 0.15, 0.20, 0.25, 0.30];
+
+  return (
+    <group position={[-0.23, 0.38, 0]}>
+      {/* Heavy-Duty Windshield Gutter A-Pillar Steel Mounting Brackets */}
+      {[-0.34, 0.34].map((zPos, bi) => (
+        <group key={bi} position={[0.015, -0.035, zPos]}>
+          <mesh castShadow>
+            <boxGeometry args={[0.04, 0.065, 0.016]} />
+            <meshStandardMaterial color="#16181B" roughness={0.4} metalness={0.85} />
+          </mesh>
+          {/* Torx Mounting Screws */}
+          <mesh position={[-0.015, -0.015, 0]}>
+            <cylinderGeometry args={[0.007, 0.007, 0.02, 6]} rotation={[Math.PI / 2, 0, 0]} />
+            <meshStandardMaterial color="#4A5260" roughness={0.2} metalness={0.9} />
+          </mesh>
+        </group>
+      ))}
+
+      {/* Main Extruded Aluminum Light Bar Housing */}
+      <mesh castShadow>
+        <boxGeometry args={[0.045, 0.042, 0.69]} />
+        <meshStandardMaterial color="#121316" roughness={0.65} metalness={0.7} />
+      </mesh>
+
+      {/* Rear Cooling Radiator Heat-Sink Fins */}
+      {[-0.014, -0.007, 0.0, 0.007].map((yOffset, fi) => (
+        <mesh key={fi} position={[0.024, yOffset, 0]}>
+          <boxGeometry args={[0.006, 0.003, 0.68]} />
+          <meshStandardMaterial color="#0A0B0D" roughness={0.8} />
         </mesh>
-        {/* Amber / Warm Lens */}
-        <mesh position={[-0.021, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
-          <circleGeometry args={[0.042, 24]} />
-          <meshBasicMaterial color={isLit ? '#FFB800' : '#4A3B12'} />
+      ))}
+
+      {/* End Caps with Perimeter Allen Bolts */}
+      {[-0.346, 0.346].map((zPos, ei) => (
+        <mesh key={ei} position={[0, 0, zPos]}>
+          <boxGeometry args={[0.048, 0.045, 0.006]} />
+          <meshStandardMaterial color="#1D1F24" roughness={0.3} metalness={0.85} />
         </mesh>
-        {/* Steel Mounting Bracket */}
-        <mesh position={[0.02, -0.03, 0]}>
-          <boxGeometry args={[0.02, 0.05, 0.02]} />
-          <meshStandardMaterial color="#1E2024" metalness={0.9} roughness={0.3} />
-        </mesh>
-        {/* Forward Spot Projection */}
-        {isLit && (
+      ))}
+
+      {/* 12 Individual Projector Cups with Optical Lenses */}
+      {lensPositions.map((zPos, idx) => (
+        <group key={idx} position={[-0.023, 0, zPos]}>
+          {/* Chrome Optical Reflector Bezel */}
+          <mesh rotation={[0, -Math.PI / 2, 0]}>
+            <ringGeometry args={[0.013, 0.018, 16]} />
+            <meshStandardMaterial color="#E2E8F0" roughness={0.15} metalness={0.95} />
+          </mesh>
+          {/* Diode Chip Core */}
+          <mesh position={[-0.002, 0, 0]}>
+            <boxGeometry args={[0.003, 0.008, 0.008]} />
+            <meshBasicMaterial color={isLit ? '#FFFFFF' : '#334155'} />
+          </mesh>
+          {/* Polycarbonate Lens Cover */}
+          <mesh position={[-0.004, 0, 0]} rotation={[0, -Math.PI / 2, 0]}>
+            <circleGeometry args={[0.015, 16]} />
+            <meshStandardMaterial
+              color={isLit ? '#E0F2FE' : '#1E293B'}
+              emissive={isLit ? new THREE.Color('#93C5FD') : new THREE.Color(0)}
+              emissiveIntensity={isLit ? 4 : 0}
+              roughness={0.05}
+              metalness={0.1}
+              transparent
+              opacity={0.9}
+            />
+          </mesh>
+        </group>
+      ))}
+
+      {/* High-Intensity Forward Illuminating Spotlights */}
+      {isLit && (
+        <>
           <spotLight
-            color="#FFA726"
-            intensity={5}
-            distance={10}
-            angle={0.45}
-            penumbra={0.6}
-            position={[-0.03, 0, 0]}
-            target-position={[-4, -0.3, 0]}
+            color="#F0F9FF"
+            intensity={8}
+            distance={20}
+            angle={0.52}
+            penumbra={0.4}
+            position={[-0.06, 0, -0.16]}
+            target-position={[-8, -0.5, -0.16]}
+            castShadow
           />
-        )}
+          <spotLight
+            color="#F0F9FF"
+            intensity={8}
+            distance={20}
+            angle={0.52}
+            penumbra={0.4}
+            position={[-0.06, 0, 0.16]}
+            target-position={[-8, -0.5, 0.16]}
+            castShadow
+          />
+        </>
+      )}
+    </group>
+  );
+}
+
+// 3. Front Pre-Runner Steel Bull Bar & Warn Recovery Winch
+function BullBarWinch({ active }) {
+  if (!active) return null;
+
+  return (
+    <group position={[-0.93, -0.10, 0]}>
+      {/* Heavy-Duty Tubular Steel Push Bar (Main Crossbar) */}
+      <mesh position={[-0.03, 0, 0]} rotation={[0, 0, Math.PI / 2]} castShadow>
+        <cylinderGeometry args={[0.022, 0.022, 0.65, 16]} />
+        <meshStandardMaterial color="#141517" roughness={0.7} metalness={0.3} />
+      </mesh>
+
+      {/* Upper Grille Protection Loop */}
+      <group position={[-0.02, 0.12, 0]}>
+        <mesh rotation={[0, 0, Math.PI / 2]}>
+          <cylinderGeometry args={[0.016, 0.016, 0.42, 16]} />
+          <meshStandardMaterial color="#141517" roughness={0.7} metalness={0.3} />
+        </mesh>
+        {/* Left & Right Angled Uprights */}
+        {[-0.20, 0.20].map((zPos, ui) => (
+          <mesh key={ui} position={[0.01, -0.06, zPos]} rotation={[0, 0, 0.18 * (ui === 0 ? -1 : 1)]}>
+            <cylinderGeometry args={[0.016, 0.016, 0.13, 16]} />
+            <meshStandardMaterial color="#141517" roughness={0.7} metalness={0.3} />
+          </mesh>
+        ))}
       </group>
 
-      {/* Right Fog Pod */}
-      <group position={[-0.93, -0.06, 0.22]}>
-        {/* Die-cast black housing */}
-        <mesh rotation={[0, 0, Math.PI / 2]} castShadow>
-          <cylinderGeometry args={[0.045, 0.05, 0.04, 24]} />
-          <meshStandardMaterial color="#111214" roughness={0.7} metalness={0.8} />
+      {/* Electric Winch Housing */}
+      <group position={[0.01, -0.02, 0]}>
+        {/* Left Motor Housing */}
+        <mesh position={[0, 0, -0.12]} rotation={[0, 0, Math.PI / 2]}>
+          <cylinderGeometry args={[0.035, 0.035, 0.06, 24]} />
+          <meshStandardMaterial color="#1F2024" roughness={0.6} metalness={0.5} />
         </mesh>
-        {/* Amber / Warm Lens */}
-        <mesh position={[-0.021, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
-          <circleGeometry args={[0.042, 24]} />
-          <meshBasicMaterial color={isLit ? '#FFB800' : '#4A3B12'} />
+        {/* Right Gearbox Housing */}
+        <mesh position={[0, 0, 0.12]} rotation={[0, 0, Math.PI / 2]}>
+          <cylinderGeometry args={[0.035, 0.035, 0.06, 24]} />
+          <meshStandardMaterial color="#1F2024" roughness={0.6} metalness={0.5} />
         </mesh>
-        {/* Steel Mounting Bracket */}
-        <mesh position={[0.02, -0.03, 0]}>
-          <boxGeometry args={[0.02, 0.05, 0.02]} />
-          <meshStandardMaterial color="#1E2024" metalness={0.9} roughness={0.3} />
+        {/* Center Drum Spool with Wrapped Steel Cable */}
+        <mesh rotation={[Math.PI / 2, 0, 0]}>
+          <cylinderGeometry args={[0.028, 0.028, 0.16, 24]} />
+          <meshStandardMaterial color="#71717A" roughness={0.4} metalness={0.8} />
         </mesh>
-        {/* Forward Spot Projection */}
-        {isLit && (
-          <spotLight
-            color="#FFA726"
-            intensity={5}
-            distance={10}
-            angle={0.45}
-            penumbra={0.6}
-            position={[-0.03, 0, 0]}
-            target-position={[-4, -0.3, 0]}
-          />
-        )}
+        {/* Heavy-Duty Roller Fairlead Bracket */}
+        <mesh position={[-0.04, 0, 0]}>
+          <boxGeometry args={[0.015, 0.045, 0.12]} />
+          <meshStandardMaterial color="#111214" roughness={0.5} metalness={0.6} />
+        </mesh>
+        {/* Red Forged Steel Safety Recovery Hook */}
+        <group position={[-0.065, -0.01, 0.02]} rotation={[0, 0, -0.4]}>
+          <mesh>
+            <torusGeometry args={[0.015, 0.005, 12, 24, Math.PI * 1.5]} />
+            <meshStandardMaterial color="#EF4444" roughness={0.3} metalness={0.7} />
+          </mesh>
+        </group>
       </group>
     </group>
   );
 }
 
-// 3D Roof-Mounted High-Power LED Light Bar (Mahindra Thar 4x4)
-function RoofLightBar({ active, headlights }) {
+// 4. Overland Expedition Safari Roof Rack & Recovery Gear
+function RoofRack({ active }) {
   if (!active) return null;
-  const isLit = headlights;
 
   return (
-    <group position={[-0.24, 0.38, 0]}>
-      {/* Matte Black Extruded Aluminum Light Bar Housing */}
+    <group position={[0.22, 0.43, 0]}>
+      {/* Tubular Steel Outer Roof Basket Frame */}
       <mesh castShadow>
-        <boxGeometry args={[0.04, 0.035, 0.68]} />
-        <meshStandardMaterial color="#121315" roughness={0.65} metalness={0.7} />
+        <boxGeometry args={[0.88, 0.04, 0.68]} />
+        <meshStandardMaterial color="#121315" roughness={0.8} metalness={0.3} />
       </mesh>
-
-      {/* Mounting Brackets (Left & Right) */}
-      <mesh position={[0.01, -0.03, -0.32]}>
-        <boxGeometry args={[0.04, 0.04, 0.02]} />
-        <meshStandardMaterial color="#1A1B1E" roughness={0.5} metalness={0.8} />
-      </mesh>
-      <mesh position={[0.01, -0.03, 0.32]}>
-        <boxGeometry args={[0.04, 0.04, 0.02]} />
-        <meshStandardMaterial color="#1A1B1E" roughness={0.5} metalness={0.8} />
-      </mesh>
-
-      {/* Front Glowing LED Projectors (5 lenses) */}
-      {[-0.24, -0.12, 0, 0.12, 0.24].map((zPos, idx) => (
-        <mesh key={idx} position={[-0.021, 0, zPos]}>
-          <circleGeometry args={[0.014, 16]} rotation={[0, -Math.PI / 2, 0]} />
-          <meshBasicMaterial color={isLit ? '#E0F2FE' : '#334155'} />
+      {/* 5 Crossbar Slats */}
+      {[-0.32, -0.16, 0, 0.16, 0.32].map((xPos, ci) => (
+        <mesh key={ci} position={[xPos, -0.01, 0]}>
+          <boxGeometry args={[0.02, 0.015, 0.66]} />
+          <meshStandardMaterial color="#1A1C1E" roughness={0.7} metalness={0.4} />
         </mesh>
       ))}
 
-      {/* High-Power Forward Illuminating Spotlights */}
-      {isLit && (
-        <>
-          <spotLight
-            color="#F0F9FF"
-            intensity={6}
-            distance={14}
-            angle={0.5}
-            penumbra={0.5}
-            position={[-0.05, 0, -0.15]}
-            target-position={[-6, -0.4, -0.15]}
-          />
-          <spotLight
-            color="#F0F9FF"
-            intensity={6}
-            distance={14}
-            angle={0.5}
-            penumbra={0.5}
-            position={[-0.05, 0, 0.15]}
-            target-position={[-6, -0.4, 0.15]}
-          />
-        </>
-      )}
+      {/* Dual Neon-Orange Recovery Sand Boards Strapped on Top */}
+      <group position={[-0.05, 0.028, -0.16]} rotation={[0, 0.02, 0]}>
+        <mesh castShadow>
+          <boxGeometry args={[0.55, 0.018, 0.16]} />
+          <meshStandardMaterial color="#FF6600" roughness={0.5} metalness={0.1} />
+        </mesh>
+        {/* Traction Cleats */}
+        {[-0.2, -0.1, 0, 0.1, 0.2].map((xPos, ti) => (
+          <mesh key={ti} position={[xPos, 0.012, 0]}>
+            <boxGeometry args={[0.025, 0.008, 0.12]} />
+            <meshStandardMaterial color="#D94E00" roughness={0.4} />
+          </mesh>
+        ))}
+      </group>
+
+      {/* Heavy-Duty High-Lift Farm Jack Mounted on Side Rail */}
+      <group position={[0, 0.025, 0.35]}>
+        {/* Long Steel I-Beam Spine */}
+        <mesh>
+          <boxGeometry args={[0.72, 0.018, 0.012]} />
+          <meshStandardMaterial color="#EF4444" roughness={0.4} metalness={0.7} />
+        </mesh>
+        {/* Steel Climbing Foot & Handle Bracket */}
+        <mesh position={[-0.24, 0.02, 0]}>
+          <boxGeometry args={[0.08, 0.05, 0.02]} />
+          <meshStandardMaterial color="#18191B" roughness={0.6} metalness={0.8} />
+        </mesh>
+      </group>
+    </group>
+  );
+}
+
+// 5. High-Detail Custom 3D Wheels & Tyres (Replaces or overlays wheel hubs)
+function CustomWheelAssembly({ wheelType }) {
+  if (wheelType === 'oem') return null;
+
+  // 4 Axle Hub Coordinates + 1 Rear Tailgate Spare
+  const hubs = [
+    { pos: [-0.60, -0.245, -0.37], rotY: 0, isSpare: false },
+    { pos: [-0.60, -0.245, 0.37], rotY: Math.PI, isSpare: false },
+    { pos: [0.518, -0.250, -0.37], rotY: 0, isSpare: false },
+    { pos: [0.518, -0.250, 0.37], rotY: Math.PI, isSpare: false },
+    { pos: [0.89, 0.065, 0.0], rotY: Math.PI / 2, isSpare: true },
+  ];
+
+  // Wheel styling based on wheelType
+  const isBronze = wheelType === 'dakar_bronze';
+  const isTitanium = wheelType === 'titanium_alloy';
+
+  const rimColor = isBronze ? '#6E5528' : isTitanium ? '#8E9AA8' : '#141517';
+  const rimMetalness = isBronze ? 0.75 : isTitanium ? 0.9 : 0.4;
+  const rimRoughness = isBronze ? 0.35 : isTitanium ? 0.2 : 0.6;
+  const beadlockColor = isBronze ? '#1F2024' : isTitanium ? '#E2E8F0' : '#DC2626';
+
+  return (
+    <group>
+      {hubs.map((hub, hi) => (
+        <group key={hi} position={hub.pos} rotation={[0, hub.rotY, 0]}>
+          {/* Chunky Outer Knobby Mud-Terrain Rubber Tyre */}
+          <mesh rotation={[Math.PI / 2, 0, 0]} castShadow>
+            <torusGeometry args={[0.165, 0.058, 20, 36]} />
+            <meshStandardMaterial color="#141517" roughness={0.88} metalness={0.1} />
+          </mesh>
+
+          {/* Deep-Dish Forged Rim Barrel */}
+          <mesh rotation={[Math.PI / 2, 0, 0]}>
+            <cylinderGeometry args={[0.125, 0.125, 0.09, 32, 1, true]} />
+            <meshStandardMaterial color={rimColor} roughness={rimRoughness} metalness={rimMetalness} />
+          </mesh>
+
+          {/* Perimeter Outer Beadlock Ring */}
+          <mesh position={[0, 0, -0.046]} rotation={[Math.PI / 2, 0, 0]}>
+            <ringGeometry args={[0.118, 0.134, 32]} />
+            <meshStandardMaterial color={beadlockColor} roughness={0.3} metalness={0.8} />
+          </mesh>
+
+          {/* 16 Beadlock Allen Bolts */}
+          {Array.from({ length: 16 }).map((_, bi) => {
+            const angle = (bi / 16) * Math.PI * 2;
+            const bx = Math.cos(angle) * 0.126;
+            const by = Math.sin(angle) * 0.126;
+            return (
+              <mesh key={bi} position={[bx, by, -0.048]}>
+                <circleGeometry args={[0.0035, 6]} />
+                <meshStandardMaterial color="#D1D5DB" metalness={0.9} roughness={0.2} />
+              </mesh>
+            );
+          })}
+
+          {/* Forged Multi-Spoke Center Spider */}
+          {Array.from({ length: 5 }).map((_, si) => {
+            const angle = (si / 5) * Math.PI * 2;
+            return (
+              <group key={si} position={[0, 0, -0.038]} rotation={[0, 0, angle]}>
+                <mesh position={[0, 0.055, 0]}>
+                  <boxGeometry args={[0.022, 0.075, 0.012]} />
+                  <meshStandardMaterial color={rimColor} roughness={rimRoughness} metalness={rimMetalness} />
+                </mesh>
+              </group>
+            );
+          })}
+
+          {/* Center Hub Cap with Accent Ring */}
+          <mesh position={[0, 0, -0.042]} rotation={[Math.PI / 2, 0, 0]}>
+            <cylinderGeometry args={[0.032, 0.032, 0.015, 24]} />
+            <meshStandardMaterial color="#0F1012" roughness={0.5} metalness={0.6} />
+          </mesh>
+
+          {/* Brake Rotor & Caliper (on running wheels, not spare) */}
+          {!hub.isSpare && (
+            <group position={[0, 0, 0.01]}>
+              <mesh rotation={[Math.PI / 2, 0, 0]}>
+                <cylinderGeometry args={[0.10, 0.10, 0.008, 32]} />
+                <meshStandardMaterial color="#94A3B8" roughness={0.25} metalness={0.95} />
+              </mesh>
+              <mesh position={[0.06, 0.06, 0]}>
+                <boxGeometry args={[0.045, 0.05, 0.025]} />
+                <meshStandardMaterial color="#DC2626" roughness={0.3} metalness={0.7} />
+              </mesh>
+            </group>
+          )}
+        </group>
+      ))}
     </group>
   );
 }
@@ -225,13 +556,17 @@ function RoofLightBar({ active, headlights }) {
 function VehicleShowroom({
   carModel,
   carColor = 'original',
+  wheelType = 'oem',
   bumperLights = true,
   roofLights = true,
+  bullBar = true,
+  roofRack = true,
   headlights = true,
   underglow = true,
   autoRotate = true,
   liftActive = false,
   subwooferActive = true,
+  onSelectCategory,
 }) {
   const groupRef = useRef();
   const baseUrl = import.meta.env.BASE_URL || '/';
@@ -402,6 +737,47 @@ function VehicleShowroom({
             <BumperFogPods active={bumperLights} headlights={headlights} />
             {/* Roof-Mounted Off-Road Light Bar */}
             <RoofLightBar active={roofLights} headlights={headlights} />
+            {/* Front Pre-Runner Steel Bull Bar & Electric Winch */}
+            <BullBarWinch active={bullBar} />
+            {/* Overland Expedition Safari Roof Rack & Sand Boards */}
+            <RoofRack active={roofRack} />
+            {/* Interchangeable 3D Wheels & Tyres */}
+            <CustomWheelAssembly wheelType={wheelType} />
+
+            {/* 3D Interactive Game Hotspots (Pins on Vehicle) */}
+            <group position={[-0.95, -0.05, 0]}>
+              <Html distanceFactor={6} center>
+                <button
+                  onClick={() => onSelectCategory && onSelectCategory('armor')}
+                  className="w-5 h-5 rounded-full bg-[#FF4D00] text-white flex items-center justify-center text-[10px] font-bold shadow-[0_0_12px_#FF4D00] animate-bounce cursor-pointer hover:scale-125 transition-transform"
+                  title="Customize Bull Bar & Winch"
+                >
+                  ⚡
+                </button>
+              </Html>
+            </group>
+            <group position={[-0.23, 0.42, 0]}>
+              <Html distanceFactor={6} center>
+                <button
+                  onClick={() => onSelectCategory && onSelectCategory('lighting')}
+                  className="w-5 h-5 rounded-full bg-[#00E5FF] text-black flex items-center justify-center text-[10px] font-bold shadow-[0_0_12px_#00E5FF] animate-pulse cursor-pointer hover:scale-125 transition-transform"
+                  title="Customize Roof Light Bar"
+                >
+                  💡
+                </button>
+              </Html>
+            </group>
+            <group position={[-0.60, -0.22, 0.46]}>
+              <Html distanceFactor={6} center>
+                <button
+                  onClick={() => onSelectCategory && onSelectCategory('wheels')}
+                  className="w-5 h-5 rounded-full bg-[#EAB308] text-black flex items-center justify-center text-[10px] font-bold shadow-[0_0_12px_#EAB308] animate-bounce cursor-pointer hover:scale-125 transition-transform"
+                  title="Customize Tyres & Rims"
+                >
+                  🛞
+                </button>
+              </Html>
+            </group>
           </group>
         ) : (
           <group scale={0.9} position={[0, 0.05, 0]}>
@@ -468,8 +844,11 @@ function VehicleShowroom({
 export function StudioShowroomCanvas({
   carModel, setCarModel,
   carColor = 'original', setCarColor,
+  wheelType = 'oem', setWheelType,
   bumperLights = true, setBumperLights,
   roofLights = true, setRoofLights,
+  bullBar = true, setBullBar,
+  roofRack = true, setRoofRack,
   underglow, setUnderglow,
   headlights, setHeadlights,
   autoRotate, setAutoRotate,
@@ -477,7 +856,27 @@ export function StudioShowroomCanvas({
   subwooferActive, setSubwooferActive,
   onOpenBooking,
 }) {
-  const [toolbarOpen, setToolbarOpen] = useState(true);
+  const [activeCategory, setActiveCategory] = useState('livery'); // 'livery' | 'wheels' | 'lighting' | 'armor' | 'chassis'
+
+  // Performance Rating Scores (Dynamically calculated based on equipped mods)
+  const stats = useMemo(() => {
+    let traction = 78;
+    if (wheelType === 'mud_beadlock') traction = 99;
+    else if (wheelType === 'dakar_bronze') traction = 94;
+    else if (wheelType === 'titanium_alloy') traction = 86;
+
+    let visibility = 65;
+    if (bumperLights) visibility += 18;
+    if (roofLights) visibility += 17;
+
+    let armor = 62;
+    if (bullBar) armor += 20;
+    if (roofRack) armor += 18;
+
+    let clearance = liftActive ? '310 mm (+3.5")' : '226 mm (Stock)';
+
+    return { traction, visibility, armor, clearance };
+  }, [wheelType, bumperLights, roofLights, bullBar, roofRack, liftActive]);
 
   const colors = [
     { name: 'Factory Original Spec (Red & Black)', hex: 'original', displayHex: '#D32F2F', badge: 'OEM' },
@@ -489,8 +888,20 @@ export function StudioShowroomCanvas({
     { name: 'Riviera Electric Blue', hex: '#0284C7', displayHex: '#0284C7' },
   ];
 
+  const wheelOptions = [
+    { id: 'oem', name: 'Factory OEM Alloy Wheels', sub: 'Original factory textured rims & rubber', tag: 'STOCK' },
+    { id: 'mud_beadlock', name: 'Stealth Black Mud-Terrain Beadlocks', sub: 'Aggressive rock-crawler lugs + functional beadlock ring', tag: 'OFFROAD 99%' },
+    { id: 'dakar_bronze', name: 'Dakar Forged Bronze Rally Rims', sub: 'Deep-dish satin bronze forged wheels with black beadlock', tag: 'RALLY SPEC' },
+    { id: 'titanium_alloy', name: 'Machined Titanium 10-Spoke Alloy', sub: 'Directional forged face + high-speed performance tyres', tag: 'PREMIUM' },
+  ];
+
+  const handleCategorySwitch = (cat) => {
+    playUiSound('tab');
+    setActiveCategory(cat);
+  };
+
   return (
-    <div id="showroom-plane" className="relative w-full h-[750px] md:h-[880px] bg-[#0B0B0C] overflow-hidden select-none border-y border-[#FF4D00]/20">
+    <div id="showroom-plane" className="relative w-full h-[750px] md:h-[890px] bg-[#070709] overflow-hidden select-none border-y border-[#FF4D00]/30 font-body">
       {/* 3D WebGL Canvas */}
       <Canvas
         shadows
@@ -500,10 +911,10 @@ export function StudioShowroomCanvas({
         <Suspense
           fallback={
             <Html center>
-              <div className="flex flex-col items-center gap-3 p-4 rounded-xl glass-panel shadow-2xl">
-                <div className="w-8 h-8 border-2 border-[#FF4D00] border-t-transparent rounded-full animate-spin" />
+              <div className="flex flex-col items-center gap-3 p-5 rounded-2xl glass-panel shadow-2xl border border-[#FF4D00]/50 bg-black/90">
+                <div className="w-10 h-10 border-3 border-[#FF4D00] border-t-transparent rounded-full animate-spin" />
                 <span className="text-xs font-mono uppercase tracking-widest text-[#FF4D00] font-bold">
-                  Loading 3D Studio Plane...
+                  INITIALIZING GAME ENGINE 3D STUDIO...
                 </span>
               </div>
             </Html>
@@ -512,20 +923,24 @@ export function StudioShowroomCanvas({
           <Environment preset="night" environmentIntensity={0.65} />
           <ambientLight intensity={0.5} />
           <directionalLight position={[6, 9, 6]} intensity={1.8} castShadow shadow-mapSize={[1024, 1024]} />
-          {/* Cyan/Orange Neon Overhead Tubes */}
-          <pointLight color="#00D9FF" intensity={2.5} distance={15} position={[-4, 5, 2]} />
-          <pointLight color="#FF4D00" intensity={2.5} distance={15} position={[4, 5, -2]} />
+          {/* Cyber Neon Overhead Tubes */}
+          <pointLight color="#00E5FF" intensity={3} distance={15} position={[-4, 5, 2]} />
+          <pointLight color="#FF4D00" intensity={3} distance={15} position={[4, 5, -2]} />
 
           <VehicleShowroom
             carModel={carModel}
             carColor={carColor}
+            wheelType={wheelType}
             bumperLights={bumperLights}
             roofLights={roofLights}
+            bullBar={bullBar}
+            roofRack={roofRack}
             headlights={headlights}
             underglow={underglow}
             autoRotate={autoRotate}
             liftActive={liftActive}
             subwooferActive={subwooferActive}
+            onSelectCategory={handleCategorySwitch}
           />
 
           <OrbitControls
@@ -538,207 +953,420 @@ export function StudioShowroomCanvas({
         </Suspense>
       </Canvas>
 
-      {/* Top Banner Guide */}
-      <div className="absolute top-6 left-6 right-6 flex items-center justify-between pointer-events-none z-20">
-        <div className="glass-panel px-4 py-2 rounded-xl border border-white/10 flex items-center gap-2.5">
-          <RotateCw className="w-4 h-4 text-[#FF4D00] animate-spin" style={{ animationDuration: '9s' }} />
-          <span className="text-xs font-mono uppercase tracking-wider text-gray-300">
-            360° Interactive Studio • Drag to Inspect from Any Angle
-          </span>
+      {/* TOP GAMING HUD BAR */}
+      <div className="absolute top-5 left-5 right-5 flex items-center justify-between pointer-events-none z-20">
+        {/* Game Title Tag */}
+        <div className="glass-panel px-4 py-2 rounded-xl border border-white/10 flex items-center gap-3 backdrop-blur-xl bg-black/70 shadow-2xl">
+          <div className="w-2.5 h-2.5 rounded-full bg-[#00E5FF] animate-ping" />
+          <div className="text-left font-mono">
+            <div className="text-[10px] text-gray-400 uppercase tracking-widest">AUTOSPORT TUNING TERMINAL</div>
+            <div className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+              <span>{carModel === 'thar' ? 'MAHINDRA THAR 4X4 ADVENTURE' : 'FERRARI 458 GT3 MOTORSPORT'}</span>
+              <span className="text-[9px] px-1.5 py-0.2 rounded bg-[#FF4D00]/30 text-[#FF4D00] border border-[#FF4D00]/50 font-mono font-bold">
+                TIER-4 MODS
+              </span>
+            </div>
+          </div>
         </div>
 
-        {/* Platform Switcher */}
-        <div className="pointer-events-auto flex items-center gap-2 glass-panel p-1 rounded-xl border border-[#FF4D00]/30 shadow-lg">
+        {/* Platform Vehicle Switcher */}
+        <div className="pointer-events-auto flex items-center gap-1.5 glass-panel p-1 rounded-xl border border-[#FF4D00]/40 shadow-2xl bg-black/85">
           <button
-            onClick={() => setCarModel('thar')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-heading font-bold uppercase transition-all ${
+            onClick={() => {
+              playUiSound('tab');
+              setCarModel('thar');
+            }}
+            className={`px-3.5 py-1.5 rounded-lg text-xs font-heading font-extrabold uppercase transition-all cursor-pointer ${
               carModel === 'thar'
-                ? 'bg-[#FF4D00] text-white shadow-md'
-                : 'text-gray-400 hover:text-white'
+                ? 'bg-gradient-to-r from-[#FF4D00] to-[#E03B00] text-white shadow-[0_0_15px_rgba(255,77,0,0.6)]'
+                : 'text-gray-400 hover:text-white bg-transparent'
             }`}
           >
-            🏔️ Mahindra Thar 4x4
+            🏔️ Thar 4x4
           </button>
           <button
-            onClick={() => setCarModel('ferrari')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-heading font-bold uppercase transition-all ${
+            onClick={() => {
+              playUiSound('tab');
+              setCarModel('ferrari');
+            }}
+            className={`px-3.5 py-1.5 rounded-lg text-xs font-heading font-extrabold uppercase transition-all cursor-pointer ${
               carModel === 'ferrari'
-                ? 'bg-[#FF4D00] text-white shadow-md'
-                : 'text-gray-400 hover:text-white'
+                ? 'bg-gradient-to-r from-[#FF4D00] to-[#E03B00] text-white shadow-[0_0_15px_rgba(255,77,0,0.6)]'
+                : 'text-gray-400 hover:text-white bg-transparent'
             }`}
           >
-            🏎️ Ferrari 458 GT3
+            🏎️ Ferrari GT3
           </button>
         </div>
       </div>
 
-      {/* Floating 3D Showroom Customizer Deck */}
-      <div className="absolute bottom-6 left-6 z-30 pointer-events-auto max-w-[95vw]">
-        <button
-          onClick={() => setToolbarOpen(!toolbarOpen)}
-          className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl glass-panel shadow-2xl hover:border-[#FF4D00] transition-all border border-[#FF4D00]/40 group"
-        >
-          <Sliders className="w-4 h-4 text-[#FF4D00]" />
-          <span className="text-xs font-bold tracking-wider uppercase font-heading text-white">
-            {carModel === 'thar' ? 'Thar Bespoke 4x4 Atelier Deck' : 'Ferrari Atelier Deck'}
-          </span>
-          <span className="w-2 h-2 rounded-full bg-[#FF4D00] animate-pulse" />
-        </button>
-
-        {toolbarOpen && (
-          <div className="mt-3 p-4 sm:p-5 rounded-2xl glass-panel shadow-2xl border border-[#FF4D00]/40 w-[340px] sm:w-[400px] space-y-4 backdrop-blur-2xl bg-black/90">
-            {/* Header */}
-            <div className="flex items-center justify-between border-b border-white/10 pb-2">
-              <span className="text-xs font-bold tracking-widest uppercase text-[#FF4D00] font-heading flex items-center gap-2">
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>Bespoke 3D Modification Deck</span>
+      {/* RIGHT-SIDE VIDEO GAME TUNING CONTROLLER PANEL */}
+      <div className="absolute top-20 right-5 bottom-8 w-[350px] sm:w-[390px] z-30 pointer-events-auto flex flex-col justify-between">
+        <div className="glass-panel p-4 sm:p-5 rounded-2xl border-2 border-[#FF4D00]/50 backdrop-blur-2xl bg-black/90 shadow-[0_0_35px_rgba(0,0,0,0.9)] flex flex-col gap-4 max-h-full overflow-y-auto">
+          {/* Game HUD Header */}
+          <div className="flex items-center justify-between border-b border-white/10 pb-3">
+            <div className="flex items-center gap-2">
+              <Crosshair className="w-4 h-4 text-[#FF4D00] animate-spin" style={{ animationDuration: '10s' }} />
+              <span className="text-xs font-heading font-black tracking-widest uppercase text-white">
+                GARAGE TUNING HUD
               </span>
-              <button
-                onClick={() => setToolbarOpen(false)}
-                className="text-gray-400 hover:text-white text-xs px-2 py-1 rounded bg-white/5 cursor-pointer"
-              >
-                ✕
-              </button>
+            </div>
+            <span className="text-[10px] font-mono font-bold text-[#00E5FF] px-2 py-0.5 rounded bg-[#00E5FF]/10 border border-[#00E5FF]/40">
+              LIVE PBR
+            </span>
+          </div>
+
+          {/* DYNAMIC PERFORMANCE STAT BARS */}
+          <div className="bg-black/60 p-3 rounded-xl border border-white/10 space-y-2 font-mono text-[10px]">
+            <div className="flex items-center justify-between">
+              <span className="text-gray-400">TRACTION RATING:</span>
+              <span className="text-[#00E5FF] font-bold">{stats.traction}% [MAX GRIP]</span>
+            </div>
+            <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-blue-500 to-[#00E5FF] transition-all duration-300"
+                style={{ width: `${stats.traction}%` }}
+              />
             </div>
 
-            {/* SECTION 1: BODY PAINT COLOR */}
-            <div>
-              <div className="flex items-center justify-between mb-1.5">
-                <label className="text-[10px] font-bold text-gray-400 uppercase font-mono">
-                  Body Paint Color
-                </label>
-                <span className="text-[10px] text-[#FF4D00] font-mono">
+            <div className="flex items-center justify-between pt-1">
+              <span className="text-gray-400">NIGHT ILLUMINATION:</span>
+              <span className="text-[#FF4D00] font-bold">{stats.visibility}% [BEAM POWER]</span>
+            </div>
+            <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-yellow-500 to-[#FF4D00] transition-all duration-300"
+                style={{ width: `${stats.visibility}%` }}
+              />
+            </div>
+
+            <div className="flex items-center justify-between pt-1">
+              <span className="text-gray-400">OVERLAND RECOVERY ARMOR:</span>
+              <span className="text-emerald-400 font-bold">{stats.armor}% [OFFROAD]</span>
+            </div>
+            <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-emerald-600 to-emerald-400 transition-all duration-300"
+                style={{ width: `${stats.armor}%` }}
+              />
+            </div>
+
+            <div className="flex items-center justify-between text-[9px] pt-1 text-gray-400 border-t border-white/10">
+              <span>RIDE HEIGHT:</span>
+              <span className="text-white font-bold">{stats.clearance}</span>
+            </div>
+          </div>
+
+          {/* GAME CATEGORY CONTROLLER BUTTONS */}
+          <div className="grid grid-cols-3 gap-1.5 text-[10px] font-heading font-extrabold uppercase">
+            {[
+              { id: 'livery', label: '🎨 Livery' },
+              { id: 'wheels', label: '🛞 Tyres' },
+              { id: 'lighting', label: '💡 Lights' },
+              { id: 'armor', label: '🛡️ Armor' },
+              { id: 'chassis', label: '⚙️ Hoist' },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => handleCategorySwitch(tab.id)}
+                className={`py-2 px-1 rounded-xl border text-center transition-all cursor-pointer ${
+                  activeCategory === tab.id
+                    ? 'border-[#FF4D00] bg-gradient-to-r from-[#FF4D00]/30 to-[#E03B00]/20 text-white shadow-[0_0_12px_rgba(255,77,0,0.4)]'
+                    : 'border-white/10 text-gray-400 hover:text-white bg-white/5'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
+          {/* TAB CONTENT: 1. LIVERY & PAINT */}
+          {activeCategory === 'livery' && (
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-bold text-gray-400 uppercase font-mono">
+                  SELECT AUTOMOTIVE FINISH:
+                </span>
+                <span className="text-[10px] text-[#FF4D00] font-mono font-bold">
                   {colors.find((c) => c.hex === carColor)?.name || 'Custom'}
                 </span>
               </div>
-              <div className="flex flex-wrap gap-2">
+              <div className="grid grid-cols-2 gap-2">
                 {colors.map((c) => {
                   const isSelected = carColor === c.hex;
                   return (
                     <button
                       key={c.hex}
-                      onClick={() => setCarColor(c.hex)}
-                      title={c.name}
-                      style={{ backgroundColor: c.displayHex }}
-                      className={`relative w-7 h-7 rounded-full border-2 transition-all cursor-pointer ${
+                      onClick={() => {
+                        playUiSound('click');
+                        setCarColor(c.hex);
+                      }}
+                      className={`p-2 rounded-xl border text-left flex items-center gap-2.5 transition-all cursor-pointer ${
                         isSelected
-                          ? 'border-white scale-120 shadow-[0_0_14px_rgba(255,255,255,0.8)]'
-                          : 'border-transparent opacity-80 hover:opacity-100 hover:scale-105'
+                          ? 'border-[#FF4D00] bg-[#FF4D00]/20 text-white font-bold shadow-[0_0_10px_rgba(255,77,0,0.5)]'
+                          : 'border-white/10 text-gray-300 hover:text-white bg-white/5'
                       }`}
                     >
-                      {c.badge && (
-                        <span className="absolute -top-1.5 -right-1.5 text-[8px] bg-[#FF4D00] text-white px-1 rounded-full font-bold">
-                          {c.badge}
-                        </span>
-                      )}
+                      <span
+                        className="w-5 h-5 rounded-full shrink-0 border-2 border-white/40 shadow"
+                        style={{ backgroundColor: c.displayHex }}
+                      />
+                      <div className="leading-tight">
+                        <div className="text-[10px] font-mono font-bold truncate">{c.name}</div>
+                        {c.badge && <span className="text-[8px] text-[#FF4D00] font-mono">{c.badge}</span>}
+                      </div>
                     </button>
                   );
                 })}
               </div>
             </div>
+          )}
 
-            {/* SECTION 2: 4x4 OFF-ROAD EQUIPMENT & LIGHTING */}
-            <div className="space-y-2.5 pt-2 border-t border-white/10">
-              <label className="text-[10px] font-bold text-gray-400 uppercase block font-mono">
-                Auxiliary 4x4 Gear & Lighting
-              </label>
+          {/* TAB CONTENT: 2. WHEELS & TYRES */}
+          {activeCategory === 'wheels' && (
+            <div className="space-y-2">
+              <span className="text-[10px] font-bold text-gray-400 uppercase font-mono block">
+                INTERCHANGEABLE WHEEL PACKAGES:
+              </span>
+              <div className="space-y-2">
+                {wheelOptions.map((w) => {
+                  const isSelected = wheelType === w.id;
+                  return (
+                    <button
+                      key={w.id}
+                      onClick={() => {
+                        playUiSound('click');
+                        setWheelType(w.id);
+                      }}
+                      className={`w-full p-2.5 rounded-xl border text-left flex items-center justify-between transition-all cursor-pointer ${
+                        isSelected
+                          ? 'border-[#FF4D00] bg-[#FF4D00]/20 text-white font-bold shadow-[0_0_12px_rgba(255,77,0,0.5)]'
+                          : 'border-white/10 text-gray-300 hover:text-white bg-white/5'
+                      }`}
+                    >
+                      <div>
+                        <div className="text-[11px] font-mono font-bold flex items-center gap-1.5">
+                          <span>{w.name}</span>
+                          <span className="text-[8px] px-1 py-0.2 rounded bg-white/10 text-[#00E5FF]">
+                            {w.tag}
+                          </span>
+                        </div>
+                        <div className="text-[9px] text-gray-400 mt-0.5">{w.sub}</div>
+                      </div>
+                      {isSelected && <CheckCircle className="w-4 h-4 text-[#FF4D00] shrink-0" />}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
-              {/* Extra Bumper Lights Toggle */}
-              {carModel === 'thar' && (
-                <div className="flex items-center justify-between text-xs bg-white/5 p-2 rounded-lg">
-                  <div>
-                    <div className="text-gray-200 font-heading uppercase text-[11px]">Front Bumper Rally Pods</div>
-                    <div className="text-[9px] text-gray-400">Twin high-intensity amber auxiliary fog lamps</div>
+          {/* TAB CONTENT: 3. LIGHTING RIGS */}
+          {activeCategory === 'lighting' && (
+            <div className="space-y-2.5">
+              <span className="text-[10px] font-bold text-gray-400 uppercase font-mono block">
+                EXTREME OFF-ROAD LIGHTING RIGS:
+              </span>
+
+              {/* Bumper Rally Pods */}
+              <div className="flex items-center justify-between bg-white/5 p-2.5 rounded-xl border border-white/10">
+                <div>
+                  <div className="text-gray-100 font-heading uppercase text-[11px] font-bold">
+                    KC HiLiTES Bumper Rally Pods
                   </div>
-                  <input
-                    type="checkbox"
-                    checked={bumperLights}
-                    onChange={(e) => setBumperLights(e.target.checked)}
-                    className="accent-[#FF4D00] w-4 h-4 cursor-pointer"
-                  />
+                  <div className="text-[9px] text-gray-400">Twin finned amber fog pods + forward spot beams</div>
                 </div>
-              )}
+                <input
+                  type="checkbox"
+                  checked={bumperLights}
+                  onChange={(e) => {
+                    playUiSound('toggle');
+                    setBumperLights(e.target.checked);
+                  }}
+                  className="accent-[#FF4D00] w-4 h-4 cursor-pointer"
+                />
+              </div>
 
-              {/* Extra Roof Lights Toggle */}
-              {carModel === 'thar' && (
-                <div className="flex items-center justify-between text-xs bg-white/5 p-2 rounded-lg">
-                  <div>
-                    <div className="text-gray-200 font-heading uppercase text-[11px]">Roof-Mounted Light Bar</div>
-                    <div className="text-[9px] text-gray-400">Aerodynamic 5-lens high-output trail projector</div>
+              {/* Roof Light Bar */}
+              <div className="flex items-center justify-between bg-white/5 p-2.5 rounded-xl border border-white/10">
+                <div>
+                  <div className="text-gray-100 font-heading uppercase text-[11px] font-bold">
+                    50" Curved Windshield Light Bar
                   </div>
-                  <input
-                    type="checkbox"
-                    checked={roofLights}
-                    onChange={(e) => setRoofLights(e.target.checked)}
-                    className="accent-[#FF4D00] w-4 h-4 cursor-pointer"
-                  />
+                  <div className="text-[9px] text-gray-400">12-projector aerodynamic high-power trail beam</div>
                 </div>
-              )}
+                <input
+                  type="checkbox"
+                  checked={roofLights}
+                  onChange={(e) => {
+                    playUiSound('toggle');
+                    setRoofLights(e.target.checked);
+                  }}
+                  className="accent-[#FF4D00] w-4 h-4 cursor-pointer"
+                />
+              </div>
 
-              {/* Neon Underglow Kit */}
-              <div className="flex items-center justify-between text-xs bg-white/5 p-2 rounded-lg">
-                <span className="text-gray-300 font-heading uppercase text-[11px]">Neon Underglow Kit</span>
+              {/* Neon Chassis Underglow */}
+              <div className="flex items-center justify-between bg-white/5 p-2.5 rounded-xl border border-white/10">
+                <div>
+                  <div className="text-gray-100 font-heading uppercase text-[11px] font-bold">
+                    Neon Chassis Underglow Kit
+                  </div>
+                  <div className="text-[9px] text-gray-400">Multi-point LED neon glow underbody illumination</div>
+                </div>
                 <input
                   type="checkbox"
                   checked={underglow}
-                  onChange={(e) => setUnderglow(e.target.checked)}
+                  onChange={(e) => {
+                    playUiSound('toggle');
+                    setUnderglow(e.target.checked);
+                  }}
                   className="accent-[#FF4D00] w-4 h-4 cursor-pointer"
                 />
               </div>
 
-              {/* Projector Headlights */}
-              <div className="flex items-center justify-between text-xs bg-white/5 p-2 rounded-lg">
-                <span className="text-gray-300 font-heading uppercase text-[11px]">Projector Headlights</span>
+              {/* Main Projector Headlights */}
+              <div className="flex items-center justify-between bg-white/5 p-2.5 rounded-xl border border-white/10">
+                <div>
+                  <div className="text-gray-100 font-heading uppercase text-[11px] font-bold">
+                    Xenon High-Beam Headlights
+                  </div>
+                  <div className="text-[9px] text-gray-400">Front headlights and optical driving beams</div>
+                </div>
                 <input
                   type="checkbox"
                   checked={headlights}
-                  onChange={(e) => setHeadlights(e.target.checked)}
+                  onChange={(e) => {
+                    playUiSound('toggle');
+                    setHeadlights(e.target.checked);
+                  }}
                   className="accent-[#FF4D00] w-4 h-4 cursor-pointer"
                 />
               </div>
+            </div>
+          )}
 
-              {/* Turntable 360 */}
-              <div className="flex items-center justify-between text-xs bg-white/5 p-2 rounded-lg">
-                <span className="text-gray-300 font-heading uppercase text-[11px]">Turntable 360 Spin</span>
+          {/* TAB CONTENT: 4. ARMOR & 4X4 GEAR */}
+          {activeCategory === 'armor' && (
+            <div className="space-y-2.5">
+              <span className="text-[10px] font-bold text-gray-400 uppercase font-mono block">
+                HEAVY-DUTY OVERLAND EXPEDITION ARMOR:
+              </span>
+
+              {/* Bull Bar & Winch */}
+              <div className="flex items-center justify-between bg-white/5 p-2.5 rounded-xl border border-white/10">
+                <div>
+                  <div className="text-gray-100 font-heading uppercase text-[11px] font-bold">
+                    Pre-Runner Bull Bar & Winch
+                  </div>
+                  <div className="text-[9px] text-gray-400">Tubular steel push bar + Warn electric cable winch</div>
+                </div>
                 <input
                   type="checkbox"
-                  checked={autoRotate}
-                  onChange={(e) => setAutoRotate(e.target.checked)}
+                  checked={bullBar}
+                  onChange={(e) => {
+                    playUiSound('toggle');
+                    setBullBar(e.target.checked);
+                  }}
                   className="accent-[#FF4D00] w-4 h-4 cursor-pointer"
                 />
               </div>
 
-              {/* Hydraulic Hoist Elevation */}
-              <div className="flex items-center justify-between text-xs bg-white/5 p-2 rounded-lg">
-                <span className="text-gray-300 font-heading uppercase text-[11px]">Hydraulic Hoist Elevation</span>
+              {/* Roof Expedition Rack */}
+              <div className="flex items-center justify-between bg-white/5 p-2.5 rounded-xl border border-white/10">
+                <div>
+                  <div className="text-gray-100 font-heading uppercase text-[11px] font-bold">
+                    Overland Roof Basket & Sand Boards
+                  </div>
+                  <div className="text-[9px] text-gray-400">Steel safari rack + recovery tracks & high-lift jack</div>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={roofRack}
+                  onChange={(e) => {
+                    playUiSound('toggle');
+                    setRoofRack(e.target.checked);
+                  }}
+                  className="accent-[#FF4D00] w-4 h-4 cursor-pointer"
+                />
+              </div>
+            </div>
+          )}
+
+          {/* TAB CONTENT: 5. CHASSIS & HOIST */}
+          {activeCategory === 'chassis' && (
+            <div className="space-y-2.5">
+              <span className="text-[10px] font-bold text-gray-400 uppercase font-mono block">
+                WORKSHOP HYDRAULIC & TURNTABLE CONTROLS:
+              </span>
+
+              {/* Hydraulic Lift Hoist */}
+              <div className="flex items-center justify-between bg-white/5 p-3 rounded-xl border border-white/10">
+                <div>
+                  <div className="text-gray-100 font-heading uppercase text-[11px] font-bold">
+                    Hydraulic Hoist Lift
+                  </div>
+                  <div className="text-[9px] text-gray-400">Elevate chassis +0.8m for undercarriage inspection</div>
+                </div>
                 <button
-                  onClick={() => setLiftActive(!liftActive)}
-                  className={`px-3 py-1 rounded-md text-[10px] font-mono uppercase font-bold transition-all cursor-pointer ${
+                  onClick={() => {
+                    playUiSound('toggle');
+                    setLiftActive(!liftActive);
+                  }}
+                  className={`px-3 py-1.5 rounded-lg text-[10px] font-mono uppercase font-bold transition-all cursor-pointer ${
                     liftActive
-                      ? 'bg-blue-600 text-white shadow-[0_0_10px_rgba(37,99,235,0.7)]'
+                      ? 'bg-blue-600 text-white shadow-[0_0_12px_rgba(37,99,235,0.8)]'
                       : 'bg-white/10 text-gray-300 hover:bg-white/20'
                   }`}
                 >
-                  {liftActive ? 'Lower' : 'Elevate'}
+                  {liftActive ? 'Lower Hoist' : 'Elevate +0.8m'}
                 </button>
               </div>
-            </div>
 
-            {/* Commission CTA Button */}
-            <div className="pt-2 border-t border-white/10">
-              <button
-                onClick={onOpenBooking}
-                className="w-full py-2.5 rounded-xl font-heading font-bold text-xs uppercase tracking-wider bg-gradient-to-r from-[#FF4D00] to-[#E03B00] text-white shadow-lg hover:shadow-[0_0_25px_rgba(255,77,0,0.6)] transition-all cursor-pointer"
-              >
-                Commission This Custom Build
-              </button>
+              {/* Turntable 360 Spin */}
+              <div className="flex items-center justify-between bg-white/5 p-3 rounded-xl border border-white/10">
+                <div>
+                  <div className="text-gray-100 font-heading uppercase text-[11px] font-bold">
+                    360° Studio Turntable
+                  </div>
+                  <div className="text-[9px] text-gray-400">Continuous rotational vehicle showcase</div>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={autoRotate}
+                  onChange={(e) => {
+                    playUiSound('toggle');
+                    setAutoRotate(e.target.checked);
+                  }}
+                  className="accent-[#FF4D00] w-4 h-4 cursor-pointer"
+                />
+              </div>
             </div>
+          )}
+
+          {/* COMMISSION CTA BUTTON */}
+          <div className="pt-2 border-t border-white/10">
+            <button
+              onClick={() => {
+                playUiSound('click');
+                if (onOpenBooking) onOpenBooking();
+              }}
+              className="w-full py-3 rounded-xl font-heading font-black text-xs uppercase tracking-wider bg-gradient-to-r from-[#FF4D00] to-[#E03B00] text-white shadow-[0_0_25px_rgba(255,77,0,0.7)] hover:shadow-[0_0_35px_rgba(255,77,0,0.9)] transition-all cursor-pointer flex items-center justify-center gap-2"
+            >
+              <span>COMMISSION THIS SPECIFICATION</span>
+              <Zap className="w-4 h-4 fill-white" />
+            </button>
           </div>
-        )}
+        </div>
+
+        {/* BOTTOM GAMEPAD CONTROLLER HINTS */}
+        <div className="mt-2 text-center text-[10px] font-mono text-gray-400 bg-black/70 px-3 py-1.5 rounded-xl border border-white/10 backdrop-blur-md">
+          <span className="text-[#FF4D00] font-bold">[L-CLICK + DRAG]</span> 360° ORBIT • <span className="text-[#00E5FF] font-bold">[SCROLL]</span> ZOOM • <span className="text-yellow-400 font-bold">[HOTSPOTS]</span> 3D PINS
+        </div>
       </div>
 
       {/* Bottom Vignette */}
-      <div className="absolute bottom-0 left-0 right-0 h-28 bg-gradient-to-t from-[#0B0B0C] to-transparent pointer-events-none" />
+      <div className="absolute bottom-0 left-0 right-0 h-28 bg-gradient-to-t from-[#070709] to-transparent pointer-events-none" />
     </div>
   );
 }

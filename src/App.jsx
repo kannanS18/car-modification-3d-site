@@ -16,11 +16,11 @@ export default function App() {
   // Vehicle Customization States for the 3D Showroom Plane
   const [carModel, setCarModel] = useState('thar'); // 'thar' (new Meshy Thar) or 'ferrari'
   const [carColor, setCarColor] = useState('original'); // 'original' (Factory Original Spec default)
-  const [hoodColor, setHoodColor] = useState('match'); // 'match' | '#141517' (Carbon Black) | '#453825' (Bronze) | '#C2A382' (Desert Sand)
-  const [roofColor, setRoofColor] = useState('#17181A'); // Factory Matte Black hardtop default
-  const [wheelType, setWheelType] = useState('at_black'); // 'at_black' | 'dakar_bronze' | 'silver_alloy'
+  const [wheelType, setWheelType] = useState('oem'); // 'oem' | 'mud_beadlock' | 'dakar_bronze' | 'titanium_alloy'
   const [bumperLights, setBumperLights] = useState(true); // Extra Bumper Fog Pod Lights
   const [roofLights, setRoofLights] = useState(true); // Extra Roof High-Power Light Bar
+  const [bullBar, setBullBar] = useState(true); // Front Heavy-Duty Bull Bar & Electric Winch
+  const [roofRack, setRoofRack] = useState(true); // Overland Expedition Roof Rack & Sand Boards
   const [underglow, setUnderglow] = useState(true);
   const [headlights, setHeadlights] = useState(true);
   const [autoRotate, setAutoRotate] = useState(true);
@@ -77,16 +77,16 @@ export default function App() {
             setCarModel={setCarModel}
             carColor={carColor}
             setCarColor={setCarColor}
-            hoodColor={hoodColor}
-            setHoodColor={setHoodColor}
-            roofColor={roofColor}
-            setRoofColor={setRoofColor}
             wheelType={wheelType}
             setWheelType={setWheelType}
             bumperLights={bumperLights}
             setBumperLights={setBumperLights}
             roofLights={roofLights}
             setRoofLights={setRoofLights}
+            bullBar={bullBar}
+            setBullBar={setBullBar}
+            roofRack={roofRack}
+            setRoofRack={setRoofRack}
             underglow={underglow}
             setUnderglow={setUnderglow}
             headlights={headlights}
