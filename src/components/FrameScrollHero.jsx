@@ -16,7 +16,7 @@ import {
 const TOTAL_FRAMES = 300; // 30fps 10-second sequence (300 frames)
 
 // Cinematic checkpoint stops where the vehicle comes to a clean, crisp halt
-export const CHECKPOINTS = [
+const CHECKPOINTS = [
   { id: 0, frame: 0, title: 'Atelier Start', subtitle: 'Highway Departure' },
   { id: 1, frame: 45, title: 'Atelier Philosophy', subtitle: 'Bespoke Engineering' },
   { id: 2, frame: 135, title: 'Chassis & Defense', subtitle: 'Performance Suspension' },
