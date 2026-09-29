@@ -16,6 +16,9 @@ import {
   Compass,
 } from 'lucide-react';
 import {
+  UserWheelAssembly,
+  UserRimNode,
+  UserTyreNode,
   MaxxisBimbraJTIWheel,
   FuelContraRedWheel,
   MethodBronzeKO2Wheel,
@@ -27,8 +30,8 @@ function CameraController({ category }) {
   const { camera } = useThree();
 
   useEffect(() => {
-    if (category === 'Wheels & Tyres') {
-      camera.position.set(0, 0, 1.35);
+    if (category === 'Wheels & Tyres' || category === 'User Master Models') {
+      camera.position.set(0, 0, 2.3);
       camera.lookAt(0, 0, 0);
     } else {
       camera.position.set(3.2, 1.5, 3.6);
@@ -93,10 +96,10 @@ function SandboxStage({ activeModel, wireframe, autoRotate }) {
       )}
 
       {/* Grid Floor */}
-      <gridHelper args={[10, 20, '#FF4D00', '#222']} position={[0, -0.6, 0]} />
+      <gridHelper args={[12, 24, '#FF4D00', '#222']} position={[0, -0.80, 0]} />
       {/* Reflective Dark Floor */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.61, 0]} receiveShadow>
-        <planeGeometry args={[16, 16]} />
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.81, 0]} receiveShadow>
+        <planeGeometry args={[18, 18]} />
         <meshStandardMaterial color="#08090B" roughness={0.2} metalness={0.8} />
       </mesh>
     </group>
@@ -109,11 +112,44 @@ export function ModelSandboxView({ onNavigate }) {
   // Catalog of Real, Accurate 3D Wheels & Vehicles
   const catalog = [
     {
+      id: 'user_wheel_assembly',
+      name: 'Authentic 3D Master Wheel (CAD Rim + Tread Tyre)',
+      category: 'User Master Models',
+      component: UserWheelAssembly,
+      scale: 0.75,
+      triangles: '4,329,066 tris',
+      materials: 'User CAD Alloy (rim.glb) + High-Tread Off-Road Tyre (tyre1.glb)',
+      description: 'Your exact 3D models combined: 763k-tri CAD rim nested precisely within 3.56M-tri physical geometric tread tyre casing.',
+      badge: 'USER ASSET • 4.3M TRIS',
+    },
+    {
+      id: 'user_rim',
+      name: 'Authentic CAD Alloy Rim (rim.glb)',
+      category: 'User Master Models',
+      component: UserRimNode,
+      scale: 0.75,
+      triangles: '763,004 tris',
+      materials: 'Baked PBR BaseColor + Metallic-Roughness + Normal Maps',
+      description: 'Your 26.7 MB authentic CAD alloy wheel rim with multi-spoke geometry, hub nut recesses, and baked PBR textures.',
+      badge: 'USER CAD RIM',
+    },
+    {
+      id: 'user_tyre',
+      name: 'Authentic 3D Off-Road Tyre (tyre1.glb)',
+      category: 'User Master Models',
+      component: UserTyreNode,
+      scale: 0.75,
+      triangles: '3,566,062 tris',
+      materials: 'High-Density 3D Physical Tread Blocks & Siped Sidewalls',
+      description: 'Your 85.5 MB photorealistic off-road tyre with 3.56 million triangles of real physical 3D tread geometry and vulcanized rubber finish.',
+      badge: 'USER TYRE • 3.5M TRIS',
+    },
+    {
       id: 'maxxis_bimbra',
       name: 'Maxxis AT-980 Bravo • Bimbra JTI Beadlock',
       category: 'Wheels & Tyres',
       component: MaxxisBimbraJTIWheel,
-      scale: 1.15,
+      scale: 1.7,
       triangles: '24,680 tris',
       materials: 'Maxxis 980 White Lettering, Bimbra JTI Multi-Hole Machined Dish, Brembo Caliper',
       description: 'Maxxis Bravo AT-980 (285/60 R18) all-terrain tyre with raised white lettering, paired with Bimbra JTI round multi-hole beadlock deep-dish alloy rim.',
@@ -124,7 +160,7 @@ export function ModelSandboxView({ onNavigate }) {
       name: 'Fuel Contra • Candy Red & Black Concave',
       category: 'Wheels & Tyres',
       component: FuelContraRedWheel,
-      scale: 1.15,
+      scale: 1.7,
       triangles: '26,820 tris',
       materials: 'Vredestein Pinza A/T, Gloss Black with Milled Candy Red Flanks, Slotted Rotor',
       description: 'Directional 10-blade swept spiral concave alloy in deep gloss black with CNC-milled candy red anodized accents on aggressive All-Terrain rubber.',
@@ -135,7 +171,7 @@ export function ModelSandboxView({ onNavigate }) {
       name: 'BFGoodrich KO2 • Method Bronze Forged',
       category: 'Wheels & Tyres',
       component: MethodBronzeKO2Wheel,
-      scale: 1.15,
+      scale: 1.7,
       triangles: '22,440 tris',
       materials: 'BFGoodrich T/A KO2 Raised White Lettering, Satin Bronze Forged Dish, Black Beadlock',
       description: 'BFGoodrich All-Terrain T/A KO2 Baja Champion tyre on Method Race Wheels satin bronze 8-window forged rally alloy with black simulated beadlock.',
@@ -146,7 +182,7 @@ export function ModelSandboxView({ onNavigate }) {
       name: 'Mahindra Thar 18" OEM Diamond-Cut • Ceat Czar',
       category: 'Wheels & Tyres',
       component: TharOEMDiamondWheel,
-      scale: 1.15,
+      scale: 1.7,
       triangles: '18,650 tris',
       materials: 'Ceat Czar A/T White Lettering, Dual-Tone Machined Silver & Obsidian Black',
       description: 'Authentic 18" Mahindra Thar factory diamond-cut alloy wheel with 5-split twin-arms, central Mahindra twin-peaks emblem, and Ceat Czar A/T rubber.',
@@ -178,7 +214,7 @@ export function ModelSandboxView({ onNavigate }) {
     },
   ];
 
-  const [activeModelId, setActiveModelId] = useState('maxxis_bimbra');
+  const [activeModelId, setActiveModelId] = useState('user_wheel_assembly');
   const [wireframe, setWireframe] = useState(false);
   const [autoRotate, setAutoRotate] = useState(true);
   const [lighting, setLighting] = useState('studio'); // 'studio' | 'daylight' | 'cyber'

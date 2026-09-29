@@ -18,6 +18,7 @@ import {
   Award,
 } from 'lucide-react';
 import {
+  UserWheelAssembly,
   MaxxisBimbraJTIWheel,
   FuelContraRedWheel,
   MethodBronzeKO2Wheel,
@@ -154,11 +155,14 @@ function SingleWheelDisplay({ wheelType }) {
   });
 
   return (
-    <group ref={meshRef} scale={0.46}>
-      {wheelType === 'fuel_contra' && <FuelContraRedWheel />}
-      {wheelType === 'method_bronze' && <MethodBronzeKO2Wheel />}
-      {wheelType === 'thar_oem' && <TharOEMDiamondWheel />}
-      {(!wheelType || wheelType === 'maxxis_bimbra' || wheelType === 'oem') && <MaxxisBimbraJTIWheel />}
+    <group ref={meshRef}>
+      {(wheelType === 'user_custom' || wheelType === 'custom') && (
+        <UserWheelAssembly scale={0.21} />
+      )}
+      {wheelType === 'maxxis_bimbra' && <MaxxisBimbraJTIWheel scale={0.46} />}
+      {wheelType === 'fuel_contra' && <FuelContraRedWheel scale={0.46} />}
+      {wheelType === 'method_bronze' && <MethodBronzeKO2Wheel scale={0.46} />}
+      {(wheelType === 'thar_oem' || wheelType === 'oem') && <TharOEMDiamondWheel scale={0.46} />}
     </group>
   );
 }
@@ -166,6 +170,7 @@ function SingleWheelDisplay({ wheelType }) {
 // Mini 3D Wheel Turntable for the Customization Panel
 function MiniWheelTurntable({ wheelType, onOpenSandbox }) {
   const wheelLabels = {
+    user_custom: 'User Master Spec • CAD Rim & AT Tyre (4.3M Tris)',
     maxxis_bimbra: 'Maxxis AT-980 Bravo • Bimbra JTI Beadlock (18")',
     fuel_contra: 'Fuel Contra • Candy Red & Black Concave (18")',
     method_bronze: 'BFGoodrich KO2 • Method Race Bronze (17")',
@@ -509,9 +514,11 @@ export function StudioShowroomCanvas({
   // Performance Rating Scores (Dynamically calculated based on equipped mods)
   const stats = useMemo(() => {
     let traction = 78;
-    if (wheelType === 'bfg_ko2' || wheelType === 'mud_beadlock') traction = 99;
-    else if (wheelType === 'dakar_bronze') traction = 94;
-    else if (wheelType === 'titanium_spider' || wheelType === 'titanium_alloy') traction = 88;
+    if (wheelType === 'user_custom') traction = 100;
+    else if (wheelType === 'maxxis_bimbra') traction = 99;
+    else if (wheelType === 'fuel_contra') traction = 96;
+    else if (wheelType === 'method_bronze') traction = 94;
+    else if (wheelType === 'thar_oem') traction = 82;
 
     let visibility = 60;
     if (headlights) visibility += 20;
@@ -533,6 +540,16 @@ export function StudioShowroomCanvas({
   ];
 
   const wheelOptions = [
+    {
+      id: 'user_custom',
+      name: 'User Master Spec • CAD Rim & AT Tyre',
+      specs: 'Authentic 4.3M Tri CAD Wheel • rim.glb + tyre1.glb • Precision 4x4 Fit',
+      traction: 100,
+      tag: 'MASTER 100%',
+      badge: 'USER 3D MODEL',
+      swatch: '#1A1C20',
+      rimType: 'CAD Multi-Spoke + 3D Tread',
+    },
     {
       id: 'maxxis_bimbra',
       name: 'Maxxis AT-980 Bravo • Bimbra JTI Beadlock',

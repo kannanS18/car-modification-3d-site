@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 
 // =========================================================================
@@ -639,6 +640,71 @@ export function TharOEMDiamondWheel({ wireframe = false, scale = 1.0 }) {
 }
 
 // =========================================================================
+// 5. AUTHENTIC 3D ALLOY RIM (FROM USER rim.glb - 763k polys)
+// =========================================================================
+export function UserRimNode({ wireframe = false, scale = 1.0, rotation = [0, 0, 0] }) {
+  const baseUrl = import.meta.env.BASE_URL || '/';
+  const { scene } = useGLTF(`${baseUrl}models/rim.glb`);
+  const cloned = useMemo(() => scene.clone(true), [scene]);
+
+  useMemo(() => {
+    cloned.traverse((child) => {
+      if (child.isMesh && child.material) {
+        child.castShadow = true;
+        child.receiveShadow = true;
+        if (Array.isArray(child.material)) {
+          child.material.forEach((m) => (m.wireframe = wireframe));
+        } else {
+          child.material.wireframe = wireframe;
+        }
+      }
+    });
+  }, [cloned, wireframe]);
+
+  return <primitive object={cloned} scale={scale} rotation={rotation} />;
+}
+
+// =========================================================================
+// 6. AUTHENTIC 3D OFF-ROAD TYRE (FROM USER tyre1.glb - 3.56M polys)
+// =========================================================================
+export function UserTyreNode({ wireframe = false, scale = 1.0, rotation = [0, 0, 0] }) {
+  const baseUrl = import.meta.env.BASE_URL || '/';
+  const { scene } = useGLTF(`${baseUrl}models/tyre1.glb`);
+  const cloned = useMemo(() => scene.clone(true), [scene]);
+
+  useMemo(() => {
+    const rubberMat = new THREE.MeshStandardMaterial({
+      color: '#1A1C20',
+      roughness: 0.88,
+      metalness: 0.04,
+      wireframe: wireframe,
+    });
+
+    cloned.traverse((child) => {
+      if (child.isMesh) {
+        child.castShadow = true;
+        child.receiveShadow = true;
+        child.material = rubberMat;
+      }
+    });
+  }, [cloned, wireframe]);
+
+  return <primitive object={cloned} scale={scale} rotation={rotation} />;
+}
+
+// =========================================================================
+// 7. COMPLETE AUTHENTIC WHEEL ASSEMBLY (rim.glb + tyre1.glb COMBINED - 4.3M polys)
+// =========================================================================
+export function UserWheelAssembly({ wireframe = false, scale = 1.0, rotation = [0, 0, 0] }) {
+  return (
+    <group scale={scale} rotation={rotation}>
+      <UserTyreNode wireframe={wireframe} scale={1.0} />
+      <UserRimNode wireframe={wireframe} scale={0.57} />
+    </group>
+  );
+}
+
+// =========================================================================
 // BESPOKE WHEEL ADAPTER FOR MAHINDRA THAR (MOUNTS TO ALL 5 AXLE HUBS)
 // =========================================================================
 export function TharFittedWheelSet({ wheelType }) {
@@ -659,7 +725,9 @@ export function TharFittedWheelSet({ wheelType }) {
     <group>
       {hubs.map((hub) => (
         <group key={hub.id} position={hub.pos} rotation={[0, hub.rotY, 0]}>
-          {wheelType === 'maxxis_bimbra' && <MaxxisBimbraJTIWheel scale={0.41} />}
+          {(wheelType === 'user_custom' || wheelType === 'custom' || wheelType === 'maxxis_bimbra') && (
+            <UserWheelAssembly scale={0.170} />
+          )}
           {wheelType === 'fuel_contra' && <FuelContraRedWheel scale={0.41} />}
           {wheelType === 'method_bronze' && <MethodBronzeKO2Wheel scale={0.41} />}
           {wheelType === 'thar_oem' && <TharOEMDiamondWheel scale={0.41} />}
