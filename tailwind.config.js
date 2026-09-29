@@ -5,14 +5,14 @@ export default {
     extend: {
       colors: {
         atelier: {
-          bg: '#0B0B0C',
-          surface: '#141416',
-          'surface-hover': '#1D1F24',
-          primary: '#FF4D00',
-          'primary-hover': '#FF6E2E',
+          bg: '#080A10',
+          surface: '#0F131C',
+          'surface-hover': '#161B26',
+          primary: '#F59E0B',
+          'primary-hover': '#FBBF24',
           secondary: '#D4AF37',
-          accent: '#FF3300',
-          border: 'rgba(255, 77, 0, 0.25)',
+          accent: '#D97706',
+          border: 'rgba(245, 158, 11, 0.25)',
         }
       },
       fontFamily: {

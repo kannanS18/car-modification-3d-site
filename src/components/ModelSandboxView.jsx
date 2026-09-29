@@ -92,11 +92,11 @@ function SandboxStage({ activeModel, wireframe, autoRotate }) {
       )}
 
       {/* Grid Floor */}
-      <gridHelper args={[12, 24, '#FF4D00', '#222']} position={[0, -0.80, 0]} />
+      <gridHelper args={[12, 24, '#F59E0B', '#222']} position={[0, -0.80, 0]} />
       {/* Reflective Dark Floor */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.81, 0]} receiveShadow>
         <planeGeometry args={[18, 18]} />
-        <meshStandardMaterial color="#08090B" roughness={0.2} metalness={0.8} />
+        <meshStandardMaterial color="#080A10" roughness={0.2} metalness={0.8} />
       </mesh>
     </group>
   );
@@ -177,37 +177,37 @@ export function ModelSandboxView({ onNavigate }) {
   );
 
   return (
-    <div className="pt-20 min-h-screen bg-[#070709] text-white font-body relative flex flex-col justify-between select-none">
+    <div className="pt-20 min-h-screen bg-[#07090E] text-white font-body relative flex flex-col justify-between select-none">
       {/* Top Header Bar */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 w-full pt-4 pb-2 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10">
         <div>
           <div className="flex items-center gap-2">
             <button
               onClick={() => onNavigate('showroom')}
-              className="text-xs font-mono text-gray-400 hover:text-[#FF4D00] flex items-center gap-1 transition-colors cursor-pointer"
+              className="text-xs font-mono text-slate-400 hover:text-amber-400 flex items-center gap-1 transition-colors cursor-pointer"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
               <span>Back to 3D Showroom</span>
             </button>
-            <span className="text-gray-600">/</span>
-            <span className="text-xs font-mono text-[#00E5FF] font-bold">3D Model Sandbox & Wheel Inspector</span>
+            <span className="text-slate-600">/</span>
+            <span className="text-xs font-mono text-amber-400 font-bold">3D Model Sandbox & Wheel Inspector</span>
           </div>
           <h1 className="text-xl sm:text-2xl font-heading font-black uppercase tracking-wider text-white mt-1">
             MAHINDRA THAR 3D WHEEL & TYRE INSPECTOR
           </h1>
-          <p className="text-xs text-gray-400 font-body">
+          <p className="text-xs text-slate-400 font-body">
             Accurate 3D models with true-to-life rims, raised white lettering sidewalls, deep concave dishes, and PBR studio lighting.
           </p>
         </div>
 
         {/* Viewport Control Badges */}
-        <div className="flex items-center gap-1.5 flex-wrap">
+        <div className="flex items-center gap-2 flex-wrap">
           <button
             onClick={() => setAutoRotate(!autoRotate)}
-            className={`px-3 py-1.5 rounded-xl border text-xs font-mono flex items-center gap-1.5 cursor-pointer transition-all ${
+            className={`px-3.5 py-1.5 rounded-full border text-xs font-mono flex items-center gap-1.5 cursor-pointer transition-all ${
               autoRotate
-                ? 'border-[#00E5FF] bg-[#00E5FF]/20 text-[#00E5FF]'
-                : 'border-white/10 text-gray-400 hover:text-white bg-white/5'
+                ? 'border-amber-400/50 bg-amber-400/10 text-amber-300'
+                : 'border-white/10 text-slate-400 hover:text-white bg-white/5'
             }`}
           >
             <RotateCw className={`w-3.5 h-3.5 ${autoRotate ? 'animate-spin' : ''}`} style={{ animationDuration: '6s' }} />
@@ -216,17 +216,17 @@ export function ModelSandboxView({ onNavigate }) {
 
           <button
             onClick={() => setWireframe(!wireframe)}
-            className={`px-3 py-1.5 rounded-xl border text-xs font-mono flex items-center gap-1.5 cursor-pointer transition-all ${
+            className={`px-3.5 py-1.5 rounded-full border text-xs font-mono flex items-center gap-1.5 cursor-pointer transition-all ${
               wireframe
-                ? 'border-[#FF4D00] bg-[#FF4D00]/20 text-[#FF4D00]'
-                : 'border-white/10 text-gray-400 hover:text-white bg-white/5'
+                ? 'border-amber-400/50 bg-amber-400/10 text-amber-300'
+                : 'border-white/10 text-slate-400 hover:text-white bg-white/5'
             }`}
           >
             <Layers className="w-3.5 h-3.5" />
             <span>Wireframe</span>
           </button>
 
-          <div className="flex items-center gap-1 bg-black/60 p-1 rounded-xl border border-white/10">
+          <div className="flex items-center gap-1 bg-[#0C1018] p-1 rounded-full border border-white/10">
             {[
               { id: 'studio', label: 'Studio' },
               { id: 'daylight', label: 'Day' },
@@ -235,10 +235,10 @@ export function ModelSandboxView({ onNavigate }) {
               <button
                 key={mode.id}
                 onClick={() => setLighting(mode.id)}
-                className={`px-2.5 py-1 rounded-lg text-xs font-mono transition-all cursor-pointer ${
+                className={`px-3 py-1 rounded-full text-xs font-mono transition-all cursor-pointer ${
                   lighting === mode.id
-                    ? 'bg-[#FF4D00] text-white font-bold'
-                    : 'text-gray-400 hover:text-white'
+                    ? 'bg-amber-500 text-black font-extrabold shadow-sm'
+                    : 'text-slate-400 hover:text-white'
                 }`}
               >
                 {mode.label}
@@ -252,7 +252,7 @@ export function ModelSandboxView({ onNavigate }) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 w-full flex-1 grid grid-cols-1 lg:grid-cols-12 gap-5 py-4">
         {/* LEFT MODEL CATALOG SELECTOR */}
         <div className="lg:col-span-4 flex flex-col gap-2 max-h-[680px] overflow-y-auto pr-1">
-          <div className="text-[11px] font-mono uppercase tracking-widest text-gray-400 mb-1 font-bold">
+          <div className="text-[11px] font-mono uppercase tracking-widest text-slate-400 mb-1 font-bold">
             AVAILABLE 3D WHEELS & TYRES ({catalog.length}):
           </div>
 
@@ -262,29 +262,29 @@ export function ModelSandboxView({ onNavigate }) {
               <button
                 key={m.id}
                 onClick={() => setActiveModelId(m.id)}
-                className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
+                className={`p-3 rounded-2xl border text-left transition-all cursor-pointer ${
                   isSelected
-                    ? 'border-[#FF4D00] bg-gradient-to-r from-[#FF4D00]/25 to-black/80 shadow-[0_0_15px_rgba(255,77,0,0.4)]'
-                    : 'border-white/10 hover:border-white/25 bg-white/5 hover:bg-white/10'
+                    ? 'border-amber-400/60 bg-gradient-to-r from-amber-500/15 to-black/80 shadow-[0_0_20px_rgba(245,158,11,0.15)] ring-1 ring-amber-400/30'
+                    : 'border-white/10 hover:border-white/20 bg-white/[0.03] hover:bg-white/[0.06]'
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-mono text-[#00E5FF] uppercase font-bold">
+                  <span className="text-[10px] font-mono text-amber-400 uppercase font-bold">
                     {m.category}
                   </span>
-                  <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-white/10 text-gray-300">
+                  <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-white/10 text-slate-300">
                     {m.badge}
                   </span>
                 </div>
                 <div className="text-xs font-mono font-bold text-white mt-1">
                   {m.name}
                 </div>
-                <div className="text-[10px] text-gray-400 mt-1 line-clamp-2">
+                <div className="text-[10px] text-slate-400 mt-1 line-clamp-2">
                   {m.description}
                 </div>
-                <div className="mt-2 pt-1.5 border-t border-white/10 flex items-center justify-between text-[9px] font-mono text-gray-400">
+                <div className="mt-2 pt-1.5 border-t border-white/10 flex items-center justify-between text-[9px] font-mono text-slate-400">
                   <span>{m.triangles}</span>
-                  {isSelected && <span className="text-[#FF4D00] font-bold">INSPECTING IN 3D ✓</span>}
+                  {isSelected && <span className="text-amber-400 font-bold">INSPECTING IN 3D ✓</span>}
                 </div>
               </button>
             );
@@ -303,8 +303,8 @@ export function ModelSandboxView({ onNavigate }) {
               <Suspense
                 fallback={
                   <Html center>
-                    <div className="flex flex-col items-center gap-2 p-4 rounded-xl bg-black/90 border border-[#FF4D00]/40 text-xs font-mono text-[#FF4D00]">
-                      <div className="w-8 h-8 border-2 border-[#FF4D00] border-t-transparent rounded-full animate-spin" />
+                    <div className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-[#080B10]/95 border border-amber-400/40 text-xs font-mono text-amber-400 shadow-2xl backdrop-blur-xl">
+                      <div className="w-8 h-8 border-2 border-amber-400 border-t-transparent rounded-full animate-spin" />
                       <span>INITIALIZING 3D ASSET...</span>
                     </div>
                   </Html>
@@ -339,8 +339,8 @@ export function ModelSandboxView({ onNavigate }) {
                   <>
                     <Environment preset="night" environmentIntensity={0.6} />
                     <ambientLight intensity={0.7} />
-                    <pointLight color="#00E5FF" intensity={7} distance={10} position={[-2.5, 2.5, 2]} />
-                    <pointLight color="#FF4D00" intensity={7} distance={10} position={[2.5, 2.5, 2]} />
+                    <pointLight color="#38BDF8" intensity={7} distance={10} position={[-2.5, 2.5, 2]} />
+                    <pointLight color="#F59E0B" intensity={7} distance={10} position={[2.5, 2.5, 2]} />
                     <directionalLight position={[0, 4, 3]} intensity={2.5} color="#FFF" />
                   </>
                 )}
@@ -362,32 +362,32 @@ export function ModelSandboxView({ onNavigate }) {
             </Canvas>
 
             {/* In-Canvas Model Badge Overlay */}
-            <div className="absolute top-4 left-4 glass-panel px-3 py-1.5 rounded-xl border border-white/10 bg-black/75 backdrop-blur-md font-mono text-left pointer-events-none">
-              <div className="text-[10px] text-[#00E5FF] font-bold">{activeModel.category}</div>
+            <div className="absolute top-4 left-4 glass-panel px-3.5 py-2 rounded-xl border border-white/10 bg-black/75 backdrop-blur-md font-mono text-left pointer-events-none">
+              <div className="text-[10px] text-amber-400 font-bold uppercase tracking-wider">{activeModel.category}</div>
               <div className="text-xs font-bold text-white uppercase">{activeModel.name}</div>
             </div>
 
             {/* Bottom Mouse Controls Legend */}
-            <div className="absolute bottom-3 left-4 right-4 flex items-center justify-between text-[10px] font-mono text-gray-400 glass-panel px-3 py-1 rounded-lg border border-white/10 bg-black/70 backdrop-blur-md pointer-events-none">
+            <div className="absolute bottom-3 left-4 right-4 flex items-center justify-between text-[10px] font-mono text-slate-400 glass-panel px-3 py-1.5 rounded-xl border border-white/10 bg-black/70 backdrop-blur-md pointer-events-none">
               <span><strong className="text-white">[L-CLICK + DRAG]</strong> Rotate 360°</span>
-              <span><strong className="text-[#FF4D00]">[SCROLL]</strong> Zoom</span>
-              <span><strong className="text-[#00E5FF]">[R-CLICK + DRAG]</strong> Pan</span>
+              <span><strong className="text-amber-400">[SCROLL]</strong> Zoom</span>
+              <span><strong className="text-amber-300">[R-CLICK + DRAG]</strong> Pan</span>
             </div>
           </div>
 
           {/* Technical Specs Bottom Panel */}
-          <div className="glass-panel p-4 rounded-xl border border-white/10 bg-black/60 font-mono text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="glass-panel p-4 rounded-2xl border border-white/10 bg-[#0C1018]/90 font-mono text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xl">
             <div>
-              <span className="text-gray-400 block text-[10px] uppercase">Engineered Geometry & PBR Materials</span>
+              <span className="text-slate-400 block text-[10px] uppercase">Engineered Geometry & PBR Materials</span>
               <span className="text-white font-bold">{activeModel.materials}</span>
             </div>
             <div className="flex items-center gap-3">
-              <span className="text-[10px] px-2.5 py-1 rounded bg-[#FF4D00]/20 text-[#FF4D00] border border-[#FF4D00]/40 font-bold">
+              <span className="text-[10px] px-3 py-1 rounded-full bg-amber-400/10 text-amber-300 border border-amber-400/20 font-bold">
                 {activeModel.triangles}
               </span>
               <button
                 onClick={() => onNavigate('showroom')}
-                className="px-4 py-2 rounded-lg bg-gradient-to-r from-[#FF4D00] to-[#E03B00] text-white text-xs font-heading font-extrabold uppercase shadow-[0_0_15px_rgba(255,77,0,0.5)] hover:shadow-[0_0_20px_rgba(255,77,0,0.8)] transition-all cursor-pointer"
+                className="px-5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-black text-xs font-heading font-black uppercase shadow-lg shadow-amber-950/40 transition-all cursor-pointer"
               >
                 Mount on Thar 4x4 →
               </button>

@@ -17,15 +17,27 @@
 }
 
 .glass-panel {
-  background: rgba(18, 22, 32, 0.92);
+  background: rgba(15, 19, 28, 0.88);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 16px 45px 0 rgba(0, 0, 0, 0.75);
+}
+
+.glass-pill {
+  background: rgba(12, 16, 24, 0.85);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 8px 30px 0 rgba(0, 0, 0, 0.6);
 }
 
 .theme-gradient-text {
-  background: linear-gradient(135deg, #F59E0B, #FBBF24, #F8FAFC);
+  background: linear-gradient(135deg, #F59E0B 0%, #FBBF24 50%, #F8FAFC 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+}
+
+.theme-gold-subtle {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(245, 158, 11, 0.02) 100%);
 }

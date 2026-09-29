@@ -77,8 +77,8 @@ export function VideoScrollHero({ onEnterShowroom, onProgressUpdate }) {
         {/* Loading Spinner */}
         {!videoLoaded && (
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-black z-20 gap-3">
-            <div className="w-10 h-10 border-2 border-[#FF4D00] border-t-transparent rounded-full animate-spin" />
-            <span className="text-xs font-mono uppercase tracking-widest text-gray-400">
+            <div className="w-10 h-10 border-2 border-amber-400 border-t-transparent rounded-full animate-spin" />
+            <span className="text-xs font-mono uppercase tracking-widest text-slate-400">
               Loading 4K Driving Sequence...
             </span>
           </div>
@@ -101,28 +101,28 @@ export function VideoScrollHero({ onEnterShowroom, onProgressUpdate }) {
 
         {/* Floating Driving HUD Overlay (Top & Center) */}
         <div className="absolute top-24 left-0 right-0 max-w-7xl mx-auto px-4 sm:px-6 pointer-events-none z-10 flex flex-col items-center text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass-panel text-xs font-mono font-bold tracking-wider text-[#FF4D00] uppercase mb-3 border border-[#FF4D00]/40 backdrop-blur-md">
-            <span className="w-2 h-2 rounded-full bg-[#FF4D00] animate-ping" />
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass-panel text-xs font-mono font-bold tracking-wider text-amber-400 uppercase mb-3 border border-amber-400/30 backdrop-blur-md shadow-[0_0_20px_rgba(245,158,11,0.15)]">
+            <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping" />
             <span>Mahindra Thar 4x4 • Live Highway Driving Simulation</span>
           </div>
 
           <h1 className="text-3xl sm:text-5xl md:text-6xl font-extrabold font-heading text-white uppercase tracking-tight drop-shadow-2xl">
-            AutoForge <span className="theme-gradient-text">Motorsport Atelier</span>
+            AutoForge <span className="bg-gradient-to-r from-amber-400 via-amber-200 to-amber-500 bg-clip-text text-transparent">Motorsport Atelier</span>
           </h1>
 
-          <p className="mt-2 text-xs sm:text-sm md:text-base text-gray-200 max-w-xl font-body drop-shadow">
+          <p className="mt-2 text-xs sm:text-sm md:text-base text-slate-200 max-w-xl font-body drop-shadow">
             Scroll down to watch the vehicle cruise the highway, turn into the high-tech workshop shed, and enter the interactive 3D showroom plane.
           </p>
         </div>
 
         {/* Bottom Floating Interactive Bar */}
         <div className="absolute bottom-8 left-0 right-0 max-w-4xl mx-auto px-4 pointer-events-auto z-10">
-          <div className="glass-panel p-4 rounded-2xl border border-white/10 backdrop-blur-xl flex flex-col sm:flex-row items-center justify-between gap-4 shadow-2xl">
+          <div className="glass-panel p-4 rounded-2xl border border-white/10 backdrop-blur-2xl bg-[#0C1018]/90 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-2xl">
             {/* Status & Progress Bar */}
             <div className="w-full sm:w-auto flex-1">
               <div className="flex items-center justify-between text-xs font-mono mb-1.5">
-                <span className="text-gray-300 font-bold uppercase flex items-center gap-1.5">
-                  <Wrench className="w-3.5 h-3.5 text-[#FF4D00]" />
+                <span className="text-slate-300 font-bold uppercase flex items-center gap-1.5">
+                  <Wrench className="w-3.5 h-3.5 text-amber-400" />
                   <span>
                     {progress < 0.35
                       ? 'Cruising Indian Highway'
@@ -131,11 +131,11 @@ export function VideoScrollHero({ onEnterShowroom, onProgressUpdate }) {
                       : 'Docked in Workshop Bay'}
                   </span>
                 </span>
-                <span className="text-[#FF4D00] font-bold">{Math.round(progress * 100)}%</span>
+                <span className="text-amber-400 font-bold">{Math.round(progress * 100)}%</span>
               </div>
               <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-gradient-to-r from-[#FF4D00] to-yellow-500 transition-all duration-75"
+                  className="h-full bg-gradient-to-r from-amber-500 to-amber-300 transition-all duration-75"
                   style={{ width: `${Math.max(5, progress * 100)}%` }}
                 />
               </div>
@@ -145,7 +145,7 @@ export function VideoScrollHero({ onEnterShowroom, onProgressUpdate }) {
             <div className="flex items-center gap-3 shrink-0">
               <button
                 onClick={onEnterShowroom}
-                className="px-5 py-2.5 rounded-xl font-heading font-bold text-xs uppercase tracking-wider flex items-center gap-2 bg-[#FF4D00] hover:bg-[#E03B00] text-white shadow-[0_0_20px_rgba(255,77,0,0.5)] transition-all cursor-pointer"
+                className="px-5 py-2.5 rounded-xl font-heading font-black text-xs uppercase tracking-wider flex items-center gap-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-black shadow-lg shadow-amber-950/40 hover:shadow-xl transition-all cursor-pointer"
               >
                 <span>Enter 3D Showroom Plane</span>
                 <ArrowRight className="w-4 h-4" />
@@ -154,9 +154,9 @@ export function VideoScrollHero({ onEnterShowroom, onProgressUpdate }) {
           </div>
 
           {/* Downward Scroll Hint */}
-          <div className="text-center mt-3 flex items-center justify-center gap-1 text-[11px] font-mono uppercase tracking-widest text-gray-400">
+          <div className="text-center mt-3 flex items-center justify-center gap-1 text-[11px] font-mono uppercase tracking-widest text-slate-400">
             <span>Scroll Down to Drive</span>
-            <ChevronDown className="w-3.5 h-3.5 text-[#FF4D00] animate-bounce" />
+            <ChevronDown className="w-3.5 h-3.5 text-amber-400 animate-bounce" />
           </div>
         </div>
       </div>
