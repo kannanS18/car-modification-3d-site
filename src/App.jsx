@@ -15,8 +15,12 @@ export default function App() {
 
   // Vehicle Customization States for the 3D Showroom Plane
   const [carModel, setCarModel] = useState('thar'); // 'thar' (new Meshy Thar) or 'ferrari'
-  const [carColor, setCarColor] = useState('#FFFFFF'); // Factory Dual-Tone default (shows authentic photorealistic red & black textures)
-  const [wheelFinish, setWheelFinish] = useState('black');
+  const [carColor, setCarColor] = useState('#D32F2F'); // Factory Rosso Red default
+  const [hoodColor, setHoodColor] = useState('match'); // 'match' | '#141517' (Carbon Black) | '#453825' (Bronze) | '#C2A382' (Desert Sand)
+  const [roofColor, setRoofColor] = useState('#17181A'); // Factory Matte Black hardtop default
+  const [wheelType, setWheelType] = useState('at_black'); // 'at_black' | 'dakar_bronze' | 'silver_alloy'
+  const [bumperLights, setBumperLights] = useState(true); // Extra Bumper Fog Pod Lights
+  const [roofLights, setRoofLights] = useState(true); // Extra Roof High-Power Light Bar
   const [underglow, setUnderglow] = useState(true);
   const [headlights, setHeadlights] = useState(true);
   const [autoRotate, setAutoRotate] = useState(true);
@@ -73,8 +77,16 @@ export default function App() {
             setCarModel={setCarModel}
             carColor={carColor}
             setCarColor={setCarColor}
-            wheelFinish={wheelFinish}
-            setWheelFinish={setWheelFinish}
+            hoodColor={hoodColor}
+            setHoodColor={setHoodColor}
+            roofColor={roofColor}
+            setRoofColor={setRoofColor}
+            wheelType={wheelType}
+            setWheelType={setWheelType}
+            bumperLights={bumperLights}
+            setBumperLights={setBumperLights}
+            roofLights={roofLights}
+            setRoofLights={setRoofLights}
             underglow={underglow}
             setUnderglow={setUnderglow}
             headlights={headlights}
