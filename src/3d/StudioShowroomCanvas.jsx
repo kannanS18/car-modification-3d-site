@@ -12,6 +12,9 @@ import {
   ArrowUpRight,
   Gauge,
   Volume2,
+  ChevronUp,
+  ChevronDown,
+  RotateCw,
 } from 'lucide-react';
 import {
   UserWheelAssembly,
@@ -152,15 +155,15 @@ function SingleWheelDisplay({ wheelType }) {
 // Mini 3D Turntable showing standalone parts alone on screen with 3 interactive pills
 function MiniWheelTurntable({ wheelType, setWheelType, onOpenSandbox }) {
   return (
-    <div className="bg-[#090D16] p-2 rounded-xl border border-[#00E5FF]/30 shadow-lg flex flex-col gap-1.5">
+    <div className="bg-[#090D16] p-2 rounded-xl border border-white/10 shadow-lg flex flex-col gap-1.5">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1.5">
-          <div className="w-1.5 h-1.5 rounded-full bg-[#00E5FF] animate-pulse" />
-          <span className="text-[9px] font-mono font-bold tracking-wider text-gray-200 uppercase">
+          <div className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
+          <span className="text-[9px] font-mono font-bold tracking-wider text-slate-200 uppercase">
             3D PARTS VIEWER
           </span>
         </div>
-        <span className="text-[8px] font-mono font-bold text-[#00E5FF] bg-[#00E5FF]/10 px-1.5 py-0.2 rounded border border-[#00E5FF]/30">
+        <span className="text-[8px] font-mono font-bold text-amber-300 bg-amber-500/15 px-1.5 py-0.2 rounded border border-amber-500/30">
           360° ORBIT
         </span>
       </div>
@@ -174,7 +177,7 @@ function MiniWheelTurntable({ wheelType, setWheelType, onOpenSandbox }) {
           }}
           className={`py-1 px-1 rounded text-[8px] font-mono font-bold transition-all cursor-pointer flex items-center justify-center gap-1 ${
             wheelType === 'user_custom'
-              ? 'bg-[#00E5FF] text-black shadow-[0_0_8px_#00E5FF]'
+              ? 'bg-amber-500 text-black shadow-md'
               : 'text-gray-400 hover:text-white hover:bg-white/10'
           }`}
         >
@@ -187,7 +190,7 @@ function MiniWheelTurntable({ wheelType, setWheelType, onOpenSandbox }) {
           }}
           className={`py-1 px-1 rounded text-[8px] font-mono font-bold transition-all cursor-pointer flex items-center justify-center gap-1 ${
             wheelType === 'user_rim'
-              ? 'bg-[#00E5FF] text-black shadow-[0_0_8px_#00E5FF]'
+              ? 'bg-amber-500 text-black shadow-md'
               : 'text-gray-400 hover:text-white hover:bg-white/10'
           }`}
         >
@@ -200,7 +203,7 @@ function MiniWheelTurntable({ wheelType, setWheelType, onOpenSandbox }) {
           }}
           className={`py-1 px-1 rounded text-[8px] font-mono font-bold transition-all cursor-pointer flex items-center justify-center gap-1 ${
             wheelType === 'user_tyre'
-              ? 'bg-[#00E5FF] text-black shadow-[0_0_8px_#00E5FF]'
+              ? 'bg-amber-500 text-black shadow-md'
               : 'text-gray-400 hover:text-white hover:bg-white/10'
           }`}
         >
@@ -217,12 +220,12 @@ function MiniWheelTurntable({ wheelType, setWheelType, onOpenSandbox }) {
         >
           <ambientLight intensity={1.5} />
           <directionalLight position={[3, 3, 3]} intensity={3.0} />
-          <directionalLight position={[-3, -1, -2]} intensity={1.2} color="#00E5FF" />
+          <directionalLight position={[-3, -1, -2]} intensity={1.2} color="#F59E0B" />
           <pointLight position={[0, 0, 1.2]} intensity={2.5} color="#FFF" />
           <SingleWheelDisplay wheelType={wheelType} />
           <OrbitControls enableZoom={false} enablePan={false} dampingFactor={0.1} />
         </Canvas>
-        <div className="absolute bottom-1 right-2 text-[7px] font-mono text-gray-500 pointer-events-none">
+        <div className="absolute bottom-1 right-2 text-[7px] font-mono text-gray-400 pointer-events-none">
           DRAG TO ROTATE
         </div>
       </div>
@@ -541,6 +544,7 @@ export function StudioShowroomCanvas({
   onOpenSandbox,
 }) {
   const [activeTab, setActiveTab] = useState('mods'); // 'mods' | 'paint' | 'parts' | 'controls'
+  const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const [selectedMods, setSelectedMods] = useState({
     wheels: true,
     lights: true,
@@ -641,42 +645,50 @@ export function StudioShowroomCanvas({
 
           <OrbitControls
             enablePan={false}
-            minDistance={2.5}
+            minDistance={2.4}
             maxDistance={8.5}
             maxPolarAngle={Math.PI / 2 - 0.05}
+            target={[0, 0.1, 0]}
             enableDamping={true}
             dampingFactor={0.08}
           />
         </Suspense>
       </Canvas>
 
-      {/* TOP ATELIER HUD BAR (WITH BUBBLE VEHICLE SELECTOR) */}
-      <div className="absolute top-5 left-5 right-5 flex items-center justify-between pointer-events-none z-20">
-        {/* Left Group: Title Banner + Vehicle Bubble Switcher */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 pointer-events-auto">
+      {/* TOP ATELIER HUD BAR (RESPONSIVE: COMPACT ROW ON MOBILE, SPACIOUS ON DESKTOP) */}
+      <div className="absolute top-3 sm:top-5 left-3 sm:left-5 right-3 sm:right-5 flex items-center justify-between pointer-events-none z-20">
+        {/* Left Group: Atelier Badge + 2 Circular Vehicle Bubbles */}
+        <div className="flex items-center gap-2 sm:gap-3.5 pointer-events-auto">
           {/* Atelier Title Tag */}
-          <div className="px-4 py-2 rounded-xl border border-white/10 flex items-center gap-3 backdrop-blur-xl bg-[#121620]/90 shadow-xl">
-            <div className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse" />
+          <div className="px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-xl border border-white/10 flex items-center gap-2 sm:gap-3 backdrop-blur-xl bg-[#121620]/90 shadow-xl">
+            <div className="w-2 sm:w-2.5 h-2 sm:h-2.5 rounded-full bg-amber-400 animate-pulse shrink-0" />
             <div className="text-left">
-              <div className="text-[10px] text-slate-400 uppercase tracking-widest leading-tight font-medium">ATELIER TUNING SUITE</div>
-              <div className="text-xs sm:text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2 leading-tight">
-                <span>{carModel === 'thar' ? 'MAHINDRA THAR 4X4 • AUTHENTIC SPEC' : 'FERRARI 458 GT3 • SUPERCAR ATELIER'}</span>
-                <span className="text-[10px] px-2 py-0.5 rounded-md bg-amber-500/15 text-amber-300 border border-amber-500/30 font-bold">
-                  {carModel === 'thar' ? '4X4 SUV' : 'SUPERCAR'}
+              <div className="text-[8px] sm:text-[10px] text-slate-400 uppercase tracking-widest leading-tight font-medium">
+                ATELIER SUITE
+              </div>
+              <div className="text-xs sm:text-sm font-bold text-white uppercase tracking-wider flex items-center gap-1.5 sm:gap-2 leading-tight">
+                <span className="hidden sm:inline">
+                  {carModel === 'thar' ? 'MAHINDRA THAR 4X4 • AUTHENTIC SPEC' : 'FERRARI 458 GT3 • SUPERCAR ATELIER'}
+                </span>
+                <span className="sm:hidden font-mono text-[11px]">
+                  {carModel === 'thar' ? 'THAR 4X4' : 'FERRARI GT3'}
+                </span>
+                <span className="text-[9px] sm:text-[10px] px-1.5 sm:px-2 py-0.5 rounded-md bg-amber-500/15 text-amber-300 border border-amber-500/30 font-bold shrink-0">
+                  {carModel === 'thar' ? '4X4' : 'GT3'}
                 </span>
               </div>
             </div>
           </div>
 
-          {/* THE 2 INDIVIDUAL VEHICLE BUBBLES - ONLY 3D CAR MODEL INSIDE, ZERO WORDS */}
-          <div className="flex items-center gap-3.5">
+          {/* THE 2 INDIVIDUAL VEHICLE BUBBLES - SCALED COMPACTLY ON MOBILE (54px), EXPANDED ON DESKTOP (76px-84px) */}
+          <div className="flex items-center gap-2 sm:gap-3.5">
             {/* Thar Individual Circular Bubble */}
             <button
               onClick={() => handleSelectVehicle('thar')}
-              className={`relative w-[76px] h-[76px] sm:w-[84px] sm:h-[84px] shrink-0 rounded-full overflow-hidden transition-all duration-300 cursor-pointer flex items-center justify-center ${
+              className={`relative w-[52px] h-[52px] sm:w-[76px] sm:h-[76px] md:w-[84px] md:h-[84px] shrink-0 rounded-full overflow-hidden transition-all duration-300 cursor-pointer flex items-center justify-center ${
                 carModel === 'thar'
-                  ? 'border-2 border-amber-400 shadow-[0_4px_25px_rgba(245,158,11,0.35)] ring-2 ring-amber-400/40 bg-gradient-to-b from-amber-500/20 to-[#121620] scale-105'
-                  : 'border-2 border-white/20 hover:border-amber-400/50 bg-[#121620]/90 opacity-80 hover:opacity-100 hover:scale-105 shadow-xl'
+                  ? 'border-2 border-amber-400 shadow-[0_2px_15px_rgba(245,158,11,0.4)] ring-2 ring-amber-400/40 bg-gradient-to-b from-amber-500/20 to-[#121620] scale-105'
+                  : 'border-2 border-white/20 hover:border-amber-400/50 bg-[#121620]/90 opacity-80 hover:opacity-100 hover:scale-105 shadow-md'
               }`}
               title="Mahindra Thar 4x4"
             >
@@ -688,10 +700,10 @@ export function StudioShowroomCanvas({
             {/* Supercar Individual Circular Bubble */}
             <button
               onClick={() => handleSelectVehicle('ferrari')}
-              className={`relative w-[76px] h-[76px] sm:w-[84px] sm:h-[84px] shrink-0 rounded-full overflow-hidden transition-all duration-300 cursor-pointer flex items-center justify-center ${
+              className={`relative w-[52px] h-[52px] sm:w-[76px] sm:h-[76px] md:w-[84px] md:h-[84px] shrink-0 rounded-full overflow-hidden transition-all duration-300 cursor-pointer flex items-center justify-center ${
                 carModel === 'ferrari'
-                  ? 'border-2 border-amber-400 shadow-[0_4px_25px_rgba(245,158,11,0.35)] ring-2 ring-amber-400/40 bg-gradient-to-b from-amber-500/20 to-[#121620] scale-105'
-                  : 'border-2 border-white/20 hover:border-amber-400/50 bg-[#121620]/90 opacity-80 hover:opacity-100 hover:scale-105 shadow-xl'
+                  ? 'border-2 border-amber-400 shadow-[0_2px_15px_rgba(245,158,11,0.4)] ring-2 ring-amber-400/40 bg-gradient-to-b from-amber-500/20 to-[#121620] scale-105'
+                  : 'border-2 border-white/20 hover:border-amber-400/50 bg-[#121620]/90 opacity-80 hover:opacity-100 hover:scale-105 shadow-md'
               }`}
               title="Ferrari 458 Supercar"
             >
@@ -710,19 +722,125 @@ export function StudioShowroomCanvas({
                 playUiSound('click');
                 onOpenSandbox();
               }}
-              className="px-3.5 py-1.5 rounded-xl text-xs font-bold uppercase border border-amber-500/40 bg-[#121620]/90 text-amber-300 hover:bg-amber-500/20 hover:text-white transition-all shadow-lg flex items-center gap-2 cursor-pointer backdrop-blur-md"
+              className="px-2.5 sm:px-3.5 py-1.5 rounded-xl text-xs font-bold uppercase border border-amber-500/40 bg-[#121620]/90 text-amber-300 hover:bg-amber-500/20 hover:text-white transition-all shadow-lg flex items-center gap-1.5 cursor-pointer backdrop-blur-md"
+              title="Open 3D Model Sandbox"
             >
-              <span>🔬 3D Model Sandbox</span>
+              <span>🔬</span>
+              <span className="hidden sm:inline">3D Sandbox</span>
             </button>
           )}
         </div>
       </div>
 
-      {/* RIGHT-SIDE LUXURY TUNING ATELIER SUITE (SPACIOUS, HIGH CONTRAST, EYE-PLEASING) */}
-      <div className="absolute top-20 right-4 sm:right-6 w-[360px] sm:w-[420px] z-30 pointer-events-auto flex flex-col">
-        <div className="p-4 sm:p-5 rounded-2xl border border-white/10 backdrop-blur-2xl bg-[#0F131C]/95 shadow-[0_20px_50px_rgba(0,0,0,0.85)] flex flex-col gap-3.5 max-h-[calc(100vh-110px)] overflow-hidden">
-          {/* Header */}
-          <div className="flex items-center justify-between border-b border-white/10 pb-2.5">
+      {/* MOBILE BACKDROP (TAP 3D VIEW AREA TO CLOSE DRAWER ON MOBILE) */}
+      {mobileDrawerOpen && (
+        <div
+          onClick={() => {
+            playUiSound('click');
+            setMobileDrawerOpen(false);
+          }}
+          className="md:hidden fixed inset-0 z-35 bg-black/40 backdrop-blur-[1px] pointer-events-auto"
+        />
+      )}
+
+      {/* MOBILE FLOATING ACTION BAR (< md screens) - VISIBLE ONLY WHEN DRAWER IS COLLAPSED */}
+      <div
+        className={`md:hidden fixed sm:absolute bottom-3 left-3 right-3 z-30 pointer-events-auto flex flex-col gap-1.5 transition-all duration-300 ${
+          mobileDrawerOpen
+            ? 'opacity-0 pointer-events-none translate-y-4'
+            : 'opacity-100 translate-y-0'
+        }`}
+      >
+        <div className="flex items-center gap-2">
+          {/* Primary Trigger: Open Customization Atelier Drawer */}
+          <button
+            onClick={() => {
+              playUiSound('tab');
+              setMobileDrawerOpen(true);
+            }}
+            className="flex-1 py-3 px-3.5 rounded-2xl bg-[#0F131C]/95 border border-amber-500/40 backdrop-blur-2xl shadow-[0_10px_30px_rgba(0,0,0,0.85)] text-white flex items-center justify-between active:scale-[0.98] transition-all cursor-pointer group"
+          >
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400 text-sm">
+                🛠️
+              </div>
+              <div className="text-left">
+                <div className="text-xs font-bold text-white tracking-wide uppercase flex items-center gap-2">
+                  <span>Tune Specs & Paint</span>
+                  <span className="text-[10px] px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 font-mono font-bold">
+                    {Object.values(selectedMods).filter(Boolean).length} Active
+                  </span>
+                </div>
+                <div className="text-[10px] text-slate-400 leading-tight">
+                  Colors • Upgrades • Parts • Stance
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center gap-1 text-amber-400 font-bold text-xs uppercase bg-amber-500/15 px-2.5 py-1.5 rounded-xl border border-amber-500/30 group-hover:bg-amber-500/25">
+              <span>TUNE</span>
+              <ChevronUp className="w-3.5 h-3.5 animate-bounce" />
+            </div>
+          </button>
+
+          {/* 360 Spin Quick-Toggle Button */}
+          <button
+            onClick={() => {
+              playUiSound('toggle');
+              setAutoRotate(!autoRotate);
+            }}
+            className={`p-3 rounded-2xl border backdrop-blur-2xl transition-all cursor-pointer flex items-center justify-center shadow-lg active:scale-95 ${
+              autoRotate
+                ? 'border-amber-400 bg-amber-500/20 text-amber-300 shadow-[0_0_15px_rgba(245,158,11,0.3)]'
+                : 'border-white/10 bg-[#0F131C]/95 text-slate-400'
+            }`}
+            title="Toggle 360 Auto-Spin"
+          >
+            <RotateCw className={`w-5 h-5 ${autoRotate ? 'animate-spin' : ''}`} />
+          </button>
+        </div>
+
+        {/* Interactive Gesture Hint */}
+        <div className="text-center text-[10px] font-medium text-slate-400 pointer-events-none drop-shadow">
+          👆 Drag 3D car to rotate 360° • Pinch to zoom
+        </div>
+      </div>
+
+      {/* SPECIFICATION PANEL (BOTTOM SHEET DRAWER ON MOBILE, FLOATING SUITE ON DESKTOP) */}
+      <div
+        className={`
+          fixed md:absolute bottom-0 left-0 right-0 md:bottom-auto md:top-20 md:right-6 md:left-auto
+          w-full md:w-[420px] z-40 md:z-30 pointer-events-auto flex flex-col
+          transition-all duration-300 ease-out
+          ${
+            mobileDrawerOpen
+              ? 'translate-y-0 opacity-100 pointer-events-auto'
+              : 'translate-y-full opacity-0 pointer-events-none md:translate-y-0 md:opacity-100 md:pointer-events-auto'
+          }
+        `}
+      >
+        <div className="p-4 sm:p-5 rounded-t-3xl md:rounded-2xl border-t md:border border-white/10 backdrop-blur-2xl bg-[#0F131C]/98 shadow-[0_-15px_40px_rgba(0,0,0,0.95)] md:shadow-[0_20px_50px_rgba(0,0,0,0.85)] flex flex-col gap-3.5 max-h-[60vh] md:max-h-[calc(100vh-110px)] overflow-hidden">
+          {/* MOBILE DRAWER GRAB BAR & MINIMIZE BUTTON */}
+          <div className="md:hidden flex items-center justify-between pb-2 border-b border-white/10">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+              <span className="text-xs font-bold uppercase tracking-wider text-white">
+                {carModel === 'thar' ? '🚙 THAR 4X4 ATELIER' : '🏎️ SUPERCAR ATELIER'}
+              </span>
+            </div>
+            <button
+              onClick={() => {
+                playUiSound('click');
+                setMobileDrawerOpen(false);
+              }}
+              className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-300 text-xs font-bold hover:bg-amber-500/30 transition-all cursor-pointer shadow-sm active:scale-95"
+            >
+              <ChevronDown className="w-3.5 h-3.5" />
+              <span>Minimize (View 3D Car)</span>
+            </button>
+          </div>
+
+          {/* Desktop Header */}
+          <div className="hidden md:flex items-center justify-between border-b border-white/10 pb-2.5">
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
               <span className="text-xs font-bold tracking-widest uppercase text-white font-sans">
@@ -762,7 +880,7 @@ export function StudioShowroomCanvas({
 
           {/* TAB 1: UPGRADES (LARGE, COMFORTABLE, READABLE) */}
           {activeTab === 'mods' && (
-            <div className="space-y-2 max-h-[290px] overflow-y-auto pr-1">
+            <div className="space-y-2 max-h-[200px] sm:max-h-[240px] md:max-h-[290px] overflow-y-auto pr-1">
               <div className="flex items-center justify-between text-xs text-slate-400 font-medium px-1">
                 <span>AVAILABLE UPGRADES</span>
                 <span className="text-amber-400 font-semibold">
@@ -819,7 +937,7 @@ export function StudioShowroomCanvas({
 
           {/* TAB 2: PAINT SWATCHES (GENEROUS, CLEAR, HIGH CONTRAST) */}
           {activeTab === 'paint' && (
-            <div className="space-y-2.5 max-h-[290px] overflow-y-auto pr-1">
+            <div className="space-y-2.5 max-h-[200px] sm:max-h-[240px] md:max-h-[290px] overflow-y-auto pr-1">
               <div className="flex items-center justify-between text-xs px-1">
                 <span className="text-slate-400 font-semibold uppercase">ACTIVE FINISH:</span>
                 <span className="text-amber-400 font-bold">
@@ -915,7 +1033,7 @@ export function StudioShowroomCanvas({
               </div>
 
               {/* 3D Turntable Canvas */}
-              <div className="w-full h-44 rounded-xl bg-black/60 border border-white/10 relative overflow-hidden flex items-center justify-center">
+              <div className="w-full h-36 sm:h-44 rounded-xl bg-black/60 border border-white/10 relative overflow-hidden flex items-center justify-center">
                 <Canvas
                   camera={{ position: [0.22, 0.1, 0.44], fov: 40 }}
                   gl={{ antialias: true, alpha: true, powerPreference: 'low-power' }}
@@ -1027,8 +1145,8 @@ export function StudioShowroomCanvas({
           </div>
         </div>
 
-        {/* BOTTOM GAMEPAD / MOUSE CONTROLLER HINTS */}
-        <div className="mt-2 text-center text-xs font-medium text-slate-400 bg-[#0F131C]/90 px-4 py-1.5 rounded-xl border border-white/10 backdrop-blur-md shadow-lg">
+        {/* BOTTOM GAMEPAD / MOUSE CONTROLLER HINTS (DESKTOP ONLY) */}
+        <div className="hidden md:block mt-2 text-center text-xs font-medium text-slate-400 bg-[#0F131C]/90 px-4 py-1.5 rounded-xl border border-white/10 backdrop-blur-md shadow-lg">
           <span className="text-amber-300 font-semibold">[L-CLICK + DRAG]</span> 360° ORBIT • <span className="text-slate-200 font-semibold">[SCROLL]</span> ZOOM
         </div>
       </div>
