@@ -137,26 +137,163 @@ function SubwooferBox({ active }) {
 }
 
 // ==========================================
-// ACCURATE 3D OFF-ROAD LIGHTS & ACCESSORIES (Awaiting real 3D GLB models from catalog)
-function BumperFogPods({ active, headlights }) {
-  return null;
-}
+// ==========================================
+// BESPOKE 3D OFF-ROAD WHEEL & TYRE PACKAGES
+// ==========================================
+function Bespoke3DWheelSet({ wheelType }) {
+  if (!wheelType || wheelType === 'oem') return null;
 
-function RoofLightBar({ active, headlights }) {
-  return null;
-}
+  // 5 Axle Hub Coordinates on Thar in local Thar coordinates
+  const hubs = [
+    { id: 'FL', pos: [-0.620, -0.245, -0.357], rotY: Math.PI, isSpare: false },
+    { id: 'FR', pos: [-0.620, -0.245, 0.352], rotY: 0, isSpare: false },
+    { id: 'RL', pos: [0.508, -0.245, -0.356], rotY: Math.PI, isSpare: false },
+    { id: 'RR', pos: [0.508, -0.245, 0.351], rotY: 0, isSpare: false },
+    { id: 'Spare', pos: [0.905, 0.070, -0.001], rotY: Math.PI / 2, isSpare: true },
+  ];
 
-function BullBarWinch({ active }) {
-  return null;
-}
+  const isBronze = wheelType === 'dakar_bronze';
+  const isTitanium = wheelType === 'titanium_spider';
 
-function RoofRack({ active }) {
-  return null;
-}
+  const rimColor = isBronze ? '#8C6832' : isTitanium ? '#A0ABBA' : '#141517';
+  const rimMetalness = isBronze ? 0.85 : isTitanium ? 0.95 : 0.75;
+  const rimRoughness = isBronze ? 0.32 : isTitanium ? 0.20 : 0.45;
+  const beadlockColor = isBronze ? '#1F2024' : isTitanium ? '#E2E8F0' : '#DC2626';
 
-// 5. Custom 3D Wheels (Disabled until real 3D asset GLB models are selected)
-function CustomWheelAssembly({ wheelType }) {
-  return null;
+  return (
+    <group>
+      {hubs.map((hub) => (
+        <group key={hub.id} position={hub.pos} rotation={[0, hub.rotY, 0]}>
+          {/* Main Vulcanized Rubber Tyre Tread */}
+          <mesh rotation={[Math.PI / 2, 0, 0]} castShadow receiveShadow>
+            <cylinderGeometry args={[0.163, 0.163, 0.098, 32]} />
+            <meshStandardMaterial color="#131416" roughness={0.92} metalness={0.02} />
+          </mesh>
+
+          {/* Outer & Inner Sidewall Shoulder Bevels */}
+          <mesh position={[0, 0, 0.038]} rotation={[0, 0, 0]}>
+            <torusGeometry args={[0.136, 0.027, 16, 32]} />
+            <meshStandardMaterial color="#16171A" roughness={0.88} metalness={0.05} />
+          </mesh>
+          <mesh position={[0, 0, -0.038]} rotation={[0, 0, 0]}>
+            <torusGeometry args={[0.136, 0.027, 16, 32]} />
+            <meshStandardMaterial color="#16171A" roughness={0.88} metalness={0.05} />
+          </mesh>
+
+          {/* 3D Off-Road Knobby Tread Lugs around circumference */}
+          {!isTitanium &&
+            Array.from({ length: 18 }).map((_, li) => {
+              const ang = (li / 18) * Math.PI * 2;
+              return (
+                <mesh
+                  key={li}
+                  position={[Math.cos(ang) * 0.162, Math.sin(ang) * 0.162, 0]}
+                  rotation={[0, 0, ang]}
+                  castShadow
+                >
+                  <boxGeometry args={[0.015, 0.009, 0.088]} />
+                  <meshStandardMaterial color="#111214" roughness={0.95} metalness={0.01} />
+                </mesh>
+              );
+            })}
+
+          {/* Deep-Dish Inset Rim Barrel */}
+          <mesh rotation={[Math.PI / 2, 0, 0]}>
+            <cylinderGeometry args={[0.104, 0.104, 0.088, 32, 1, true]} />
+            <meshStandardMaterial color={rimColor} roughness={rimRoughness} metalness={rimMetalness} />
+          </mesh>
+
+          {/* Outer Rim Lip */}
+          <mesh position={[0, 0, 0.046]} rotation={[0, 0, 0]}>
+            <ringGeometry args={[0.096, 0.106, 32]} />
+            <meshStandardMaterial color={beadlockColor} roughness={0.25} metalness={0.9} />
+          </mesh>
+
+          {/* 16 Beadlock Socket Screws */}
+          {Array.from({ length: 16 }).map((_, bi) => {
+            const bAng = (bi / 16) * Math.PI * 2;
+            return (
+              <mesh key={bi} position={[Math.cos(bAng) * 0.101, Math.sin(bAng) * 0.101, 0.048]}>
+                <circleGeometry args={[0.003, 6]} />
+                <meshStandardMaterial color="#E2E8F0" roughness={0.2} metalness={0.95} />
+              </mesh>
+            );
+          })}
+
+          {/* Rim Face / Spokes */}
+          {isBronze ? (
+            /* Dakar 8-Window Rally Dish */
+            Array.from({ length: 8 }).map((_, si) => {
+              const sAng = (si / 8) * Math.PI * 2;
+              return (
+                <group key={si} position={[0, 0, 0.038]} rotation={[0, 0, sAng]}>
+                  <mesh position={[0, 0.052, 0]}>
+                    <boxGeometry args={[0.024, 0.068, 0.010]} />
+                    <meshStandardMaterial color={rimColor} roughness={rimRoughness} metalness={rimMetalness} />
+                  </mesh>
+                </group>
+              );
+            })
+          ) : isTitanium ? (
+            /* 10-Spoke Directional Sport Alloy */
+            Array.from({ length: 10 }).map((_, si) => {
+              const sAng = (si / 10) * Math.PI * 2;
+              return (
+                <group key={si} position={[0, 0, 0.040]} rotation={[0, 0, sAng + 0.1]}>
+                  <mesh position={[0, 0.055, 0]}>
+                    <boxGeometry args={[0.014, 0.072, 0.008]} />
+                    <meshStandardMaterial color={rimColor} roughness={rimRoughness} metalness={rimMetalness} />
+                  </mesh>
+                </group>
+              );
+            })
+          ) : (
+            /* BFG Method Beadlock 5-Spoke Star */
+            Array.from({ length: 5 }).map((_, si) => {
+              const sAng = (si / 5) * Math.PI * 2;
+              return (
+                <group key={si} position={[0, 0, 0.039]} rotation={[0, 0, sAng]}>
+                  <mesh position={[0, 0.050, 0]}>
+                    <boxGeometry args={[0.028, 0.068, 0.012]} />
+                    <meshStandardMaterial color={rimColor} roughness={rimRoughness} metalness={rimMetalness} />
+                  </mesh>
+                </group>
+              );
+            })
+          )}
+
+          {/* Center Hub & 5 Hex Lug Nuts */}
+          <mesh position={[0, 0, 0.042]} rotation={[Math.PI / 2, 0, 0]}>
+            <cylinderGeometry args={[0.028, 0.028, 0.014, 24]} />
+            <meshStandardMaterial color="#0E1013" roughness={0.4} metalness={0.7} />
+          </mesh>
+          {Array.from({ length: 5 }).map((_, ni) => {
+            const nAng = (ni / 5) * Math.PI * 2;
+            return (
+              <mesh key={ni} position={[Math.cos(nAng) * 0.018, Math.sin(nAng) * 0.018, 0.046]}>
+                <circleGeometry args={[0.0035, 6]} />
+                <meshStandardMaterial color="#D4D4D8" roughness={0.2} metalness={0.95} />
+              </mesh>
+            );
+          })}
+
+          {/* Behind-the-Wheel Slotted Brake Rotor & Brembo Caliper (Running wheels only) */}
+          {!hub.isSpare && (
+            <group position={[0, 0, -0.016]}>
+              <mesh rotation={[Math.PI / 2, 0, 0]}>
+                <cylinderGeometry args={[0.082, 0.082, 0.006, 32]} />
+                <meshStandardMaterial color="#94A3B8" roughness={0.25} metalness={0.95} />
+              </mesh>
+              <mesh position={[0.052, 0.052, 0]}>
+                <boxGeometry args={[0.042, 0.048, 0.022]} />
+                <meshStandardMaterial color="#E11D48" roughness={0.2} metalness={0.5} />
+              </mesh>
+            </group>
+          )}
+        </group>
+      ))}
+    </group>
+  );
 }
 
 // 3D Car Vehicle Mesh Node
@@ -179,7 +316,7 @@ function VehicleShowroom({
   const baseUrl = import.meta.env.BASE_URL || '/';
 
   const ferrariGLTF = useGLTF(`${baseUrl}models/ferrari.glb`);
-  const tharGLTF = useGLTF(`${baseUrl}models/thar.glb`);
+  const tharGLTF = useGLTF(`${baseUrl}models/thar_split.glb`);
 
   const ferrariScene = useMemo(() => ferrariGLTF.scene.clone(true), [ferrariGLTF.scene]);
   const tharScene = useMemo(() => tharGLTF.scene.clone(true), [tharGLTF.scene]);
@@ -247,6 +384,15 @@ function VehicleShowroom({
       }
     });
   }, [ferrariScene, ferrariPaintMat, ferrariWheelMat, glassMat, headlightMat]);
+
+  // Toggle OEM Wheels Visibility on Thar (Completely removes OEM tires when custom wheel is selected)
+  useEffect(() => {
+    tharScene.traverse((child) => {
+      if (child.name === 'Thar_OEM_Wheels') {
+        child.visible = (wheelType === 'oem');
+      }
+    });
+  }, [tharScene, wheelType]);
 
   // Shader Uniforms for Thar Body Paint Customization (Preserves 100% of authentic textured wheels, roof, glass, and bumpers)
   const uniformsRef = useRef({
@@ -340,6 +486,7 @@ function VehicleShowroom({
         {carModel === 'thar' ? (
           <group scale={1.8} position={[0, 0.77, 0]} rotation={[0, -Math.PI / 2, 0]}>
             <primitive object={tharScene} />
+            <Bespoke3DWheelSet wheelType={wheelType} />
           </group>
         ) : (
           <group scale={0.9} position={[0, 0.05, 0]}>
@@ -418,27 +565,23 @@ export function StudioShowroomCanvas({
   subwooferActive, setSubwooferActive,
   onOpenBooking,
 }) {
-  const [activeCategory, setActiveCategory] = useState('livery'); // 'livery' | 'wheels' | 'lighting' | 'armor' | 'chassis'
+  const [activeCategory, setActiveCategory] = useState('wheels'); // 'wheels' | 'livery' | 'lighting' | 'chassis'
 
   // Performance Rating Scores (Dynamically calculated based on equipped mods)
   const stats = useMemo(() => {
     let traction = 78;
-    if (wheelType === 'mud_beadlock') traction = 99;
+    if (wheelType === 'bfg_ko2' || wheelType === 'mud_beadlock') traction = 99;
     else if (wheelType === 'dakar_bronze') traction = 94;
-    else if (wheelType === 'titanium_alloy') traction = 86;
+    else if (wheelType === 'titanium_spider' || wheelType === 'titanium_alloy') traction = 88;
 
-    let visibility = 65;
-    if (bumperLights) visibility += 18;
-    if (roofLights) visibility += 17;
-
-    let armor = 62;
-    if (bullBar) armor += 20;
-    if (roofRack) armor += 18;
+    let visibility = 60;
+    if (headlights) visibility += 20;
+    if (roofLights) visibility += 20;
 
     let clearance = liftActive ? '310 mm (+3.5")' : '226 mm (Stock)';
 
-    return { traction, visibility, armor, clearance };
-  }, [wheelType, bumperLights, roofLights, bullBar, roofRack, liftActive]);
+    return { traction, visibility, clearance };
+  }, [wheelType, headlights, roofLights, liftActive]);
 
   const colors = [
     { name: 'Factory Original Spec (Red & Black)', hex: 'original', displayHex: '#D32F2F', badge: 'OEM' },
@@ -451,10 +594,46 @@ export function StudioShowroomCanvas({
   ];
 
   const wheelOptions = [
-    { id: 'oem', name: 'Factory OEM Alloy Wheels', sub: 'Original factory textured rims & rubber', tag: 'STOCK' },
-    { id: 'mud_beadlock', name: 'Stealth Black Mud-Terrain Beadlocks', sub: 'Aggressive rock-crawler lugs + functional beadlock ring', tag: 'OFFROAD 99%' },
-    { id: 'dakar_bronze', name: 'Dakar Forged Bronze Rally Rims', sub: 'Deep-dish satin bronze forged wheels with black beadlock', tag: 'RALLY SPEC' },
-    { id: 'titanium_alloy', name: 'Machined Titanium 10-Spoke Alloy', sub: 'Directional forged face + high-speed performance tyres', tag: 'PREMIUM' },
+    {
+      id: 'bfg_ko2',
+      name: 'BFGoodrich T/A KO2 • Method Beadlock',
+      specs: '17" Forged Rim • 285/75 R17 Rock-Crawler Lugs • Red Anodized Beadlock',
+      traction: 99,
+      tag: 'OFFROAD 99%',
+      badge: 'MAX GRIP',
+      swatch: '#DC2626',
+      rimType: 'Matte Black Dish + Red Ring',
+    },
+    {
+      id: 'dakar_bronze',
+      name: 'Dakar Rally Stage • Satin Bronze Forged',
+      specs: '17" Multi-Window Dish • 3-Ply Kevlar Mud-Terrain • Black Beadlock',
+      traction: 94,
+      tag: 'RALLY 94%',
+      badge: 'RALLY SPEC',
+      swatch: '#8C6832',
+      rimType: 'Satin Bronze + Black Ring',
+    },
+    {
+      id: 'titanium_spider',
+      name: 'Titanium 10-Spoke • Directional Sport Alloy',
+      specs: '18" Lightweight Titanium • All-Terrain Directional • Silver Machined Lip',
+      traction: 88,
+      tag: 'SPORT 88%',
+      badge: 'PREMIUM',
+      swatch: '#A0ABBA',
+      rimType: 'Machined Titanium Finish',
+    },
+    {
+      id: 'oem',
+      name: 'Mahindra OEM Factory 18" Diamond-Cut',
+      specs: '18" Stock Mahindra Factory Alloys • Highway Spec Dueler Rubber',
+      traction: 78,
+      tag: 'STOCK 78%',
+      badge: 'OEM FACTORY',
+      swatch: '#475569',
+      rimType: 'Factory Diamond-Cut Spec',
+    },
   ];
 
   const handleCategorySwitch = (cat) => {
@@ -579,10 +758,12 @@ export function StudioShowroomCanvas({
           </div>
 
           {/* DYNAMIC PERFORMANCE STAT BARS */}
-          <div className="bg-black/60 p-3 rounded-xl border border-white/10 space-y-2 font-mono text-[10px]">
+          <div className="bg-black/60 p-3 rounded-xl border border-white/10 space-y-2.5 font-mono text-[10px]">
             <div className="flex items-center justify-between">
               <span className="text-gray-400">TRACTION RATING:</span>
-              <span className="text-[#00E5FF] font-bold">{stats.traction}% [MAX GRIP]</span>
+              <span className="text-[#00E5FF] font-bold">
+                {stats.traction}% {stats.traction >= 99 ? '[MAX GRIP]' : stats.traction >= 94 ? '[RALLY SPEC]' : stats.traction >= 88 ? '[SPORT SPEC]' : '[STOCK HIGHWAY]'}
+              </span>
             </div>
             <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
               <div
@@ -591,9 +772,11 @@ export function StudioShowroomCanvas({
               />
             </div>
 
-            <div className="flex items-center justify-between pt-1">
+            <div className="flex items-center justify-between pt-0.5">
               <span className="text-gray-400">NIGHT ILLUMINATION:</span>
-              <span className="text-[#FF4D00] font-bold">{stats.visibility}% [BEAM POWER]</span>
+              <span className="text-[#FF4D00] font-bold">
+                {stats.visibility}% {stats.visibility >= 90 ? '[BEAM POWER MAX]' : '[STANDARD BEAM]'}
+              </span>
             </div>
             <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
               <div
@@ -602,30 +785,18 @@ export function StudioShowroomCanvas({
               />
             </div>
 
-            <div className="flex items-center justify-between pt-1">
-              <span className="text-gray-400">OVERLAND RECOVERY ARMOR:</span>
-              <span className="text-emerald-400 font-bold">{stats.armor}% [OFFROAD]</span>
-            </div>
-            <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-gradient-to-r from-emerald-600 to-emerald-400 transition-all duration-300"
-                style={{ width: `${stats.armor}%` }}
-              />
-            </div>
-
             <div className="flex items-center justify-between text-[9px] pt-1 text-gray-400 border-t border-white/10">
-              <span>RIDE HEIGHT:</span>
+              <span>GROUND CLEARANCE:</span>
               <span className="text-white font-bold">{stats.clearance}</span>
             </div>
           </div>
 
-          {/* GAME CATEGORY CONTROLLER BUTTONS */}
-          <div className="grid grid-cols-3 gap-1.5 text-[10px] font-heading font-extrabold uppercase">
+          {/* REFINED CATEGORY NAVIGATION TABS */}
+          <div className="grid grid-cols-4 gap-1 text-[10px] font-heading font-extrabold uppercase">
             {[
-              { id: 'livery', label: '🎨 Livery' },
               { id: 'wheels', label: '🛞 Tyres' },
+              { id: 'livery', label: '🎨 Livery' },
               { id: 'lighting', label: '💡 Lights' },
-              { id: 'armor', label: '🛡️ Armor' },
               { id: 'chassis', label: '⚙️ Hoist' },
             ].map((tab) => (
               <button
@@ -642,7 +813,108 @@ export function StudioShowroomCanvas({
             ))}
           </div>
 
-          {/* TAB CONTENT: 1. LIVERY & PAINT */}
+          {/* TAB CONTENT: 1. 3D WHEELS & TYRES SHOWCASE */}
+          {activeCategory === 'wheels' && (
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-bold text-gray-400 uppercase font-mono tracking-wider">
+                  3D WHEEL & TYRE PACKAGES:
+                </span>
+                <span className="text-[9px] font-mono text-[#00E5FF] bg-[#00E5FF]/10 px-2 py-0.5 rounded border border-[#00E5FF]/30">
+                  4 HUBS + SPARE
+                </span>
+              </div>
+              <p className="text-[10px] text-gray-400 leading-relaxed font-body">
+                Equipping a package unmounts the factory OEM tyres and locks authentic 3D forged wheels onto all axle hubs.
+              </p>
+
+              <div className="space-y-2.5">
+                {wheelOptions.map((w) => {
+                  const isSelected = wheelType === w.id;
+                  return (
+                    <div
+                      key={w.id}
+                      onClick={() => {
+                        playUiSound('click');
+                        setWheelType(w.id);
+                      }}
+                      className={`p-3 rounded-xl border text-left transition-all cursor-pointer relative overflow-hidden ${
+                        isSelected
+                          ? 'border-[#FF4D00] bg-gradient-to-r from-[#FF4D00]/25 to-black/80 shadow-[0_0_16px_rgba(255,77,0,0.4)]'
+                          : 'border-white/10 hover:border-white/25 bg-white/5 hover:bg-white/10'
+                      }`}
+                    >
+                      {/* Active Glow Accent Strip */}
+                      {isSelected && (
+                        <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#FF4D00] shadow-[0_0_8px_#FF4D00]" />
+                      )}
+
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-center gap-2.5">
+                          {/* Wheel Color & Rim Swatch */}
+                          <div
+                            className="w-7 h-7 rounded-lg border-2 border-white/20 shrink-0 flex items-center justify-center shadow-md"
+                            style={{ backgroundColor: w.colorHex }}
+                          >
+                            <span
+                              className="w-2.5 h-2.5 rounded-full"
+                              style={{ backgroundColor: w.swatch }}
+                            />
+                          </div>
+
+                          <div>
+                            <div className="text-[11px] font-mono font-bold text-white flex items-center gap-1.5">
+                              <span>{w.name}</span>
+                            </div>
+                            <div className="text-[9px] text-[#FF4D00] font-mono font-bold">
+                              {w.rimType}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Traction Score Tag */}
+                        <div className="text-right shrink-0">
+                          <span className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded ${
+                            isSelected ? 'bg-[#FF4D00] text-white' : 'bg-white/10 text-gray-300'
+                          }`}>
+                            {w.badge}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Specs description */}
+                      <div className="text-[9px] text-gray-400 mt-2 font-mono">
+                        {w.specs}
+                      </div>
+
+                      {/* Grip Bar & Action Row */}
+                      <div className="mt-2.5 pt-2 border-t border-white/10 flex items-center justify-between text-[9px] font-mono">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-gray-400">TRACTION:</span>
+                          <span className="text-[#00E5FF] font-bold">{w.traction}%</span>
+                        </div>
+
+                        <div className="flex items-center gap-1">
+                          {isSelected ? (
+                            <span className="text-emerald-400 font-bold flex items-center gap-1">
+                              <CheckCircle className="w-3.5 h-3.5" />
+                              MOUNTED ON VEHICLE
+                            </span>
+                          ) : (
+                            <span className="text-gray-400 hover:text-white flex items-center gap-1">
+                              EQUIP SPEC →
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* TAB CONTENT: 2. LIVERY & PAINT */}
           {activeCategory === 'livery' && (
             <div className="space-y-3">
               <div className="flex items-center justify-between">
@@ -677,45 +949,6 @@ export function StudioShowroomCanvas({
                         <div className="text-[10px] font-mono font-bold truncate">{c.name}</div>
                         {c.badge && <span className="text-[8px] text-[#FF4D00] font-mono">{c.badge}</span>}
                       </div>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* TAB CONTENT: 2. WHEELS & TYRES */}
-          {activeCategory === 'wheels' && (
-            <div className="space-y-2">
-              <span className="text-[10px] font-bold text-gray-400 uppercase font-mono block">
-                INTERCHANGEABLE WHEEL PACKAGES:
-              </span>
-              <div className="space-y-2">
-                {wheelOptions.map((w) => {
-                  const isSelected = wheelType === w.id;
-                  return (
-                    <button
-                      key={w.id}
-                      onClick={() => {
-                        playUiSound('click');
-                        setWheelType(w.id);
-                      }}
-                      className={`w-full p-2.5 rounded-xl border text-left flex items-center justify-between transition-all cursor-pointer ${
-                        isSelected
-                          ? 'border-[#FF4D00] bg-[#FF4D00]/20 text-white font-bold shadow-[0_0_12px_rgba(255,77,0,0.5)]'
-                          : 'border-white/10 text-gray-300 hover:text-white bg-white/5'
-                      }`}
-                    >
-                      <div>
-                        <div className="text-[11px] font-mono font-bold flex items-center gap-1.5">
-                          <span>{w.name}</span>
-                          <span className="text-[8px] px-1 py-0.2 rounded bg-white/10 text-[#00E5FF]">
-                            {w.tag}
-                          </span>
-                        </div>
-                        <div className="text-[9px] text-gray-400 mt-0.5">{w.sub}</div>
-                      </div>
-                      {isSelected && <CheckCircle className="w-4 h-4 text-[#FF4D00] shrink-0" />}
                     </button>
                   );
                 })}
@@ -801,53 +1034,6 @@ export function StudioShowroomCanvas({
                   onChange={(e) => {
                     playUiSound('toggle');
                     setHeadlights(e.target.checked);
-                  }}
-                  className="accent-[#FF4D00] w-4 h-4 cursor-pointer"
-                />
-              </div>
-            </div>
-          )}
-
-          {/* TAB CONTENT: 4. ARMOR & 4X4 GEAR */}
-          {activeCategory === 'armor' && (
-            <div className="space-y-2.5">
-              <span className="text-[10px] font-bold text-gray-400 uppercase font-mono block">
-                HEAVY-DUTY OVERLAND EXPEDITION ARMOR:
-              </span>
-
-              {/* Bull Bar & Winch */}
-              <div className="flex items-center justify-between bg-white/5 p-2.5 rounded-xl border border-white/10">
-                <div>
-                  <div className="text-gray-100 font-heading uppercase text-[11px] font-bold">
-                    Pre-Runner Bull Bar & Winch
-                  </div>
-                  <div className="text-[9px] text-gray-400">Tubular steel push bar + Warn electric cable winch</div>
-                </div>
-                <input
-                  type="checkbox"
-                  checked={bullBar}
-                  onChange={(e) => {
-                    playUiSound('toggle');
-                    setBullBar(e.target.checked);
-                  }}
-                  className="accent-[#FF4D00] w-4 h-4 cursor-pointer"
-                />
-              </div>
-
-              {/* Roof Expedition Rack */}
-              <div className="flex items-center justify-between bg-white/5 p-2.5 rounded-xl border border-white/10">
-                <div>
-                  <div className="text-gray-100 font-heading uppercase text-[11px] font-bold">
-                    Overland Roof Basket & Sand Boards
-                  </div>
-                  <div className="text-[9px] text-gray-400">Steel safari rack + recovery tracks & high-lift jack</div>
-                </div>
-                <input
-                  type="checkbox"
-                  checked={roofRack}
-                  onChange={(e) => {
-                    playUiSound('toggle');
-                    setRoofRack(e.target.checked);
                   }}
                   className="accent-[#FF4D00] w-4 h-4 cursor-pointer"
                 />
