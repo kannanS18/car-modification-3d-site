@@ -15,7 +15,7 @@ export default function App() {
 
   // Vehicle Customization States for the 3D Showroom Plane
   const [carModel, setCarModel] = useState('thar'); // 'thar' (new Meshy Thar) or 'ferrari'
-  const [carColor, setCarColor] = useState('#D32F2F'); // Factory Rosso Red default
+  const [carColor, setCarColor] = useState('original'); // 'original' (Factory Original Spec default)
   const [hoodColor, setHoodColor] = useState('match'); // 'match' | '#141517' (Carbon Black) | '#453825' (Bronze) | '#C2A382' (Desert Sand)
   const [roofColor, setRoofColor] = useState('#17181A'); // Factory Matte Black hardtop default
   const [wheelType, setWheelType] = useState('at_black'); // 'at_black' | 'dakar_bronze' | 'silver_alloy'

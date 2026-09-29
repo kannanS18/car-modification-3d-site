@@ -224,10 +224,7 @@ function RoofLightBar({ active, headlights }) {
 // 3D Car Vehicle Mesh Node
 function VehicleShowroom({
   carModel,
-  carColor,
-  hoodColor = 'match',
-  roofColor = '#17181A',
-  wheelType = 'at_black',
+  carColor = 'original',
   bumperLights = true,
   roofLights = true,
   headlights = true,
@@ -245,94 +242,43 @@ function VehicleShowroom({
   const ferrariScene = useMemo(() => ferrariGLTF.scene.clone(true), [ferrariGLTF.scene]);
   const tharScene = useMemo(() => tharGLTF.scene.clone(true), [tharGLTF.scene]);
 
-  // 1. Luxury PBR Metallic Body Paint (Ferrari or Thar body panels)
-  const paintMat = useMemo(
+  // Ferrari PBR Metallic Paint
+  const ferrariPaintMat = useMemo(
     () =>
       new THREE.MeshPhysicalMaterial({
-        color: new THREE.Color(carColor),
+        color: new THREE.Color(carColor === 'original' ? '#FF2200' : carColor),
         metalness: 0.85,
-        roughness: 0.22,
+        roughness: 0.18,
         clearcoat: 1.0,
-        clearcoatRoughness: 0.05,
+        clearcoatRoughness: 0.04,
         reflectivity: 0.95,
       }),
     [carColor]
   );
 
-  // 2. Hood / Bonnet Material (Match body or custom Carbon Black / Bronze / Desert Tan)
-  const effectiveHoodColor = hoodColor === 'match' ? carColor : hoodColor;
-  const hoodMat = useMemo(
-    () =>
-      new THREE.MeshPhysicalMaterial({
-        color: new THREE.Color(effectiveHoodColor),
-        metalness: hoodColor === '#141517' ? 0.35 : 0.85,
-        roughness: hoodColor === '#141517' ? 0.65 : 0.25,
-        clearcoat: hoodColor === '#141517' ? 0.35 : 0.95,
-      }),
-    [effectiveHoodColor, hoodColor]
-  );
-
-  // 3. Hardtop Roof Material (Rugged Matte Black or custom match / safari)
-  const effectiveRoofColor = roofColor === 'match' ? carColor : roofColor;
-  const roofMat = useMemo(
+  const ferrariWheelMat = useMemo(
     () =>
       new THREE.MeshStandardMaterial({
-        color: new THREE.Color(effectiveRoofColor),
-        roughness: roofColor === '#17181A' ? 0.88 : 0.38,
-        metalness: roofColor === '#17181A' ? 0.15 : 0.65,
+        color: new THREE.Color('#D4AF37'),
+        metalness: 0.9,
+        roughness: 0.2,
       }),
-    [effectiveRoofColor, roofColor]
+    []
   );
 
-  // 4. Tinted Automotive Glass
   const glassMat = useMemo(
     () =>
       new THREE.MeshPhysicalMaterial({
         color: new THREE.Color('#0A0E17'),
-        metalness: 0.15,
+        metalness: 0.1,
         roughness: 0.05,
         transmission: 0.85,
         transparent: true,
-        opacity: 0.75,
+        opacity: 0.7,
       }),
     []
   );
 
-  // 5. Wheels & Tyres Material
-  const wheelMat = useMemo(() => {
-    let rimHex = '#161719';
-    let roughness = 0.85;
-    let metalness = 0.25;
-
-    if (wheelType === 'dakar_bronze') {
-      rimHex = '#4A3B22';
-      roughness = 0.55;
-      metalness = 0.7;
-    } else if (wheelType === 'silver_alloy') {
-      rimHex = '#8A929E';
-      roughness = 0.45;
-      metalness = 0.85;
-    }
-
-    return new THREE.MeshStandardMaterial({
-      color: new THREE.Color(rimHex),
-      roughness,
-      metalness,
-    });
-  }, [wheelType]);
-
-  // 6. Rugged Bumpers & 7-Slot Grille
-  const bumperMat = useMemo(
-    () =>
-      new THREE.MeshStandardMaterial({
-        color: new THREE.Color('#141416'),
-        roughness: 0.82,
-        metalness: 0.2,
-      }),
-    []
-  );
-
-  // Headlight Glow Material
   const headlightMat = useMemo(
     () =>
       new THREE.MeshBasicMaterial({
@@ -348,9 +294,9 @@ function VehicleShowroom({
         child.castShadow = true;
         child.receiveShadow = true;
         if (child.name === 'body' || child.material?.name === 'Body_Color') {
-          child.material = paintMat;
+          child.material = ferrariPaintMat;
         } else if (child.name.includes('rim') || child.name.includes('wheel')) {
-          child.material = wheelMat;
+          child.material = ferrariWheelMat;
         } else if (child.name.includes('glass') || child.material?.name?.includes('Glass')) {
           child.material = glassMat;
         } else if (child.name.includes('light') || child.name === 'leds') {
@@ -358,67 +304,79 @@ function VehicleShowroom({
         }
       }
     });
-  }, [ferrariScene, paintMat, wheelMat, glassMat, headlightMat]);
+  }, [ferrariScene, ferrariPaintMat, ferrariWheelMat, glassMat, headlightMat]);
 
-  // Apply discrete materials to Thar model with 6-group spatial partitioning
+  // Shader Uniforms for Thar Body Paint Customization (Preserves 100% of authentic textured wheels, roof, glass, and bumpers)
+  const uniformsRef = useRef({
+    uBodyColor: { value: new THREE.Color('#D32F2F') },
+    uColorActive: { value: 0.0 },
+  });
+
+  // Dynamically update uniforms when carColor changes
+  useEffect(() => {
+    if (!carColor || carColor === 'original' || carColor === 'default') {
+      uniformsRef.current.uColorActive.value = 0.0;
+    } else {
+      uniformsRef.current.uColorActive.value = 1.0;
+      uniformsRef.current.uBodyColor.value.set(carColor);
+    }
+  }, [carColor]);
+
+  // Apply original textured material to Thar with intelligent paint chrominance-masking shader
   useEffect(() => {
     tharScene.traverse((child) => {
-      if (child.isMesh && child.geometry) {
-        const geo = child.geometry;
-        if (!geo.attributes.normal) {
-          geo.computeVertexNormals();
-        }
-
-        const pos = geo.attributes.position.array;
-        const idx = geo.index ? geo.index.array : null;
-
-        if (idx && !child.userData.partitioned) {
-          child.userData.partitioned = true;
-
-          const g0 = [], g1 = [], g2 = [], g3 = [], g4 = [], g5 = [];
-
-          for (let i = 0; i < idx.length; i += 3) {
-            const i1 = idx[i], i2 = idx[i + 1], i3 = idx[i + 2];
-            const cx = (pos[i1 * 3] + pos[i2 * 3] + pos[i3 * 3]) / 3;
-            const cy = (pos[i1 * 3 + 1] + pos[i2 * 3 + 1] + pos[i3 * 3 + 1]) / 3;
-            const cz = (pos[i1 * 3 + 2] + pos[i2 * 3 + 2] + pos[i3 * 3 + 2]) / 3;
-
-            if (cy < -0.16) {
-              g4.push(i1, i2, i3); // 4: Wheels & tyres
-            } else if (cy > 0.28 && cx > -0.25 && cx < 0.78) {
-              g2.push(i1, i2, i3); // 2: Roof / hardtop
-            } else if (cx >= -0.82 && cx <= -0.32 && cy >= 0.08 && cy <= 0.26 && Math.abs(cz) <= 0.36) {
-              g1.push(i1, i2, i3); // 1: Hood / Bonnet
-            } else if (cy > 0.08 && cy <= 0.28 && cx > -0.3 && cx < 0.75 && Math.abs(cz) > 0.35) {
-              g3.push(i1, i2, i3); // 3: Side windows
-            } else if (cy > 0.06 && cy <= 0.28 && cx >= -0.35 && cx <= -0.15 && Math.abs(cz) < 0.4) {
-              g3.push(i1, i2, i3); // 3: Windshield
-            } else if (cx < -0.82 || (cx > 0.88 && cy < 0.1)) {
-              g5.push(i1, i2, i3); // 5: Bumpers & grille
-            } else {
-              g0.push(i1, i2, i3); // 0: Main Body panels
-            }
-          }
-
-          const sorted = new Uint32Array(idx.length);
-          let offset = 0;
-
-          sorted.set(g0, offset); geo.addGroup(offset, g0.length, 0); offset += g0.length;
-          sorted.set(g1, offset); geo.addGroup(offset, g1.length, 1); offset += g1.length;
-          sorted.set(g2, offset); geo.addGroup(offset, g2.length, 2); offset += g2.length;
-          sorted.set(g3, offset); geo.addGroup(offset, g3.length, 3); offset += g3.length;
-          sorted.set(g4, offset); geo.addGroup(offset, g4.length, 4); offset += g4.length;
-          sorted.set(g5, offset); geo.addGroup(offset, g5.length, 5); offset += g5.length;
-
-          geo.setIndex(new THREE.BufferAttribute(sorted, 1));
-        }
-
-        child.material = [paintMat, hoodMat, roofMat, glassMat, wheelMat, bumperMat];
+      if (child.isMesh && child.material) {
         child.castShadow = true;
         child.receiveShadow = true;
+
+        const mat = child.material;
+        if (!mat.userData.customShaderAttached) {
+          mat.userData.customShaderAttached = true;
+
+          if (mat.map) {
+            mat.map.anisotropy = 16;
+            mat.map.needsUpdate = true;
+          }
+
+          mat.envMapIntensity = 1.35;
+          mat.roughness = 0.45;
+          mat.metalness = 0.55;
+
+          mat.onBeforeCompile = (shader) => {
+            shader.uniforms.uBodyColor = uniformsRef.current.uBodyColor;
+            shader.uniforms.uColorActive = uniformsRef.current.uColorActive;
+
+            shader.fragmentShader =
+              'uniform vec3 uBodyColor;\nuniform float uColorActive;\n' +
+              shader.fragmentShader;
+
+            shader.fragmentShader = shader.fragmentShader.replace(
+              '#include <map_fragment>',
+              [
+                '#ifdef USE_MAP',
+                '  vec4 sampledDiffuseColor = texture2D( map, vMapUv );',
+                '  #ifdef DECODE_VIDEO_TEXTURE',
+                '    sampledDiffuseColor = vec4( mix( pow( sampledDiffuseColor.rgb * 0.9478672986 + vec3( 0.0521327014 ), vec3( 2.4 ) ), sampledDiffuseColor.rgb * 0.0773993808, vec3( lessThanEqual( sampledDiffuseColor.rgb, vec3( 0.04045 ) ) ) ), sampledDiffuseColor.w );',
+                '  #endif',
+                '  // Detect red body paint pixels from the texture UV unwrap',
+                '  float redDominance = sampledDiffuseColor.r - max(sampledDiffuseColor.g, sampledDiffuseColor.b);',
+                '  float isBodyPaint = smoothstep(0.08, 0.22, redDominance);',
+                '  // Compute custom body paint color with realistic luminance preservation:',
+                '  float lum = dot(sampledDiffuseColor.rgb, vec3(0.299, 0.587, 0.114));',
+                '  vec3 customPaint = uBodyColor * (lum * 1.55);',
+                '  // Blend: if it is body paint and colorActive > 0, apply custom paint; otherwise keep original texture untouched:',
+                '  vec3 finalColor = mix(sampledDiffuseColor.rgb, mix(sampledDiffuseColor.rgb, customPaint, uColorActive), isBodyPaint);',
+                '  diffuseColor *= vec4(finalColor, sampledDiffuseColor.a);',
+                '#endif',
+              ].join('\n')
+            );
+          };
+
+          mat.needsUpdate = true;
+        }
       }
     });
-  }, [tharScene, paintMat, hoodMat, roofMat, glassMat, wheelMat, bumperMat]);
+  }, [tharScene]);
 
   useFrame((state, delta) => {
     if (autoRotate && groupRef.current) {
@@ -427,6 +385,7 @@ function VehicleShowroom({
   });
 
   const targetY = liftActive ? 0.8 : 0;
+  const underglowColor = carColor === 'original' ? '#FF4D00' : carColor;
 
   return (
     <group position={[0, -0.6, 0]}>
@@ -476,7 +435,7 @@ function VehicleShowroom({
         {/* Chassis Neon Underglow */}
         {underglow && (
           <pointLight
-            color={carColor}
+            color={underglowColor}
             intensity={6}
             distance={3.8}
             decay={2}
@@ -508,10 +467,7 @@ function VehicleShowroom({
 
 export function StudioShowroomCanvas({
   carModel, setCarModel,
-  carColor, setCarColor,
-  hoodColor = 'match', setHoodColor,
-  roofColor = '#17181A', setRoofColor,
-  wheelType = 'at_black', setWheelType,
+  carColor = 'original', setCarColor,
   bumperLights = true, setBumperLights,
   roofLights = true, setRoofLights,
   underglow, setUnderglow,
@@ -522,36 +478,15 @@ export function StudioShowroomCanvas({
   onOpenBooking,
 }) {
   const [toolbarOpen, setToolbarOpen] = useState(true);
-  const [activeTab, setActiveTab] = useState('body'); // 'body' | 'hood' | 'roof' | 'wheels' | 'equipment'
 
-  const bodyColors = [
-    { name: 'Factory Rosso Red', hex: '#D32F2F' },
-    { name: 'Desert Sand (Thar)', hex: '#C2A382' },
-    { name: 'Obsidian Matte Black', hex: '#111215' },
-    { name: 'Army Camo Green', hex: '#2A3D2A' },
-    { name: 'Forged Monaco Gold', hex: '#D4AF37' },
-    { name: 'Glacier Pearl White', hex: '#F1F5F9' },
-    { name: 'Riviera Electric Blue', hex: '#0284C7' },
-  ];
-
-  const hoodOptions = [
-    { id: 'match', name: 'Match Body Paint', hex: carColor },
-    { id: '#141517', name: 'Matte Carbon Black', hex: '#141517' },
-    { id: '#453825', name: 'Dakar Satin Bronze', hex: '#453825' },
-    { id: '#C2A382', name: 'Desert Sand Contrast', hex: '#C2A382' },
-  ];
-
-  const roofOptions = [
-    { id: '#17181A', name: 'Factory Rugged Black', hex: '#17181A' },
-    { id: 'match', name: 'Match Body Paint', hex: carColor },
-    { id: '#F1F5F9', name: 'Glacier White Safari', hex: '#F1F5F9' },
-    { id: '#C2A382', name: 'Desert Sand Hardtop', hex: '#C2A382' },
-  ];
-
-  const wheelOptions = [
-    { id: 'at_black', name: 'All-Terrain Mud Black', sub: 'Deep vulcanized off-road rubber' },
-    { id: 'dakar_bronze', name: 'Dakar Forged Bronze', sub: 'Rally beadlock alloy rims' },
-    { id: 'silver_alloy', name: 'Machined Titanium Alloy', sub: 'Brushed multi-spoke face' },
+  const colors = [
+    { name: 'Factory Original Spec (Red & Black)', hex: 'original', displayHex: '#D32F2F', badge: 'OEM' },
+    { name: 'Desert Sand (Thar)', hex: '#C2A382', displayHex: '#C2A382' },
+    { name: 'Obsidian Stealth Black', hex: '#111215', displayHex: '#111215' },
+    { name: 'Army Camo Green', hex: '#2A3D2A', displayHex: '#2A3D2A' },
+    { name: 'Forged Monaco Gold', hex: '#D4AF37', displayHex: '#D4AF37' },
+    { name: 'Glacier Pearl White', hex: '#F1F5F9', displayHex: '#F1F5F9' },
+    { name: 'Riviera Electric Blue', hex: '#0284C7', displayHex: '#0284C7' },
   ];
 
   return (
@@ -584,9 +519,6 @@ export function StudioShowroomCanvas({
           <VehicleShowroom
             carModel={carModel}
             carColor={carColor}
-            hoodColor={hoodColor}
-            roofColor={roofColor}
-            wheelType={wheelType}
             bumperLights={bumperLights}
             roofLights={roofLights}
             headlights={headlights}
@@ -654,7 +586,7 @@ export function StudioShowroomCanvas({
         </button>
 
         {toolbarOpen && (
-          <div className="mt-3 p-4 sm:p-5 rounded-2xl glass-panel shadow-2xl border border-[#FF4D00]/40 w-[340px] sm:w-[420px] space-y-4 backdrop-blur-2xl bg-black/90">
+          <div className="mt-3 p-4 sm:p-5 rounded-2xl glass-panel shadow-2xl border border-[#FF4D00]/40 w-[340px] sm:w-[400px] space-y-4 backdrop-blur-2xl bg-black/90">
             {/* Header */}
             <div className="flex items-center justify-between border-b border-white/10 pb-2">
               <span className="text-xs font-bold tracking-widest uppercase text-[#FF4D00] font-heading flex items-center gap-2">
@@ -669,266 +601,128 @@ export function StudioShowroomCanvas({
               </button>
             </div>
 
-            {/* Customization Category Tabs (For Thar) */}
-            {carModel === 'thar' && (
-              <div className="flex items-center gap-1.5 overflow-x-auto pb-1 border-b border-white/10 text-[10px] font-mono uppercase tracking-wider">
-                {[
-                  { id: 'body', label: 'Body Paint' },
-                  { id: 'hood', label: 'Hood' },
-                  { id: 'roof', label: 'Roof' },
-                  { id: 'wheels', label: 'Tyres' },
-                  { id: 'equipment', label: '4x4 Gear' },
-                ].map((t) => (
-                  <button
-                    key={t.id}
-                    onClick={() => setActiveTab(t.id)}
-                    className={`px-2.5 py-1 rounded-md transition-all shrink-0 cursor-pointer ${
-                      activeTab === t.id
-                        ? 'bg-[#FF4D00] text-white font-bold'
-                        : 'text-gray-400 hover:text-white bg-white/5'
-                    }`}
-                  >
-                    {t.label}
-                  </button>
-                ))}
-              </div>
-            )}
-
-            {/* TAB 1: BODY PAINT */}
-            {(activeTab === 'body' || carModel !== 'thar') && (
-              <div>
-                <label className="text-[10px] font-bold text-gray-400 uppercase block mb-1.5 font-mono">
+            {/* SECTION 1: BODY PAINT COLOR */}
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="text-[10px] font-bold text-gray-400 uppercase font-mono">
                   Body Paint Color
                 </label>
-                <div className="flex flex-wrap gap-2">
-                  {bodyColors.map((c) => (
+                <span className="text-[10px] text-[#FF4D00] font-mono">
+                  {colors.find((c) => c.hex === carColor)?.name || 'Custom'}
+                </span>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {colors.map((c) => {
+                  const isSelected = carColor === c.hex;
+                  return (
                     <button
                       key={c.hex}
                       onClick={() => setCarColor(c.hex)}
                       title={c.name}
-                      style={{ backgroundColor: c.hex }}
-                      className={`w-7 h-7 rounded-full border-2 transition-all cursor-pointer ${
-                        carColor === c.hex
-                          ? 'border-white scale-115 shadow-[0_0_12px_rgba(255,255,255,0.7)]'
-                          : 'border-transparent opacity-80 hover:opacity-100'
+                      style={{ backgroundColor: c.displayHex }}
+                      className={`relative w-7 h-7 rounded-full border-2 transition-all cursor-pointer ${
+                        isSelected
+                          ? 'border-white scale-120 shadow-[0_0_14px_rgba(255,255,255,0.8)]'
+                          : 'border-transparent opacity-80 hover:opacity-100 hover:scale-105'
                       }`}
-                    />
-                  ))}
-                </div>
+                    >
+                      {c.badge && (
+                        <span className="absolute -top-1.5 -right-1.5 text-[8px] bg-[#FF4D00] text-white px-1 rounded-full font-bold">
+                          {c.badge}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
               </div>
-            )}
+            </div>
 
-            {/* TAB 2: HOOD STYLING (Thar only) */}
-            {carModel === 'thar' && activeTab === 'hood' && (
-              <div className="space-y-2">
-                <label className="text-[10px] font-bold text-gray-400 uppercase block font-mono">
-                  Bonnet / Hood Styling
-                </label>
-                <div className="grid grid-cols-2 gap-2">
-                  {hoodOptions.map((h) => {
-                    const isSelected = hoodColor === h.id;
-                    return (
-                      <button
-                        key={h.id}
-                        onClick={() => setHoodColor(h.id)}
-                        className={`p-2 rounded-lg border text-left flex items-center gap-2 transition-all cursor-pointer ${
-                          isSelected
-                            ? 'border-[#FF4D00] bg-[#FF4D00]/20 text-white font-bold'
-                            : 'border-white/10 text-gray-300 hover:text-white bg-white/5'
-                        }`}
-                      >
-                        <span
-                          className="w-4 h-4 rounded-full shrink-0 border border-white/30"
-                          style={{ backgroundColor: h.hex }}
-                        />
-                        <span className="text-[10px] font-mono leading-tight">{h.name}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
+            {/* SECTION 2: 4x4 OFF-ROAD EQUIPMENT & LIGHTING */}
+            <div className="space-y-2.5 pt-2 border-t border-white/10">
+              <label className="text-[10px] font-bold text-gray-400 uppercase block font-mono">
+                Auxiliary 4x4 Gear & Lighting
+              </label>
 
-            {/* TAB 3: ROOF / HARDTOP (Thar only) */}
-            {carModel === 'thar' && activeTab === 'roof' && (
-              <div className="space-y-2">
-                <label className="text-[10px] font-bold text-gray-400 uppercase block font-mono">
-                  Hardtop Roof Styling
-                </label>
-                <div className="grid grid-cols-2 gap-2">
-                  {roofOptions.map((r) => {
-                    const isSelected = roofColor === r.id;
-                    return (
-                      <button
-                        key={r.id}
-                        onClick={() => setRoofColor(r.id)}
-                        className={`p-2 rounded-lg border text-left flex items-center gap-2 transition-all cursor-pointer ${
-                          isSelected
-                            ? 'border-[#FF4D00] bg-[#FF4D00]/20 text-white font-bold'
-                            : 'border-white/10 text-gray-300 hover:text-white bg-white/5'
-                        }`}
-                      >
-                        <span
-                          className="w-4 h-4 rounded-full shrink-0 border border-white/30"
-                          style={{ backgroundColor: r.hex }}
-                        />
-                        <span className="text-[10px] font-mono leading-tight">{r.name}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* TAB 4: TYRES & WHEELS */}
-            {activeTab === 'wheels' && (
-              <div className="space-y-2">
-                <label className="text-[10px] font-bold text-gray-400 uppercase block font-mono">
-                  Tyres & Wheel Setup
-                </label>
-                <div className="space-y-1.5">
-                  {wheelOptions.map((w) => {
-                    const isSelected = wheelType === w.id;
-                    return (
-                      <button
-                        key={w.id}
-                        onClick={() => setWheelType(w.id)}
-                        className={`w-full p-2.5 rounded-lg border text-left flex items-center justify-between transition-all cursor-pointer ${
-                          isSelected
-                            ? 'border-[#FF4D00] bg-[#FF4D00]/20 text-white font-bold'
-                            : 'border-white/10 text-gray-300 hover:text-white bg-white/5'
-                        }`}
-                      >
-                        <div>
-                          <div className="text-[11px] font-mono">{w.name}</div>
-                          <div className="text-[9px] text-gray-400">{w.sub}</div>
-                        </div>
-                        {isSelected && <CheckCircle className="w-4 h-4 text-[#FF4D00]" />}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* TAB 5: 4x4 OFF-ROAD EQUIPMENT & LIGHTS */}
-            {activeTab === 'equipment' && (
-              <div className="space-y-2.5">
-                <label className="text-[10px] font-bold text-gray-400 uppercase block font-mono">
-                  Auxiliary Off-Road Gear & Lighting
-                </label>
-
-                {/* Extra Bumper Lights Toggle */}
-                {carModel === 'thar' && (
-                  <div className="flex items-center justify-between text-xs bg-white/5 p-2 rounded-lg">
-                    <div>
-                      <div className="text-gray-200 font-heading uppercase text-[11px]">Front Bumper Rally Pods</div>
-                      <div className="text-[9px] text-gray-400">Twin high-intensity amber auxiliary fog lamps</div>
-                    </div>
-                    <input
-                      type="checkbox"
-                      checked={bumperLights}
-                      onChange={(e) => setBumperLights(e.target.checked)}
-                      className="accent-[#FF4D00] w-4 h-4 cursor-pointer"
-                    />
+              {/* Extra Bumper Lights Toggle */}
+              {carModel === 'thar' && (
+                <div className="flex items-center justify-between text-xs bg-white/5 p-2 rounded-lg">
+                  <div>
+                    <div className="text-gray-200 font-heading uppercase text-[11px]">Front Bumper Rally Pods</div>
+                    <div className="text-[9px] text-gray-400">Twin high-intensity amber auxiliary fog lamps</div>
                   </div>
-                )}
+                  <input
+                    type="checkbox"
+                    checked={bumperLights}
+                    onChange={(e) => setBumperLights(e.target.checked)}
+                    className="accent-[#FF4D00] w-4 h-4 cursor-pointer"
+                  />
+                </div>
+              )}
 
-                {/* Extra Roof Lights Toggle */}
-                {carModel === 'thar' && (
-                  <div className="flex items-center justify-between text-xs bg-white/5 p-2 rounded-lg">
-                    <div>
-                      <div className="text-gray-200 font-heading uppercase text-[11px]">Roof-Mounted Light Bar</div>
-                      <div className="text-[9px] text-gray-400">Aerodynamic 5-lens high-output trail projector</div>
-                    </div>
-                    <input
-                      type="checkbox"
-                      checked={roofLights}
-                      onChange={(e) => setRoofLights(e.target.checked)}
-                      className="accent-[#FF4D00] w-4 h-4 cursor-pointer"
-                    />
+              {/* Extra Roof Lights Toggle */}
+              {carModel === 'thar' && (
+                <div className="flex items-center justify-between text-xs bg-white/5 p-2 rounded-lg">
+                  <div>
+                    <div className="text-gray-200 font-heading uppercase text-[11px]">Roof-Mounted Light Bar</div>
+                    <div className="text-[9px] text-gray-400">Aerodynamic 5-lens high-output trail projector</div>
                   </div>
-                )}
-
-                {/* Neon Underglow Kit */}
-                <div className="flex items-center justify-between text-xs bg-white/5 p-2 rounded-lg">
-                  <span className="text-gray-300 font-heading uppercase text-[11px]">Neon Underglow Kit</span>
                   <input
                     type="checkbox"
-                    checked={underglow}
-                    onChange={(e) => setUnderglow(e.target.checked)}
+                    checked={roofLights}
+                    onChange={(e) => setRoofLights(e.target.checked)}
                     className="accent-[#FF4D00] w-4 h-4 cursor-pointer"
                   />
                 </div>
+              )}
 
-                {/* Projector Headlights */}
-                <div className="flex items-center justify-between text-xs bg-white/5 p-2 rounded-lg">
-                  <span className="text-gray-300 font-heading uppercase text-[11px]">Projector Headlights</span>
-                  <input
-                    type="checkbox"
-                    checked={headlights}
-                    onChange={(e) => setHeadlights(e.target.checked)}
-                    className="accent-[#FF4D00] w-4 h-4 cursor-pointer"
-                  />
-                </div>
-
-                {/* Turntable 360 */}
-                <div className="flex items-center justify-between text-xs bg-white/5 p-2 rounded-lg">
-                  <span className="text-gray-300 font-heading uppercase text-[11px]">Turntable 360 Spin</span>
-                  <input
-                    type="checkbox"
-                    checked={autoRotate}
-                    onChange={(e) => setAutoRotate(e.target.checked)}
-                    className="accent-[#FF4D00] w-4 h-4 cursor-pointer"
-                  />
-                </div>
-
-                {/* Hydraulic Hoist Elevation */}
-                <div className="flex items-center justify-between text-xs bg-white/5 p-2 rounded-lg">
-                  <span className="text-gray-300 font-heading uppercase text-[11px]">Hydraulic Hoist Elevation</span>
-                  <button
-                    onClick={() => setLiftActive(!liftActive)}
-                    className={`px-3 py-1 rounded-md text-[10px] font-mono uppercase font-bold transition-all cursor-pointer ${
-                      liftActive
-                        ? 'bg-blue-600 text-white shadow-[0_0_10px_rgba(37,99,235,0.7)]'
-                        : 'bg-white/10 text-gray-300 hover:bg-white/20'
-                    }`}
-                  >
-                    {liftActive ? 'Lower' : 'Elevate'}
-                  </button>
-                </div>
+              {/* Neon Underglow Kit */}
+              <div className="flex items-center justify-between text-xs bg-white/5 p-2 rounded-lg">
+                <span className="text-gray-300 font-heading uppercase text-[11px]">Neon Underglow Kit</span>
+                <input
+                  type="checkbox"
+                  checked={underglow}
+                  onChange={(e) => setUnderglow(e.target.checked)}
+                  className="accent-[#FF4D00] w-4 h-4 cursor-pointer"
+                />
               </div>
-            )}
 
-            {/* Quick General Toggles (Visible across tabs) */}
-            {activeTab !== 'equipment' && (
-              <div className="pt-2 border-t border-white/10 flex items-center justify-between text-[11px] font-mono">
+              {/* Projector Headlights */}
+              <div className="flex items-center justify-between text-xs bg-white/5 p-2 rounded-lg">
+                <span className="text-gray-300 font-heading uppercase text-[11px]">Projector Headlights</span>
+                <input
+                  type="checkbox"
+                  checked={headlights}
+                  onChange={(e) => setHeadlights(e.target.checked)}
+                  className="accent-[#FF4D00] w-4 h-4 cursor-pointer"
+                />
+              </div>
+
+              {/* Turntable 360 */}
+              <div className="flex items-center justify-between text-xs bg-white/5 p-2 rounded-lg">
+                <span className="text-gray-300 font-heading uppercase text-[11px]">Turntable 360 Spin</span>
+                <input
+                  type="checkbox"
+                  checked={autoRotate}
+                  onChange={(e) => setAutoRotate(e.target.checked)}
+                  className="accent-[#FF4D00] w-4 h-4 cursor-pointer"
+                />
+              </div>
+
+              {/* Hydraulic Hoist Elevation */}
+              <div className="flex items-center justify-between text-xs bg-white/5 p-2 rounded-lg">
+                <span className="text-gray-300 font-heading uppercase text-[11px]">Hydraulic Hoist Elevation</span>
                 <button
-                  onClick={() => setHeadlights(!headlights)}
-                  className={`px-2.5 py-1 rounded border transition-all cursor-pointer ${
-                    headlights ? 'border-[#FF4D00] text-[#FF4D00]' : 'border-white/10 text-gray-400'
+                  onClick={() => setLiftActive(!liftActive)}
+                  className={`px-3 py-1 rounded-md text-[10px] font-mono uppercase font-bold transition-all cursor-pointer ${
+                    liftActive
+                      ? 'bg-blue-600 text-white shadow-[0_0_10px_rgba(37,99,235,0.7)]'
+                      : 'bg-white/10 text-gray-300 hover:bg-white/20'
                   }`}
                 >
-                  💡 Lights: {headlights ? 'ON' : 'OFF'}
-                </button>
-                <button
-                  onClick={() => setUnderglow(!underglow)}
-                  className={`px-2.5 py-1 rounded border transition-all cursor-pointer ${
-                    underglow ? 'border-[#FF4D00] text-[#FF4D00]' : 'border-white/10 text-gray-400'
-                  }`}
-                >
-                  ✨ Glow: {underglow ? 'ON' : 'OFF'}
-                </button>
-                <button
-                  onClick={() => setAutoRotate(!autoRotate)}
-                  className={`px-2.5 py-1 rounded border transition-all cursor-pointer ${
-                    autoRotate ? 'border-[#FF4D00] text-[#FF4D00]' : 'border-white/10 text-gray-400'
-                  }`}
-                >
-                  🔄 Spin: {autoRotate ? 'ON' : 'OFF'}
+                  {liftActive ? 'Lower' : 'Elevate'}
                 </button>
               </div>
-            )}
+            </div>
 
             {/* Commission CTA Button */}
             <div className="pt-2 border-t border-white/10">
