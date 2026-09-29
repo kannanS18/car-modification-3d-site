@@ -3,25 +3,26 @@
 @tailwind utilities;
 
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #0B0B0C;
+  background: #080B11;
 }
 ::-webkit-scrollbar-thumb {
-  background: #FF4D00;
+  background: #00E5FF;
   border-radius: 4px;
 }
 
 .glass-panel {
-  background: rgba(20, 20, 22, 0.82);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 77, 0, 0.2);
+  background: rgba(11, 16, 26, 0.88);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(0, 229, 255, 0.25);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.7);
 }
 
 .theme-gradient-text {
-  background: linear-gradient(135deg, #FF4D00, #D4AF37);
+  background: linear-gradient(135deg, #00E5FF, #38BDF8, #818CF8);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }

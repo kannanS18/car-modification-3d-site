@@ -3,18 +3,18 @@ import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls, Environment, Html, useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 import {
-  Sparkles,
-  CheckCircle,
   Crosshair,
   Zap,
   Check,
   Shield,
   Lightbulb,
   Disc,
-  Activity,
   ArrowUpRight,
   Gauge,
   Volume2,
+  CheckCircle,
+  Eye,
+  Sliders,
 } from 'lucide-react';
 import {
   UserWheelAssembly,
@@ -37,32 +37,32 @@ const playUiSound = (type = 'click') => {
       osc.type = 'sine';
       osc.frequency.setValueAtTime(880, ctx.currentTime);
       osc.frequency.exponentialRampToValueAtTime(1400, ctx.currentTime + 0.035);
-      gain.gain.setValueAtTime(0.08, ctx.currentTime);
+      gain.gain.setValueAtTime(0.07, ctx.currentTime);
       gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.04);
       osc.start();
       osc.stop(ctx.currentTime + 0.04);
     } else if (type === 'tab') {
       osc.type = 'triangle';
-      osc.frequency.setValueAtTime(520, ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(820, ctx.currentTime + 0.05);
-      gain.gain.setValueAtTime(0.09, ctx.currentTime);
+      osc.frequency.setValueAtTime(540, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.05);
+      gain.gain.setValueAtTime(0.08, ctx.currentTime);
       gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.06);
       osc.start();
       osc.stop(ctx.currentTime + 0.06);
     } else if (type === 'toggle') {
-      osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(400, ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(750, ctx.currentTime + 0.06);
-      gain.gain.setValueAtTime(0.07, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.07);
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(440, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(780, ctx.currentTime + 0.05);
+      gain.gain.setValueAtTime(0.06, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.06);
       osc.start();
-      osc.stop(ctx.currentTime + 0.07);
+      osc.stop(ctx.currentTime + 0.06);
     } else if (type === 'spin' || type === 'spawn') {
-      // Futuristic motor spool-up & lock sound
+      // Futuristic motor spool-up & snap sound
       osc.type = 'sawtooth';
       osc.frequency.setValueAtTime(180, ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(980, ctx.currentTime + 0.32);
-      gain.gain.setValueAtTime(0.12, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(980, ctx.currentTime + 0.3);
+      gain.gain.setValueAtTime(0.1, ctx.currentTime);
       gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
       osc.start();
       osc.stop(ctx.currentTime + 0.35);
@@ -72,8 +72,8 @@ const playUiSound = (type = 'click') => {
   }
 };
 
-// Sparks / Embers Particle Effect (Optimized low-count)
-function StudioParticles({ count = 20 }) {
+// Gentle Cyan Sparks / Ambient Embers
+function StudioParticles({ count = 22 }) {
   const particles = useMemo(() => {
     const temp = [];
     for (let i = 0; i < count; i++) {
@@ -81,8 +81,8 @@ function StudioParticles({ count = 20 }) {
         x: (Math.random() - 0.5) * 8,
         y: Math.random() * 3.5,
         z: (Math.random() - 0.5) * 8,
-        speedY: 0.01 + Math.random() * 0.02,
-        speedX: (Math.random() - 0.5) * 0.01,
+        speedY: 0.008 + Math.random() * 0.015,
+        speedX: (Math.random() - 0.5) * 0.008,
       });
     }
     return temp;
@@ -114,10 +114,10 @@ function StudioParticles({ count = 20 }) {
         />
       </bufferGeometry>
       <pointsMaterial
-        color="#FF6B2B"
-        size={0.06}
+        color="#00E5FF"
+        size={0.05}
         transparent
-        opacity={0.8}
+        opacity={0.75}
         blending={THREE.AdditiveBlending}
       />
     </points>
@@ -152,38 +152,32 @@ function SingleWheelDisplay({ wheelType }) {
   );
 }
 
-// Mini 3D Turntable showing standalone parts alone on screen with interactive tabs
+// Mini 3D Turntable showing standalone parts alone on screen with 3 interactive pills
 function MiniWheelTurntable({ wheelType, setWheelType, onOpenSandbox }) {
-  const wheelLabels = {
-    user_custom: 'User Master Wheel Assembly (rim.glb + tyre1.glb)',
-    user_rim: 'User CAD Alloy Wheel Rim (rim.glb • 763k Tris)',
-    user_tyre: 'User 3D Deep Tread Off-Road Tyre (tyre1.glb • 3.56M Tris)',
-  };
-
   return (
-    <div className="bg-gradient-to-b from-black/95 to-[#121316] p-3 rounded-xl border border-[#FF4D00]/40 shadow-xl flex flex-col gap-2">
+    <div className="bg-[#090D16] p-2.5 rounded-xl border border-[#00E5FF]/30 shadow-lg flex flex-col gap-1.5">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1.5">
-          <div className="w-2 h-2 rounded-full bg-[#00E5FF] animate-pulse" />
-          <span className="text-[10px] font-mono font-bold tracking-widest text-white uppercase">
-            STANDALONE 3D PARTS VIEWER
+          <div className="w-1.5 h-1.5 rounded-full bg-[#00E5FF] animate-pulse" />
+          <span className="text-[9px] font-mono font-bold tracking-wider text-gray-200 uppercase">
+            3D PARTS VIEWER
           </span>
         </div>
-        <span className="text-[9px] font-mono font-bold text-[#FF4D00] bg-[#FF4D00]/10 px-1.5 py-0.5 rounded border border-[#FF4D00]/30">
-          360° SPIN & ORBIT
+        <span className="text-[8px] font-mono font-bold text-[#00E5FF] bg-[#00E5FF]/10 px-1.5 py-0.2 rounded border border-[#00E5FF]/30">
+          360° ORBIT
         </span>
       </div>
 
       {/* Part Switcher Pill Tabs directly inside widget */}
-      <div className="grid grid-cols-3 gap-1 bg-black/60 p-1 rounded-lg border border-white/10">
+      <div className="grid grid-cols-3 gap-1 bg-black/60 p-0.5 rounded-lg border border-white/10">
         <button
           onClick={() => {
             playUiSound('tab');
             setWheelType('user_custom');
           }}
-          className={`py-1 px-1 rounded text-[9px] font-mono font-bold transition-all cursor-pointer flex items-center justify-center gap-1 ${
+          className={`py-1 px-1 rounded text-[8px] font-mono font-bold transition-all cursor-pointer flex items-center justify-center gap-1 ${
             wheelType === 'user_custom'
-              ? 'bg-[#FF4D00] text-white shadow-[0_0_8px_#FF4D00]'
+              ? 'bg-[#00E5FF] text-black shadow-[0_0_8px_#00E5FF]'
               : 'text-gray-400 hover:text-white hover:bg-white/10'
           }`}
         >
@@ -194,9 +188,9 @@ function MiniWheelTurntable({ wheelType, setWheelType, onOpenSandbox }) {
             playUiSound('tab');
             setWheelType('user_rim');
           }}
-          className={`py-1 px-1 rounded text-[9px] font-mono font-bold transition-all cursor-pointer flex items-center justify-center gap-1 ${
+          className={`py-1 px-1 rounded text-[8px] font-mono font-bold transition-all cursor-pointer flex items-center justify-center gap-1 ${
             wheelType === 'user_rim'
-              ? 'bg-[#FF4D00] text-white shadow-[0_0_8px_#FF4D00]'
+              ? 'bg-[#00E5FF] text-black shadow-[0_0_8px_#00E5FF]'
               : 'text-gray-400 hover:text-white hover:bg-white/10'
           }`}
         >
@@ -207,9 +201,9 @@ function MiniWheelTurntable({ wheelType, setWheelType, onOpenSandbox }) {
             playUiSound('tab');
             setWheelType('user_tyre');
           }}
-          className={`py-1 px-1 rounded text-[9px] font-mono font-bold transition-all cursor-pointer flex items-center justify-center gap-1 ${
+          className={`py-1 px-1 rounded text-[8px] font-mono font-bold transition-all cursor-pointer flex items-center justify-center gap-1 ${
             wheelType === 'user_tyre'
-              ? 'bg-[#FF4D00] text-white shadow-[0_0_8px_#FF4D00]'
+              ? 'bg-[#00E5FF] text-black shadow-[0_0_8px_#00E5FF]'
               : 'text-gray-400 hover:text-white hover:bg-white/10'
           }`}
         >
@@ -218,44 +212,103 @@ function MiniWheelTurntable({ wheelType, setWheelType, onOpenSandbox }) {
       </div>
 
       {/* 3D Mini Viewport with 3/4 Perspective Camera & Orbit Controls */}
-      <div className="w-full h-32 rounded-lg bg-black/80 border border-white/10 relative overflow-hidden flex items-center justify-center">
+      <div className="w-full h-24 rounded-lg bg-black/70 border border-white/10 relative overflow-hidden flex items-center justify-center">
         <Canvas
           camera={{ position: [0.22, 0.1, 0.44], fov: 40 }}
           gl={{ antialias: true, alpha: true, powerPreference: 'low-power' }}
           dpr={1}
         >
-          <ambientLight intensity={1.4} />
+          <ambientLight intensity={1.5} />
           <directionalLight position={[3, 3, 3]} intensity={3.0} />
-          <directionalLight position={[-3, -1, -2]} intensity={1.2} color="#FF6B2B" />
+          <directionalLight position={[-3, -1, -2]} intensity={1.2} color="#00E5FF" />
           <pointLight position={[0, 0, 1.2]} intensity={2.5} color="#FFF" />
           <SingleWheelDisplay wheelType={wheelType} />
           <OrbitControls enableZoom={false} enablePan={false} dampingFactor={0.1} />
         </Canvas>
-        <div className="absolute bottom-1 right-2 text-[8px] font-mono text-gray-400 pointer-events-none">
-          DRAG TO ORBIT
+        <div className="absolute bottom-1 right-2 text-[7px] font-mono text-gray-500 pointer-events-none">
+          DRAG TO ROTATE
         </div>
       </div>
+    </div>
+  );
+}
 
-      <div className="flex items-center justify-between text-[10px] font-mono">
-        <div className="text-white font-bold truncate">
-          {wheelLabels[wheelType] || 'Selected 3D Part'}
-        </div>
-      </div>
+// 3D Miniature Model Node for the 2-Car Selector Cards
+function MiniCarModel({ model }) {
+  const baseUrl = import.meta.env.BASE_URL || '/';
+  const tharGLTF = useGLTF(`${baseUrl}models/thar.glb`);
+  const ferrariGLTF = useGLTF(`${baseUrl}models/ferrari.glb`);
 
-      {onOpenSandbox && (
-        <button
-          onClick={onOpenSandbox}
-          className="mt-0.5 w-full py-1.5 rounded-lg border border-[#00E5FF]/40 bg-[#00E5FF]/10 hover:bg-[#00E5FF]/20 text-[#00E5FF] hover:text-white text-[10px] font-mono font-bold uppercase transition-all flex items-center justify-center gap-1.5 cursor-pointer"
-        >
-          <span>🔬 Inspect in 3D Model Sandbox</span>
-        </button>
+  const tharScene = useMemo(() => tharGLTF.scene.clone(true), [tharGLTF.scene]);
+  const ferrariScene = useMemo(() => ferrariGLTF.scene.clone(true), [ferrariGLTF.scene]);
+
+  const groupRef = useRef();
+
+  useFrame((_, delta) => {
+    if (groupRef.current) {
+      groupRef.current.rotation.y += delta * 0.85;
+    }
+  });
+
+  return (
+    <group ref={groupRef}>
+      {model === 'thar' ? (
+        <group scale={0.72} position={[0, -0.05, 0]} rotation={[0, -Math.PI / 2, 0]}>
+          <primitive object={tharScene} />
+        </group>
+      ) : (
+        <group scale={0.38} position={[0, -0.08, 0]} rotation={[0, 0, 0]}>
+          <primitive object={ferrariScene} />
+        </group>
       )}
+    </group>
+  );
+}
+
+// Sleek 3D Vehicle Selector Card with Live Rotating Miniature Model
+function VehicleSelectorCard({ model, name, subtitle, isActive, onClick }) {
+  return (
+    <div
+      onClick={onClick}
+      className={`group relative p-2 rounded-2xl border transition-all cursor-pointer flex flex-col items-center justify-between w-36 sm:w-40 h-28 backdrop-blur-xl ${
+        isActive
+          ? 'border-[#00E5FF] bg-gradient-to-b from-[#00E5FF]/20 to-[#0A0E1A]/95 shadow-[0_0_22px_rgba(0,229,255,0.4)] scale-105'
+          : 'border-white/10 hover:border-[#00E5FF]/40 bg-[#090D16]/80 hover:bg-[#090D16]'
+      }`}
+    >
+      {/* Active Indicator Pin */}
+      {isActive && (
+        <div className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#00E5FF] shadow-[0_0_8px_#00E5FF] animate-pulse" />
+      )}
+
+      {/* Mini 3D Viewport with Actual Car Model */}
+      <div className="w-full h-16 rounded-xl overflow-hidden relative flex items-center justify-center bg-black/40">
+        <Canvas
+          camera={{ position: [2.2, 1.2, 2.5], fov: 40 }}
+          gl={{ antialias: false, alpha: true, powerPreference: 'low-power' }}
+          dpr={1}
+        >
+          <ambientLight intensity={1.6} />
+          <directionalLight position={[3, 3, 3]} intensity={2.5} />
+          <directionalLight position={[-3, -1, -2]} intensity={1.2} color="#00E5FF" />
+          <MiniCarModel model={model} />
+        </Canvas>
+      </div>
+
+      {/* Text Info */}
+      <div className="text-center w-full">
+        <div className={`text-[10px] font-mono font-bold leading-tight ${isActive ? 'text-white' : 'text-gray-300'}`}>
+          {name}
+        </div>
+        <div className="text-[7px] font-mono text-[#00E5FF] font-semibold tracking-wider uppercase">
+          {subtitle}
+        </div>
+      </div>
     </div>
   );
 }
 
 // 3D Vehicle Node on Showroom Plane
-// (SUPPORTS BOTH MAHINDRA THAR 4x4 AND SUPERCAR FERRARI GT3 WITH SPIN & SCALE-UP ENTRANCE)
 function VehicleShowroom({
   carModel = 'thar',
   carColor = 'original',
@@ -415,7 +468,7 @@ function VehicleShowroom({
   });
 
   const targetY = liftActive ? 0.8 : 0;
-  const underglowColor = (!carColor || carColor === 'original') ? '#FF4D00' : carColor;
+  const underglowColor = (!carColor || carColor === 'original') ? '#00E5FF' : carColor;
 
   return (
     <group position={[0, -0.6, 0]}>
@@ -441,7 +494,7 @@ function VehicleShowroom({
         {headlights && (
           <group position={carModel === 'thar' ? [0, 0.4, 2.2] : [0, 0.3, 2.0]}>
             <spotLight
-              color="#FFF8E7"
+              color="#F0F9FF"
               intensity={4.5}
               angle={0.6}
               penumbra={0.5}
@@ -449,7 +502,7 @@ function VehicleShowroom({
               target-position={[-0.7, -0.5, 6]}
             />
             <spotLight
-              color="#FFF8E7"
+              color="#F0F9FF"
               intensity={4.5}
               angle={0.6}
               penumbra={0.5}
@@ -470,17 +523,17 @@ function VehicleShowroom({
         )}
       </group>
 
-      {/* Floating Sparks */}
-      <StudioParticles count={20} />
+      {/* Floating Cyan Sparks */}
+      <StudioParticles count={22} />
 
-      {/* Sleek Dark Showroom Floor Plane */}
+      {/* Sleek Midnight Reflective Floor Plane */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 0]} receiveShadow>
         <planeGeometry args={[32, 32]} />
-        <meshStandardMaterial color="#060607" roughness={0.18} metalness={0.82} />
+        <meshStandardMaterial color="#080C14" roughness={0.16} metalness={0.85} />
       </mesh>
 
-      {/* Glowing Automotive Grid Floor */}
-      <gridHelper args={[24, 24, '#FF4D00', '#1F1F24']} position={[0, 0.005, 0]} />
+      {/* Glowing Pleasant Cyan Grid Floor */}
+      <gridHelper args={[24, 24, '#00E5FF', '#121A2A']} position={[0, 0.005, 0]} />
     </group>
   );
 }
@@ -496,8 +549,7 @@ export function StudioShowroomCanvas({
   onOpenBooking,
   onOpenSandbox,
 }) {
-  const [activeCategory, setActiveCategory] = useState('mods'); // 'mods' | 'livery' | 'chassis'
-  const [vehicleTab, setVehicleTab] = useState(carModel || 'thar'); // 'thar' | 'ferrari'
+  const [activeTab, setActiveTab] = useState('paint'); // 'paint' | 'controls' | 'mods'
   const [selectedMods, setSelectedMods] = useState({
     wheels: true,
     lights: true,
@@ -513,194 +565,47 @@ export function StudioShowroomCanvas({
     setSelectedMods((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
-  // Sync tab with external carModel
-  useEffect(() => {
-    if (carModel) setVehicleTab(carModel);
-  }, [carModel]);
-
-  // Both Cars and their Authentic Preset Editions for the Floating Bubble Selector
-  const carEditions = [
-    // 1. MAHINDRA THAR 4X4 SUV
-    {
-      id: 'thar_crimson',
-      model: 'thar',
-      name: 'Thar OEM Crimson',
-      color: 'original',
-      displayColor: '#D32F2F',
-      accentColor: '#FF4D00',
-      badge: 'THAR 4X4',
-      icon: '🚙',
-      desc: 'Mahindra Thar 4x4 Factory Red & Black Spec',
-    },
-    {
-      id: 'thar_stealth',
-      model: 'thar',
-      name: 'Thar Stealth',
-      color: '#111215',
-      displayColor: '#111215',
-      accentColor: '#4B5563',
-      badge: 'THAR 4X4',
-      icon: '🖤',
-      desc: 'Mahindra Thar Midnight Matte Obsidian Edition',
-    },
-    {
-      id: 'thar_sahara',
-      model: 'thar',
-      name: 'Thar Sahara Dune',
-      color: '#C2A382',
-      displayColor: '#C2A382',
-      accentColor: '#D97706',
-      badge: 'THAR 4X4',
-      icon: '🏜️',
-      desc: 'Mahindra Thar Overland Desert Expedition Spec',
-    },
-    {
-      id: 'thar_camo',
-      model: 'thar',
-      name: 'Thar Army Camo',
-      color: '#2A3D2A',
-      displayColor: '#2A3D2A',
-      accentColor: '#15803D',
-      badge: 'THAR 4X4',
-      icon: '🌲',
-      desc: 'Mahindra Thar Tactical Military Matte Forest Drab',
-    },
-    // 2. FERRARI 458 GT3 SUPERCAR
-    {
-      id: 'ferrari_rosso',
-      model: 'ferrari',
-      name: 'Ferrari Rosso Corsa',
-      color: '#D32F2F',
-      displayColor: '#D32F2F',
-      accentColor: '#EF4444',
-      badge: 'SUPERCAR GT3',
-      icon: '🏎️',
-      desc: 'Ferrari 458 Italia GT3 Classic Italian Racing Red',
-    },
-    {
-      id: 'ferrari_giallo',
-      model: 'ferrari',
-      name: 'Ferrari Giallo Modena',
-      color: '#EAB308',
-      displayColor: '#EAB308',
-      accentColor: '#FACC15',
-      badge: 'SUPERCAR GT3',
-      icon: '⚡',
-      desc: 'Ferrari 458 Italia GT3 Racing Yellow',
-    },
-    {
-      id: 'ferrari_nero',
-      model: 'ferrari',
-      name: 'Ferrari Nero Daytona',
-      color: '#111215',
-      displayColor: '#111215',
-      accentColor: '#374151',
-      badge: 'SUPERCAR GT3',
-      icon: '🥷',
-      desc: 'Ferrari 458 Italia GT3 Stealth Carbon Black',
-    },
-    {
-      id: 'ferrari_bianco',
-      model: 'ferrari',
-      name: 'Ferrari Bianco Avus',
-      color: '#F1F5F9',
-      displayColor: '#F1F5F9',
-      accentColor: '#38BDF8',
-      badge: 'SUPERCAR GT3',
-      icon: '❄️',
-      desc: 'Ferrari 458 Italia GT3 Pearl Arctic White',
-    },
-    {
-      id: 'ferrari_azure',
-      model: 'ferrari',
-      name: 'Ferrari Blu Corsa',
-      color: '#0284C7',
-      displayColor: '#0284C7',
-      accentColor: '#00E5FF',
-      badge: 'SUPERCAR GT3',
-      icon: '🌊',
-      desc: 'Ferrari 458 Italia GT3 Metallic Riviera Azure Blue',
-    },
+  // Color Swatches tailored to each vehicle
+  const tharColors = [
+    { name: 'Factory Crimson', hex: 'original', displayHex: '#D32F2F', badge: 'OEM' },
+    { name: 'Obsidian Stealth', hex: '#111215', displayHex: '#111215', badge: 'MATTE' },
+    { name: 'Dune Sahara', hex: '#C2A382', displayHex: '#C2A382', badge: '4X4' },
+    { name: 'Tactical Camo', hex: '#2A3D2A', displayHex: '#2A3D2A', badge: 'MIL' },
+    { name: 'Monaco Gold', hex: '#D4AF37', displayHex: '#D4AF37', badge: 'ROYAL' },
+    { name: 'Glacier White', hex: '#F1F5F9', displayHex: '#F1F5F9', badge: 'SNOW' },
+    { name: 'Electric Cyan', hex: '#0284C7', displayHex: '#00E5FF', badge: 'CYBER' },
   ];
 
-  // Available Modifications Catalogue (Mentioned cleanly without altering the 3D model)
-  const availableMods = [
-    {
-      id: 'wheels',
-      name: 'Heavy-Duty Beadlock Wheels & AT Tyres',
-      category: 'WHEELS & RIMS',
-      icon: Disc,
-      specs: '18" CAD Forged Multi-Spoke Alloys with 33" Deep Lug Physical Rubber Treads',
-      badge: 'USER 3D SPEC',
-      badgeColor: '#00E5FF',
-      status: 'AVAILABLE AT WORKSHOP',
-    },
-    {
-      id: 'lights',
-      name: 'High-Power LED Off-Road Light Bar & Pods',
-      category: 'ILLUMINATION',
-      icon: Lightbulb,
-      specs: '50" Curved Quad-Row Roof Bar (50,000 Lumens) + 4x Front Bumper Amber Fog Pods',
-      badge: 'POPULAR MOD',
-      badgeColor: '#FF4D00',
-      status: 'IN STOCK',
-    },
-    {
-      id: 'bullbar',
-      name: 'Heavy-Duty Steel Bull Bar & Winch Mount',
-      category: 'ARMOR & PROTECTION',
-      icon: Shield,
-      specs: 'Laser-Cut Cold Rolled Steel with Integrated 12,000 lbs Electric Recovery Winch',
-      badge: 'EXPEDITION SPEC',
-      badgeColor: '#10B981',
-      status: 'READY TO MOUNT',
-    },
-    {
-      id: 'lift',
-      name: '+3.5" Nitrogen Reservoir Suspension Lift Kit',
-      category: 'CHASSIS & CLEARANCE',
-      icon: ArrowUpRight,
-      specs: 'Ironman 4x4 Foam Cell Shocks, Extended Control Arms & Heavy-Duty Sway Bar Links',
-      badge: '310mm CLEARANCE',
-      badgeColor: '#3B82F6',
-      status: 'CUSTOM FABRICATION',
-    },
-    {
-      id: 'audio',
-      name: 'Dual 12" Tailgate Subwoofer Audio Enclosure',
-      category: 'INTERIOR ACOUSTICS',
-      icon: Volume2,
-      specs: '2000W RMS Monoblock Class-D Amp with Sealed Weatherproof Rear Sound Stage',
-      badge: '142 dB STAGE',
-      badgeColor: '#A855F7',
-      status: 'PLUG & PLAY',
-    },
-    {
-      id: 'exhaust',
-      name: 'Valvetronic Stainless Dual-Exit Performance Exhaust',
-      category: 'POWERTRAIN & SOUND',
-      icon: Gauge,
-      specs: 'Active Valve Remote Bypass with Stage 2 ECU Calibration (+45 HP / +80 Nm)',
-      badge: '+45 HP TUNE',
-      badgeColor: '#F59E0B',
-      status: 'DYNO TESTED',
-    },
+  const ferrariColors = [
+    { name: 'Rosso Corsa Red', hex: '#D32F2F', displayHex: '#D32F2F', badge: 'CORSA' },
+    { name: 'Giallo Modena', hex: '#EAB308', displayHex: '#EAB308', badge: 'RACE' },
+    { name: 'Nero Daytona', hex: '#111215', displayHex: '#111215', badge: 'DARK' },
+    { name: 'Bianco Avus', hex: '#F1F5F9', displayHex: '#F1F5F9', badge: 'PEARL' },
+    { name: 'Blu Tour de France', hex: '#0284C7', displayHex: '#0284C7', badge: 'AZURE' },
+    { name: 'Grigio Silverstone', hex: '#4B5563', displayHex: '#4B5563', badge: 'TITAN' },
   ];
 
-  const handleCategorySwitch = (cat) => {
-    playUiSound('tab');
-    setActiveCategory(cat);
-  };
+  const activeColors = carModel === 'thar' ? tharColors : ferrariColors;
 
-  const handleSelectEdition = (edition) => {
+  // Modification upgrades (without off-roading / grip rating bars)
+  const modsList = [
+    { id: 'wheels', name: 'Forged Beadlock Alloys & AT Tyres', badge: 'WHEELS', icon: Disc },
+    { id: 'lights', name: '50" Quad Roof LED Bar & Pods', badge: 'LIGHTS', icon: Lightbulb },
+    { id: 'bullbar', name: 'Laser-Cut Winch Bull Bar Mount', badge: 'ARMOR', icon: Shield },
+    { id: 'lift', name: '+3.5" Nitrogen Reservoir Lift Kit', badge: 'CHASSIS', icon: ArrowUpRight },
+    { id: 'audio', name: 'Dual 12" Tailgate Subwoofer 2000W', badge: 'AUDIO', icon: Volume2 },
+    { id: 'exhaust', name: 'Valvetronic Stainless Cat-Back Tune', badge: 'POWER', icon: Gauge },
+  ];
+
+  const handleSelectVehicle = (model) => {
+    if (carModel === model) return;
     playUiSound('spin');
-    if (setCarModel) setCarModel(edition.model);
-    setCarColor(edition.color);
-    setVehicleTab(edition.model);
+    if (setCarModel) setCarModel(model);
+    setCarColor('original');
   };
 
   return (
-    <div id="showroom-plane" className="relative w-full h-[760px] md:h-[900px] bg-[#070709] overflow-hidden select-none border-y border-[#FF4D00]/30 font-body">
+    <div id="showroom-plane" className="relative w-full h-[760px] md:h-[880px] bg-[#070A10] overflow-hidden select-none border-y border-[#00E5FF]/20 font-body">
       {/* 3D WebGL Canvas */}
       <Canvas
         shadows
@@ -718,9 +623,9 @@ export function StudioShowroomCanvas({
         <Suspense
           fallback={
             <Html center>
-              <div className="flex flex-col items-center gap-3 p-5 rounded-2xl glass-panel shadow-2xl border border-[#FF4D00]/50 bg-black/90">
-                <div className="w-10 h-10 border-3 border-[#FF4D00] border-t-transparent rounded-full animate-spin" />
-                <span className="text-xs font-mono uppercase tracking-widest text-[#FF4D00] font-bold">
+              <div className="flex flex-col items-center gap-3 p-5 rounded-2xl glass-panel shadow-2xl border border-[#00E5FF]/40 bg-black/90">
+                <div className="w-10 h-10 border-3 border-[#00E5FF] border-t-transparent rounded-full animate-spin" />
+                <span className="text-xs font-mono uppercase tracking-widest text-[#00E5FF] font-bold">
                   INITIALIZING GAME ENGINE 3D STUDIO...
                 </span>
               </div>
@@ -728,11 +633,11 @@ export function StudioShowroomCanvas({
           }
         >
           <Environment preset="night" environmentIntensity={0.65} />
-          <ambientLight intensity={0.5} />
+          <ambientLight intensity={0.6} />
           <directionalLight position={[6, 9, 6]} intensity={1.8} castShadow shadow-mapSize={[512, 512]} />
-          {/* Cyber Neon Overhead Tubes */}
-          <pointLight color="#00E5FF" intensity={3} distance={15} position={[-4, 5, 2]} />
-          <pointLight color="#FF4D00" intensity={3} distance={15} position={[4, 5, -2]} />
+          {/* Pleasant Cyan & Platinum Overhead Tubes */}
+          <pointLight color="#00E5FF" intensity={3.5} distance={16} position={[-4, 5, 2]} />
+          <pointLight color="#38BDF8" intensity={2.5} distance={16} position={[4, 5, -2]} />
 
           <VehicleShowroom
             carModel={carModel}
@@ -760,11 +665,11 @@ export function StudioShowroomCanvas({
         <div className="glass-panel px-4 py-2 rounded-xl border border-white/10 flex items-center gap-3 backdrop-blur-xl bg-black/70 shadow-2xl">
           <div className="w-2.5 h-2.5 rounded-full bg-[#00E5FF] animate-ping" />
           <div className="text-left font-mono">
-            <div className="text-[10px] text-gray-400 uppercase tracking-widest">AUTOSPORT TUNING TERMINAL</div>
+            <div className="text-[10px] text-gray-400 uppercase tracking-widest">ATELIER TUNING SUITE</div>
             <div className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
               <span>{carModel === 'thar' ? 'MAHINDRA THAR 4X4 • AUTHENTIC SPEC' : 'FERRARI 458 GT3 • SUPERCAR ATELIER'}</span>
-              <span className="text-[9px] px-1.5 py-0.2 rounded bg-[#FF4D00]/30 text-[#FF4D00] border border-[#FF4D00]/50 font-mono font-bold">
-                {carModel === 'thar' ? 'USER ASSET' : 'SUPERCAR'}
+              <span className="text-[9px] px-1.5 py-0.2 rounded bg-[#00E5FF]/20 text-[#00E5FF] border border-[#00E5FF]/40 font-mono font-bold">
+                {carModel === 'thar' ? '4X4 SUV' : 'SUPERCAR'}
               </span>
             </div>
           </div>
@@ -778,7 +683,7 @@ export function StudioShowroomCanvas({
                 playUiSound('click');
                 onOpenSandbox();
               }}
-              className="px-3.5 py-1.5 rounded-xl text-xs font-heading font-extrabold uppercase border border-[#00E5FF]/50 bg-black/85 text-[#00E5FF] hover:bg-[#00E5FF]/20 hover:text-white transition-all shadow-[0_0_15px_rgba(0,229,255,0.3)] flex items-center gap-1.5 cursor-pointer backdrop-blur-md"
+              className="px-3.5 py-1.5 rounded-xl text-xs font-heading font-extrabold uppercase border border-[#00E5FF]/50 bg-black/85 text-[#00E5FF] hover:bg-[#00E5FF]/20 hover:text-white transition-all shadow-[0_0_15px_rgba(0,229,255,0.25)] flex items-center gap-1.5 cursor-pointer backdrop-blur-md"
             >
               <span>🔬 3D Model Sandbox</span>
             </button>
@@ -786,103 +691,62 @@ export function StudioShowroomCanvas({
         </div>
       </div>
 
-      {/* FLOATING BUBBLE ICONS DOCK (TAP BUBBLE TO SWITCH CAR & SPIN/SCALE UP ONTO PLANE) */}
-      <div className="absolute bottom-6 left-6 z-30 pointer-events-auto flex flex-col gap-2 max-w-[calc(100vw-400px)] hidden sm:flex">
-        <div className="flex items-center gap-3 px-3 py-1 rounded-full bg-black/85 border border-[#FF4D00]/40 backdrop-blur-md w-fit shadow-xl">
-          <div className="flex items-center gap-1.5">
-            <div className="w-2 h-2 rounded-full bg-[#FF4D00] animate-pulse" />
-            <span className="text-[10px] font-mono font-bold tracking-wider text-white uppercase">
-              SELECT CAR SPECIFICATION
-            </span>
-          </div>
+      {/* BOTTOM-LEFT: THE TWO VEHICLES SELECTOR DOCK (WITH REAL ROTATING 3D MINI MODELS) */}
+      <div className="absolute bottom-6 left-6 z-30 pointer-events-auto flex flex-col gap-2">
+        <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-[#090D16]/90 border border-[#00E5FF]/30 backdrop-blur-md w-fit shadow-xl">
+          <div className="w-2 h-2 rounded-full bg-[#00E5FF] animate-pulse" />
+          <span className="text-[10px] font-mono font-bold tracking-wider text-gray-200 uppercase">
+            GARAGE VEHICLES
+          </span>
           <span className="text-[9px] font-mono text-[#00E5FF]">
-            [TAP TO SWAP VEHICLE & SPIN ONTO PLANE]
+            [TAP TO SWAP & SPIN]
           </span>
         </div>
 
-        {/* Bubble Row */}
-        <div className="flex items-center gap-2.5 p-2 rounded-2xl bg-black/85 border border-white/15 backdrop-blur-2xl shadow-[0_0_30px_rgba(0,0,0,0.85)] overflow-x-auto scrollbar-none">
-          {carEditions.map((edition) => {
-            const isSelected = carModel === edition.model && carColor === edition.color;
-            return (
-              <button
-                key={edition.id}
-                onClick={() => handleSelectEdition(edition)}
-                className={`group relative flex flex-col items-center gap-1 p-2 rounded-xl transition-all cursor-pointer shrink-0 ${
-                  isSelected
-                    ? 'bg-[#FF4D00]/25 border-2 border-[#FF4D00] shadow-[0_0_20px_rgba(255,77,0,0.6)] scale-105'
-                    : 'bg-white/5 border border-white/10 hover:border-white/30 hover:bg-white/10'
-                }`}
-                title={edition.desc}
-              >
-                {/* Circular Glowing Bubble Icon */}
-                <div
-                  className={`w-11 h-11 rounded-full flex items-center justify-center relative shadow-inner transition-transform group-hover:scale-110 ${
-                    isSelected ? 'ring-2 ring-[#FF4D00] ring-offset-2 ring-offset-black' : ''
-                  }`}
-                  style={{
-                    background: `radial-gradient(circle, ${edition.displayColor} 40%, #050507 100%)`,
-                    border: `2px solid ${edition.accentColor}`,
-                  }}
-                >
-                  <span className="text-lg filter drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
-                    {edition.icon}
-                  </span>
-                  {isSelected && (
-                    <div className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-[#00E5FF] border-2 border-black flex items-center justify-center">
-                      <Check className="w-2 h-2 text-black stroke-[3]" />
-                    </div>
-                  )}
-                </div>
-
-                {/* Edition Label */}
-                <div className="text-center">
-                  <div className={`text-[9px] font-mono font-bold leading-tight ${isSelected ? 'text-white' : 'text-gray-300'}`}>
-                    {edition.name}
-                  </div>
-                  <div className="text-[7px] font-mono text-[#FF4D00]">
-                    {edition.badge}
-                  </div>
-                </div>
-              </button>
-            );
-          })}
+        {/* 2 Actual Vehicle Cards */}
+        <div className="flex items-center gap-3">
+          <VehicleSelectorCard
+            model="thar"
+            name="Mahindra Thar"
+            subtitle="4x4 Off-Road SUV"
+            isActive={carModel === 'thar'}
+            onClick={() => handleSelectVehicle('thar')}
+          />
+          <VehicleSelectorCard
+            model="ferrari"
+            name="Ferrari 458"
+            subtitle="GT3 Widebody Supercar"
+            isActive={carModel === 'ferrari'}
+            onClick={() => handleSelectVehicle('ferrari')}
+          />
         </div>
       </div>
 
-      {/* RIGHT-SIDE VIDEO GAME TUNING CONTROLLER PANEL */}
-      <div className="absolute top-20 right-5 bottom-8 w-[350px] sm:w-[380px] z-30 pointer-events-auto flex flex-col justify-between">
-        <div className="glass-panel p-4 sm:p-5 rounded-2xl border-2 border-[#FF4D00]/50 backdrop-blur-2xl bg-black/90 shadow-[0_0_35px_rgba(0,0,0,0.9)] flex flex-col gap-4 max-h-full overflow-y-auto">
-          {/* Game HUD Header */}
-          <div className="flex items-center justify-between border-b border-white/10 pb-3">
-            <div className="flex items-center gap-2">
-              <Crosshair className="w-4 h-4 text-[#FF4D00] animate-spin" style={{ animationDuration: '10s' }} />
+      {/* RIGHT-SIDE COMPACT GAMING TUNING HUD (FITS ENTIRELY ON SCREEN - ZERO SCROLLING NEEDED) */}
+      <div className="absolute top-20 right-5 w-[330px] sm:w-[360px] z-30 pointer-events-auto flex flex-col">
+        <div className="glass-panel p-3.5 sm:p-4 rounded-2xl border border-[#00E5FF]/40 backdrop-blur-2xl bg-[#080C14]/90 shadow-[0_0_35px_rgba(0,0,0,0.85)] flex flex-col gap-2.5 max-h-[calc(100vh-120px)] overflow-hidden">
+          {/* Header */}
+          <div className="flex items-center justify-between border-b border-white/10 pb-2">
+            <div className="flex items-center gap-1.5">
+              <Crosshair className="w-3.5 h-3.5 text-[#00E5FF] animate-spin" style={{ animationDuration: '10s' }} />
               <span className="text-xs font-heading font-black tracking-widest uppercase text-white">
-                GARAGE TUNING HUD
+                TUNING HUD
               </span>
             </div>
-            {/* Quick Car Selector Toggle */}
+            {/* Quick Car Pill Toggle */}
             <div className="flex items-center bg-black/60 rounded-lg p-0.5 border border-white/10">
               <button
-                onClick={() => {
-                  playUiSound('spin');
-                  if (setCarModel) setCarModel('thar');
-                  setVehicleTab('thar');
-                }}
+                onClick={() => handleSelectVehicle('thar')}
                 className={`px-2 py-0.5 rounded text-[9px] font-mono font-bold transition-all cursor-pointer ${
-                  carModel === 'thar' ? 'bg-[#FF4D00] text-white shadow' : 'text-gray-400 hover:text-white'
+                  carModel === 'thar' ? 'bg-[#00E5FF] text-black shadow-[0_0_8px_#00E5FF]' : 'text-gray-400 hover:text-white'
                 }`}
               >
                 🚙 Thar
               </button>
               <button
-                onClick={() => {
-                  playUiSound('spin');
-                  if (setCarModel) setCarModel('ferrari');
-                  setVehicleTab('ferrari');
-                }}
+                onClick={() => handleSelectVehicle('ferrari')}
                 className={`px-2 py-0.5 rounded text-[9px] font-mono font-bold transition-all cursor-pointer ${
-                  carModel === 'ferrari' ? 'bg-[#FF4D00] text-white shadow' : 'text-gray-400 hover:text-white'
+                  carModel === 'ferrari' ? 'bg-[#00E5FF] text-black shadow-[0_0_8px_#00E5FF]' : 'text-gray-400 hover:text-white'
                 }`}
               >
                 🏎️ Supercar
@@ -890,26 +754,29 @@ export function StudioShowroomCanvas({
             </div>
           </div>
 
-          {/* STANDALONE 3D WHEEL & TYRE TURNTABLE (ALONE ON SCREEN IN PANEL WITH PART SWITCHER) */}
+          {/* Standalone 3D Parts Studio (Alone in widget, 360 spin & drag) */}
           <MiniWheelTurntable
             wheelType={wheelType}
             setWheelType={setWheelType}
             onOpenSandbox={onOpenSandbox}
           />
 
-          {/* CATEGORY NAVIGATION TABS */}
-          <div className="grid grid-cols-3 gap-1.5 text-[10px] font-heading font-extrabold uppercase">
+          {/* Gaming Segmented Navigation Tabs */}
+          <div className="grid grid-cols-3 gap-1 text-[10px] font-heading font-extrabold uppercase">
             {[
-              { id: 'mods', label: '📦 All Mods' },
-              { id: 'livery', label: '🎨 Car Paint' },
-              { id: 'chassis', label: '⚙️ Hoist & Spin' },
+              { id: 'paint', label: '🎨 Paint' },
+              { id: 'controls', label: '⚙️ Controls' },
+              { id: 'mods', label: '📦 Upgrades' },
             ].map((tab) => (
               <button
                 key={tab.id}
-                onClick={() => handleCategorySwitch(tab.id)}
-                className={`py-2 px-1 rounded-xl border text-center transition-all cursor-pointer ${
-                  activeCategory === tab.id
-                    ? 'border-[#FF4D00] bg-gradient-to-r from-[#FF4D00]/30 to-[#E03B00]/20 text-white shadow-[0_0_12px_rgba(255,77,0,0.4)]'
+                onClick={() => {
+                  playUiSound('tab');
+                  setActiveTab(tab.id);
+                }}
+                className={`py-1.5 px-1 rounded-xl border text-center transition-all cursor-pointer ${
+                  activeTab === tab.id
+                    ? 'border-[#00E5FF] bg-[#00E5FF]/20 text-white shadow-[0_0_10px_rgba(0,229,255,0.3)]'
                     : 'border-white/10 text-gray-400 hover:text-white bg-white/5'
                 }`}
               >
@@ -918,247 +785,165 @@ export function StudioShowroomCanvas({
             ))}
           </div>
 
-          {/* TAB 1: ALL AVAILABLE MODIFICATIONS (MENTIONED FULLY) */}
-          {activeCategory === 'mods' && (
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] font-bold text-gray-400 uppercase font-mono tracking-wider">
-                  AVAILABLE TUNING UPGRADES:
-                </span>
-                <span className="text-[9px] font-mono text-[#00E5FF] bg-[#00E5FF]/10 px-2 py-0.5 rounded border border-[#00E5FF]/30">
-                  {Object.values(selectedMods).filter(Boolean).length} / {availableMods.length} EQUIPPED
+          {/* TAB 1: PAINT SWATCHES (COMPACT, NO SCROLLING) */}
+          {activeTab === 'paint' && (
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between text-[9px] font-mono">
+                <span className="text-gray-400 font-bold uppercase">FINISH:</span>
+                <span className="text-[#00E5FF] font-bold">
+                  {activeColors.find((c) => c.hex === carColor)?.name || 'Custom'}
                 </span>
               </div>
-              <p className="text-[10px] text-gray-400 leading-relaxed font-body">
-                Select your desired modifications to include in your vehicle commission build package:
-              </p>
-
-              <div className="space-y-2">
-                {availableMods.map((mod) => {
-                  const isChecked = !!selectedMods[mod.id];
-                  const Icon = mod.icon;
+              <div className="grid grid-cols-2 gap-1.5 max-h-[145px] overflow-y-auto pr-0.5 scrollbar-none">
+                {activeColors.map((c) => {
+                  const isSelected = carColor === c.hex;
                   return (
-                    <div
-                      key={mod.id}
-                      onClick={() => toggleMod(mod.id)}
-                      className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer relative overflow-hidden ${
-                        isChecked
-                          ? 'border-[#FF4D00]/70 bg-gradient-to-r from-[#FF4D00]/20 to-black/80 shadow-[0_0_12px_rgba(255,77,0,0.3)]'
-                          : 'border-white/10 hover:border-white/20 bg-white/5'
+                    <button
+                      key={c.hex}
+                      onClick={() => {
+                        playUiSound('spin');
+                        setCarColor(c.hex);
+                      }}
+                      className={`p-1.5 rounded-lg border text-left flex items-center gap-2 transition-all cursor-pointer ${
+                        isSelected
+                          ? 'border-[#00E5FF] bg-[#00E5FF]/25 text-white font-bold shadow-[0_0_8px_rgba(0,229,255,0.4)]'
+                          : 'border-white/10 text-gray-300 hover:text-white bg-white/5'
                       }`}
                     >
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="flex items-center gap-2">
-                          <div className="w-6 h-6 rounded-lg bg-black/60 border border-white/20 flex items-center justify-center shrink-0">
-                            <Icon className="w-3.5 h-3.5 text-[#FF4D00]" />
-                          </div>
-                          <div>
-                            <div className="text-[10px] font-mono font-bold text-white flex items-center gap-1.5 leading-tight">
-                              <span>{mod.name}</span>
-                            </div>
-                            <div className="text-[8px] text-gray-400 font-mono">
-                              {mod.category}
-                            </div>
-                          </div>
-                        </div>
-
-                        <span
-                          className="text-[8px] font-mono font-bold px-1.5 py-0.5 rounded border"
-                          style={{
-                            color: mod.badgeColor,
-                            borderColor: `${mod.badgeColor}40`,
-                            backgroundColor: `${mod.badgeColor}15`,
-                          }}
-                        >
-                          {mod.badge}
-                        </span>
+                      <span
+                        className="w-4 h-4 rounded-full shrink-0 border border-white/40 shadow"
+                        style={{ backgroundColor: c.displayHex }}
+                      />
+                      <div className="leading-none truncate text-[9px] font-mono font-bold">
+                        {c.name}
                       </div>
-
-                      <div className="text-[9px] text-gray-400 mt-1.5 font-mono leading-tight">
-                        {mod.specs}
-                      </div>
-
-                      <div className="mt-2 pt-1.5 border-t border-white/10 flex items-center justify-between text-[9px] font-mono">
-                        <span className="text-gray-400">{mod.status}</span>
-                        <div className="flex items-center gap-1">
-                          {isChecked ? (
-                            <span className="text-emerald-400 font-bold flex items-center gap-1">
-                              <CheckCircle className="w-3 h-3" />
-                              ADDED TO SPEC
-                            </span>
-                          ) : (
-                            <span className="text-gray-500 hover:text-gray-300">
-                              + ADD TO SPEC
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
+                    </button>
                   );
                 })}
               </div>
             </div>
           )}
 
-          {/* TAB 2: LIVERY & COLOR */}
-          {activeCategory === 'livery' && (
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] font-bold text-gray-400 uppercase font-mono">
-                  SELECT {carModel === 'thar' ? 'THAR 4X4' : 'SUPERCAR'} FINISH:
-                </span>
-                <span className="text-[10px] text-[#FF4D00] font-mono font-bold">
-                  {carEditions.find((c) => c.model === carModel && c.color === carColor)?.name || 'Custom'}
-                </span>
-              </div>
-              <p className="text-[10px] text-gray-400 font-body">
-                Changes the active car body paint finish in real-time with preserved reflections and specular highlights.
-              </p>
-              <div className="grid grid-cols-2 gap-2">
-                {carEditions
-                  .filter((c) => c.model === carModel)
-                  .map((c) => {
-                    const isSelected = carColor === c.color;
-                    return (
-                      <button
-                        key={c.id}
-                        onClick={() => {
-                          playUiSound('spin');
-                          setCarColor(c.color);
-                        }}
-                        className={`p-2 rounded-xl border text-left flex items-center gap-2.5 transition-all cursor-pointer ${
-                          isSelected
-                            ? 'border-[#FF4D00] bg-[#FF4D00]/20 text-white font-bold shadow-[0_0_10px_rgba(255,77,0,0.5)]'
-                            : 'border-white/10 text-gray-300 hover:text-white bg-white/5'
-                        }`}
-                      >
-                        <span
-                          className="w-5 h-5 rounded-full shrink-0 border-2 border-white/40 shadow"
-                          style={{ backgroundColor: c.displayColor }}
-                        />
-                        <div className="leading-tight">
-                          <div className="text-[10px] font-mono font-bold truncate">{c.name}</div>
-                          <span className="text-[8px] text-[#FF4D00] font-mono">{c.badge}</span>
-                        </div>
-                      </button>
-                    );
-                  })}
-              </div>
+          {/* TAB 2: CONTROLS & HOIST (2x2 GRID, NO SCROLLING) */}
+          {activeTab === 'controls' && (
+            <div className="grid grid-cols-2 gap-1.5">
+              {/* Hydraulic Hoist */}
+              <button
+                onClick={() => {
+                  playUiSound('toggle');
+                  setLiftActive(!liftActive);
+                }}
+                className={`p-2 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
+                  liftActive
+                    ? 'border-[#00E5FF] bg-[#00E5FF]/20 text-white shadow-[0_0_10px_rgba(0,229,255,0.3)]'
+                    : 'border-white/10 bg-white/5 text-gray-300 hover:text-white'
+                }`}
+              >
+                <div className="text-[10px] font-mono font-bold">Hydraulic Lift</div>
+                <div className="text-[8px] text-[#00E5FF] mt-1">{liftActive ? 'ELEVATED +0.8M' : 'GROUNDED'}</div>
+              </button>
+
+              {/* 360 Turntable */}
+              <button
+                onClick={() => {
+                  playUiSound('toggle');
+                  setAutoRotate(!autoRotate);
+                }}
+                className={`p-2 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
+                  autoRotate
+                    ? 'border-[#00E5FF] bg-[#00E5FF]/20 text-white shadow-[0_0_10px_rgba(0,229,255,0.3)]'
+                    : 'border-white/10 bg-white/5 text-gray-300 hover:text-white'
+                }`}
+              >
+                <div className="text-[10px] font-mono font-bold">360° Turntable</div>
+                <div className="text-[8px] text-[#00E5FF] mt-1">{autoRotate ? 'ACTIVE SPIN' : 'PAUSED'}</div>
+              </button>
+
+              {/* Headlights */}
+              <button
+                onClick={() => {
+                  playUiSound('toggle');
+                  setHeadlights(!headlights);
+                }}
+                className={`p-2 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
+                  headlights
+                    ? 'border-[#00E5FF] bg-[#00E5FF]/20 text-white shadow-[0_0_10px_rgba(0,229,255,0.3)]'
+                    : 'border-white/10 bg-white/5 text-gray-300 hover:text-white'
+                }`}
+              >
+                <div className="text-[10px] font-mono font-bold">Headlight Beams</div>
+                <div className="text-[8px] text-[#00E5FF] mt-1">{headlights ? 'ON' : 'OFF'}</div>
+              </button>
+
+              {/* Neon Underglow */}
+              <button
+                onClick={() => {
+                  playUiSound('toggle');
+                  setUnderglow(!underglow);
+                }}
+                className={`p-2 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
+                  underglow
+                    ? 'border-[#00E5FF] bg-[#00E5FF]/20 text-white shadow-[0_0_10px_rgba(0,229,255,0.3)]'
+                    : 'border-white/10 bg-white/5 text-gray-300 hover:text-white'
+                }`}
+              >
+                <div className="text-[10px] font-mono font-bold">Chassis Underglow</div>
+                <div className="text-[8px] text-[#00E5FF] mt-1">{underglow ? 'ILLUMINATED' : 'OFF'}</div>
+              </button>
             </div>
           )}
 
-          {/* TAB 3: CHASSIS & HOIST */}
-          {activeCategory === 'chassis' && (
-            <div className="space-y-2.5">
-              <span className="text-[10px] font-bold text-gray-400 uppercase font-mono block">
-                WORKSHOP HYDRAULIC & TURNTABLE CONTROLS:
-              </span>
-
-              {/* Hydraulic Lift Hoist */}
-              <div className="flex items-center justify-between bg-white/5 p-3 rounded-xl border border-white/10">
-                <div>
-                  <div className="text-gray-100 font-heading uppercase text-[11px] font-bold">
-                    Hydraulic Hoist Lift
+          {/* TAB 3: UPGRADES (CLEAN COMPACT LIST, NO BARS, NO SCROLLING) */}
+          {activeTab === 'mods' && (
+            <div className="space-y-1 max-h-[145px] overflow-y-auto pr-0.5 scrollbar-none">
+              {modsList.map((mod) => {
+                const isChecked = !!selectedMods[mod.id];
+                return (
+                  <div
+                    key={mod.id}
+                    onClick={() => toggleMod(mod.id)}
+                    className={`px-2.5 py-1.5 rounded-lg border text-left transition-all cursor-pointer flex items-center justify-between ${
+                      isChecked
+                        ? 'border-[#00E5FF]/60 bg-[#00E5FF]/15 text-white'
+                        : 'border-white/10 bg-white/5 text-gray-400 hover:text-white'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2 truncate">
+                      <div className={`w-1.5 h-1.5 rounded-full ${isChecked ? 'bg-[#00E5FF]' : 'bg-gray-600'}`} />
+                      <span className="text-[9px] font-mono font-bold truncate">{mod.name}</span>
+                    </div>
+                    <span className="text-[7px] font-mono font-bold px-1 py-0.2 rounded bg-black/40 text-[#00E5FF] border border-[#00E5FF]/30">
+                      {mod.badge}
+                    </span>
                   </div>
-                  <div className="text-[9px] text-gray-400">Elevate chassis +0.8m for undercarriage inspection</div>
-                </div>
-                <button
-                  onClick={() => {
-                    playUiSound('toggle');
-                    setLiftActive(!liftActive);
-                  }}
-                  className={`px-3 py-1.5 rounded-lg text-[10px] font-mono uppercase font-bold transition-all cursor-pointer ${
-                    liftActive
-                      ? 'bg-blue-600 text-white shadow-[0_0_12px_rgba(37,99,235,0.8)]'
-                      : 'bg-white/10 text-gray-300 hover:bg-white/20'
-                  }`}
-                >
-                  {liftActive ? 'Lower Hoist' : 'Elevate +0.8m'}
-                </button>
-              </div>
-
-              {/* Turntable 360 Spin */}
-              <div className="flex items-center justify-between bg-white/5 p-3 rounded-xl border border-white/10">
-                <div>
-                  <div className="text-gray-100 font-heading uppercase text-[11px] font-bold">
-                    360° Studio Turntable
-                  </div>
-                  <div className="text-[9px] text-gray-400">Continuous rotational vehicle showcase</div>
-                </div>
-                <input
-                  type="checkbox"
-                  checked={autoRotate}
-                  onChange={(e) => {
-                    playUiSound('toggle');
-                    setAutoRotate(e.target.checked);
-                  }}
-                  className="accent-[#FF4D00] w-4 h-4 cursor-pointer"
-                />
-              </div>
-
-              {/* Headlights Toggle */}
-              <div className="flex items-center justify-between bg-white/5 p-3 rounded-xl border border-white/10">
-                <div>
-                  <div className="text-gray-100 font-heading uppercase text-[11px] font-bold">
-                    Headlight Driving Beams
-                  </div>
-                  <div className="text-[9px] text-gray-400">Forward driving projectors</div>
-                </div>
-                <input
-                  type="checkbox"
-                  checked={headlights}
-                  onChange={(e) => {
-                    playUiSound('toggle');
-                    setHeadlights(e.target.checked);
-                  }}
-                  className="accent-[#FF4D00] w-4 h-4 cursor-pointer"
-                />
-              </div>
-
-              {/* Neon Chassis Underglow */}
-              <div className="flex items-center justify-between bg-white/5 p-3 rounded-xl border border-white/10">
-                <div>
-                  <div className="text-gray-100 font-heading uppercase text-[11px] font-bold">
-                    Chassis Underglow
-                  </div>
-                  <div className="text-[9px] text-gray-400">Ground effect illumination</div>
-                </div>
-                <input
-                  type="checkbox"
-                  checked={underglow}
-                  onChange={(e) => {
-                    playUiSound('toggle');
-                    setUnderglow(e.target.checked);
-                  }}
-                  className="accent-[#FF4D00] w-4 h-4 cursor-pointer"
-                />
-              </div>
+                );
+              })}
             </div>
           )}
 
           {/* COMMISSION CTA BUTTON */}
-          <div className="pt-2 border-t border-white/10">
+          <div className="pt-1.5 border-t border-white/10">
             <button
               onClick={() => {
                 playUiSound('click');
                 if (onOpenBooking) onOpenBooking();
               }}
-              className="w-full py-3 rounded-xl font-heading font-black text-xs uppercase tracking-wider bg-gradient-to-r from-[#FF4D00] to-[#E03B00] text-white shadow-[0_0_25px_rgba(255,77,0,0.7)] hover:shadow-[0_0_35px_rgba(255,77,0,0.9)] transition-all cursor-pointer flex items-center justify-center gap-2"
+              className="w-full py-2.5 rounded-xl font-heading font-black text-xs uppercase tracking-wider bg-gradient-to-r from-[#00E5FF] to-[#0284C7] text-black hover:text-white shadow-[0_0_20px_rgba(0,229,255,0.4)] hover:shadow-[0_0_30px_rgba(0,229,255,0.7)] transition-all cursor-pointer flex items-center justify-center gap-2"
             >
-              <span>COMMISSION THIS SPECIFICATION</span>
-              <Zap className="w-4 h-4 fill-white" />
+              <span>COMMISSION SPECIFICATION</span>
+              <Zap className="w-3.5 h-3.5 fill-current" />
             </button>
           </div>
         </div>
 
         {/* BOTTOM GAMEPAD CONTROLLER HINTS */}
-        <div className="mt-2 text-center text-[10px] font-mono text-gray-400 bg-black/70 px-3 py-1.5 rounded-xl border border-white/10 backdrop-blur-md">
-          <span className="text-[#FF4D00] font-bold">[L-CLICK + DRAG]</span> 360° ORBIT • <span className="text-[#00E5FF] font-bold">[SCROLL]</span> ZOOM • <span className="text-yellow-400 font-bold">[BUBBLE]</span> SWAP CAR
+        <div className="mt-1.5 text-center text-[9px] font-mono text-gray-400 bg-black/70 px-3 py-1 rounded-xl border border-white/10 backdrop-blur-md">
+          <span className="text-[#00E5FF] font-bold">[L-CLICK + DRAG]</span> 360° ORBIT • <span className="text-[#38BDF8] font-bold">[SCROLL]</span> ZOOM
         </div>
       </div>
 
       {/* Bottom Vignette */}
-      <div className="absolute bottom-0 left-0 right-0 h-28 bg-gradient-to-t from-[#070709] to-transparent pointer-events-none" />
+      <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-[#070A10] to-transparent pointer-events-none" />
     </div>
   );
 }
