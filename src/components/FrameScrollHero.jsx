@@ -14,7 +14,16 @@ import {
 } from 'lucide-react';
 
 const TOTAL_FRAMES = 300; // 30fps 10-second sequence (300 frames)
-const SCROLL_SENSITIVITY = 18; // Silky-smooth wheel delta per frame
+
+// Cinematic checkpoint stops where the vehicle comes to a clean, crisp halt
+export const CHECKPOINTS = [
+  { id: 0, frame: 0, title: 'Atelier Start', subtitle: 'Highway Departure' },
+  { id: 1, frame: 45, title: 'Atelier Philosophy', subtitle: 'Bespoke Engineering' },
+  { id: 2, frame: 135, title: 'Chassis & Defense', subtitle: 'Performance Suspension' },
+  { id: 3, frame: 210, title: 'Composite Armor', subtitle: 'Dry Carbon & 9H Shield' },
+  { id: 4, frame: 275, title: 'Hydraulic Hoist', subtitle: 'Workshop Alignment' },
+  { id: 5, frame: 299, title: '3D Studio Showroom', subtitle: 'Interactive Plane' },
+];
 
 // High-tech audio chime when crossing checkpoints
 const playCheckpointChime = (cpId) => {
@@ -49,7 +58,9 @@ export function FrameScrollHero({ onEnterShowroom }) {
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [cardMinimized, setCardMinimized] = useState(false);
 
-  // Smooth lerp tracking
+  // Smooth checkpoint step tracking
+  const activeCheckpointRef = useRef(0);
+  const [activeCheckpoint, setActiveCheckpoint] = useState(0);
   const targetFrameRef = useRef(0);
   const currentFrameRef = useRef(0);
   const hasTriggeredRef = useRef(false);
@@ -151,9 +162,12 @@ export function FrameScrollHero({ onEnterShowroom }) {
     const animateLoop = () => {
       const diff = targetFrameRef.current - currentFrameRef.current;
 
-      if (Math.abs(diff) > 0.01) {
-        // Silky-smooth easing lerp (0.14)
-        currentFrameRef.current += diff * 0.14;
+      if (Math.abs(diff) < 0.18) {
+        // Lock firmly onto target checkpoint integer frame to ensure ZERO motion blur
+        currentFrameRef.current = targetFrameRef.current;
+      } else {
+        // Silky-smooth easing lerp (0.10) for graceful deceleration into each stop
+        currentFrameRef.current += diff * 0.10;
       }
 
       const frameInt = Math.min(
@@ -193,24 +207,54 @@ export function FrameScrollHero({ onEnterShowroom }) {
     return () => cancelAnimationFrame(animId);
   }, [drawFrame, onEnterShowroom]);
 
-  // SMOOTH VIEWPORT WHEEL & TOUCH CONTROLLER
-  useEffect(() => {
-    let touchStartY = 0;
+  // NAVIGATION ACTIONS TO STEP CLEANLY BETWEEN CHECKPOINTS
+  const goToNextCheckpoint = useCallback(() => {
+    if (activeCheckpointRef.current < CHECKPOINTS.length - 1) {
+      const nextIdx = activeCheckpointRef.current + 1;
+      activeCheckpointRef.current = nextIdx;
+      setActiveCheckpoint(nextIdx);
+      targetFrameRef.current = CHECKPOINTS[nextIdx].frame;
 
-    const advanceByDelta = (deltaY) => {
-      // Smooth bidirectional scrubbing: deltaY > 0 advances, deltaY < 0 reverses
-      const nextTarget = Math.max(
-        0,
-        Math.min(TOTAL_FRAMES - 1, targetFrameRef.current + deltaY / SCROLL_SENSITIVITY)
-      );
-      targetFrameRef.current = nextTarget;
+      // When advancing to the final showroom step
+      if (nextIdx === CHECKPOINTS.length - 1) {
+        if (onEnterShowroom && !hasTriggeredRef.current) {
+          hasTriggeredRef.current = true;
+          setIsTransitioning(true);
+          setTimeout(() => {
+            onEnterShowroom();
+            setIsTransitioning(false);
+          }, 450);
+        }
+      }
+    } else {
+      if (onEnterShowroom && !hasTriggeredRef.current) {
+        hasTriggeredRef.current = true;
+        onEnterShowroom();
+      }
+    }
+  }, [onEnterShowroom]);
 
-      // When scrubbing in reverse away from the end, reset trigger flag so transition can trigger again
-      if (nextTarget < TOTAL_FRAMES - 10) {
+  const goToPrevCheckpoint = useCallback(() => {
+    if (activeCheckpointRef.current > 0) {
+      const prevIdx = activeCheckpointRef.current - 1;
+      activeCheckpointRef.current = prevIdx;
+      setActiveCheckpoint(prevIdx);
+      targetFrameRef.current = CHECKPOINTS[prevIdx].frame;
+
+      if (CHECKPOINTS[prevIdx].frame < TOTAL_FRAMES - 10) {
         hasTriggeredRef.current = false;
         setIsTransitioning(false);
       }
-    };
+    }
+  }, []);
+
+  // DISCRETE SMOOTH CHECKPOINT CONTROLLER: ONE SCROLL GLIDES SMOOTHLY TO NEXT/PREV STOP
+  useEffect(() => {
+    let wheelDeltaAccumulator = 0;
+    let touchDeltaAccumulator = 0;
+    let touchStartY = 0;
+    let lastStepTime = 0;
+    let resetWheelTimer = null;
 
     const onWheel = (e) => {
       // If user is scrolled down into the 3D showroom plane, allow native page scrolling!
@@ -218,65 +262,121 @@ export function FrameScrollHero({ onEnterShowroom }) {
         return;
       }
 
-      if (e.deltaY > 0) {
-        if (currentFrameRef.current < TOTAL_FRAMES - 6) {
+      const now = Date.now();
+      const timeSinceLastStep = now - lastStepTime;
+
+      wheelDeltaAccumulator += e.deltaY;
+      clearTimeout(resetWheelTimer);
+      resetWheelTimer = setTimeout(() => {
+        wheelDeltaAccumulator = 0;
+      }, 200);
+
+      // FORWARD SCROLL (wheel down): Glides smoothly to next checkpoint stop
+      if (e.deltaY > 0 || wheelDeltaAccumulator > 25) {
+        if (activeCheckpointRef.current < CHECKPOINTS.length - 1) {
           e.preventDefault();
-          advanceByDelta(e.deltaY);
+          if (timeSinceLastStep > 480) {
+            lastStepTime = now;
+            wheelDeltaAccumulator = 0;
+            goToNextCheckpoint();
+          }
         } else {
-          // Reached end of video: smoothly transition down to 3D plane
+          // Reached docking stage: smoothly transition down to 3D plane
           if (onEnterShowroom && !hasTriggeredRef.current) {
             hasTriggeredRef.current = true;
             onEnterShowroom();
           }
         }
-      } else if (e.deltaY < 0 && window.scrollY <= 10) {
-        // SCROLL BACKWARD: Smoothly scrub the car and popups in reverse
-        if (currentFrameRef.current > 0.1 || targetFrameRef.current > 0.1) {
+      }
+      // REVERSE SCROLL (wheel up): Glides smoothly to previous checkpoint stop
+      else if (e.deltaY < 0 || wheelDeltaAccumulator < -25) {
+        if (window.scrollY <= 10 && activeCheckpointRef.current > 0) {
           e.preventDefault();
-          advanceByDelta(e.deltaY);
+          if (timeSinceLastStep > 480) {
+            lastStepTime = now;
+            wheelDeltaAccumulator = 0;
+            goToPrevCheckpoint();
+          }
         }
       }
     };
 
     const onTouchStart = (e) => {
       touchStartY = e.touches[0].clientY;
+      touchDeltaAccumulator = 0;
     };
 
     const onTouchMove = (e) => {
       if (window.scrollY > 40) return;
       const currentY = e.touches[0].clientY;
-      const deltaY = (touchStartY - currentY) * 1.3;
+      const deltaY = touchStartY - currentY;
       touchStartY = currentY;
+      touchDeltaAccumulator += deltaY;
 
-      if (deltaY > 0 && currentFrameRef.current < TOTAL_FRAMES - 6) {
-        e.preventDefault();
-        advanceByDelta(deltaY);
-      } else if (deltaY > 0 && currentFrameRef.current >= TOTAL_FRAMES - 6) {
-        if (onEnterShowroom && !hasTriggeredRef.current) {
-          hasTriggeredRef.current = true;
-          onEnterShowroom();
+      const now = Date.now();
+      const timeSinceLastStep = now - lastStepTime;
+
+      // Touch swipe up: Step forward to next checkpoint
+      if (touchDeltaAccumulator > 30) {
+        if (activeCheckpointRef.current < CHECKPOINTS.length - 1) {
+          e.preventDefault();
+          if (timeSinceLastStep > 480) {
+            lastStepTime = now;
+            touchDeltaAccumulator = 0;
+            goToNextCheckpoint();
+          }
+        } else {
+          if (onEnterShowroom && !hasTriggeredRef.current) {
+            hasTriggeredRef.current = true;
+            onEnterShowroom();
+          }
         }
-      } else if (deltaY < 0 && (currentFrameRef.current > 0.1 || targetFrameRef.current > 0.1)) {
-        // TOUCH SWIPE DOWN: Smoothly scrub frames in reverse on mobile
+      }
+      // Touch swipe down: Step backward to previous checkpoint
+      else if (touchDeltaAccumulator < -30) {
+        if (window.scrollY <= 10 && activeCheckpointRef.current > 0) {
+          e.preventDefault();
+          if (timeSinceLastStep > 480) {
+            lastStepTime = now;
+            touchDeltaAccumulator = 0;
+            goToPrevCheckpoint();
+          }
+        }
+      }
+    };
+
+    const onKeyDown = (e) => {
+      if (window.scrollY > 40) return;
+      if (e.key === 'ArrowDown' || e.key === 'PageDown') {
         e.preventDefault();
-        advanceByDelta(deltaY);
+        goToNextCheckpoint();
+      } else if (e.key === 'ArrowUp' || e.key === 'PageUp') {
+        if (activeCheckpointRef.current > 0) {
+          e.preventDefault();
+          goToPrevCheckpoint();
+        }
       }
     };
 
     window.addEventListener('wheel', onWheel, { passive: false });
     window.addEventListener('touchstart', onTouchStart, { passive: true });
     window.addEventListener('touchmove', onTouchMove, { passive: false });
+    window.addEventListener('keydown', onKeyDown);
 
     return () => {
       window.removeEventListener('wheel', onWheel);
       window.removeEventListener('touchstart', onTouchStart);
       window.removeEventListener('touchmove', onTouchMove);
+      window.removeEventListener('keydown', onKeyDown);
+      clearTimeout(resetWheelTimer);
     };
-  }, [onEnterShowroom, drawFrame]);
+  }, [goToNextCheckpoint, goToPrevCheckpoint, onEnterShowroom]);
 
   const loadPercent = Math.round((imagesLoaded / TOTAL_FRAMES) * 100);
 
   const resetToBeginning = () => {
+    activeCheckpointRef.current = 0;
+    setActiveCheckpoint(0);
     targetFrameRef.current = 0;
     currentFrameRef.current = 0;
     hasTriggeredRef.current = false;
@@ -402,10 +502,19 @@ export function FrameScrollHero({ onEnterShowroom }) {
           <p className="text-xs sm:text-sm text-slate-300 font-body leading-relaxed mb-4">
             Every machine that enters our Silverstone atelier receives bespoke engineering — dyno-proven power, millimeter-gap composite fabrication, and hand-tailored interiors built for true automotive connoisseurs.
           </p>
-          <div className="flex flex-wrap gap-2 pt-3 border-t border-white/10 text-[11px] font-mono font-bold text-amber-300">
-            <span className="px-2.5 py-1 rounded-full bg-white/5 border border-white/10">Bespoke Commission</span>
-            <span className="px-2.5 py-1 rounded-full bg-white/5 border border-white/10">Dyno Certified</span>
-            <span className="px-2.5 py-1 rounded-full bg-white/5 border border-white/10">Silverstone Atelier</span>
+          <div className="flex items-center justify-between pt-3 border-t border-white/10 text-[11px] font-mono font-bold text-amber-300">
+            <div className="flex flex-wrap gap-1.5">
+              <span className="px-2.5 py-1 rounded-full bg-white/5 border border-white/10">Bespoke Commission</span>
+              <span className="px-2.5 py-1 rounded-full bg-white/5 border border-white/10">Silverstone Atelier</span>
+            </div>
+            <button
+              onClick={goToNextCheckpoint}
+              className="px-3 py-1.5 rounded-full bg-amber-500/20 hover:bg-amber-400 text-amber-300 hover:text-black border border-amber-500/40 font-heading text-xs font-bold uppercase tracking-wider flex items-center gap-1 transition-all cursor-pointer shadow-sm active:scale-95 ml-auto"
+              title="Drive to next checkpoint"
+            >
+              <span>Next Stop</span>
+              <ArrowRight className="w-3 h-3" />
+            </button>
           </div>
         </div>
       </div>
@@ -436,10 +545,19 @@ export function FrameScrollHero({ onEnterShowroom }) {
           <p className="text-xs sm:text-sm text-slate-300 font-body leading-relaxed mb-4">
             Stage-3 nitrogen remote-reservoir dampers, forged monoblock beadlock wheels, and high-clearance expedition geometry engineered to conquer 18,000ft mountain passes.
           </p>
-          <div className="flex flex-wrap gap-2 pt-3 border-t border-white/10 text-[11px] font-mono font-bold text-amber-300">
-            <span className="px-2.5 py-1 rounded-full bg-white/5 border border-white/10">Stage-3 Nitrogen Lift</span>
-            <span className="px-2.5 py-1 rounded-full bg-white/5 border border-white/10">Forged Beadlocks</span>
-            <span className="px-2.5 py-1 rounded-full bg-white/5 border border-white/10">Dual-Stage Valving</span>
+          <div className="flex items-center justify-between pt-3 border-t border-white/10 text-[11px] font-mono font-bold text-amber-300">
+            <div className="flex flex-wrap gap-1.5">
+              <span className="px-2.5 py-1 rounded-full bg-white/5 border border-white/10">Stage-3 Nitrogen Lift</span>
+              <span className="px-2.5 py-1 rounded-full bg-white/5 border border-white/10">Forged Beadlocks</span>
+            </div>
+            <button
+              onClick={goToNextCheckpoint}
+              className="px-3 py-1.5 rounded-full bg-amber-500/20 hover:bg-amber-400 text-amber-300 hover:text-black border border-amber-500/40 font-heading text-xs font-bold uppercase tracking-wider flex items-center gap-1 transition-all cursor-pointer shadow-sm active:scale-95 ml-auto"
+              title="Drive to next checkpoint"
+            >
+              <span>Next Stop</span>
+              <ArrowRight className="w-3 h-3" />
+            </button>
           </div>
         </div>
       </div>
@@ -470,10 +588,19 @@ export function FrameScrollHero({ onEnterShowroom }) {
           <p className="text-xs sm:text-sm text-slate-300 font-body leading-relaxed mb-4">
             Aerodynamic dry carbon splitters, valved Inconel performance downpipes, and multi-layer 10-mil self-healing PPF ceramic armor protecting high-strike body panels against extreme debris.
           </p>
-          <div className="flex flex-wrap gap-2 pt-3 border-t border-white/10 text-[11px] font-mono font-bold text-amber-300">
-            <span className="px-2.5 py-1 rounded-full bg-white/5 border border-white/10">Dry Carbon Aero</span>
-            <span className="px-2.5 py-1 rounded-full bg-white/5 border border-white/10">Valved Inconel</span>
-            <span className="px-2.5 py-1 rounded-full bg-white/5 border border-white/10">9H Ceramic Armor</span>
+          <div className="flex items-center justify-between pt-3 border-t border-white/10 text-[11px] font-mono font-bold text-amber-300">
+            <div className="flex flex-wrap gap-1.5">
+              <span className="px-2.5 py-1 rounded-full bg-white/5 border border-white/10">Dry Carbon Aero</span>
+              <span className="px-2.5 py-1 rounded-full bg-white/5 border border-white/10">9H Ceramic Armor</span>
+            </div>
+            <button
+              onClick={goToNextCheckpoint}
+              className="px-3 py-1.5 rounded-full bg-amber-500/20 hover:bg-amber-400 text-amber-300 hover:text-black border border-amber-500/40 font-heading text-xs font-bold uppercase tracking-wider flex items-center gap-1 transition-all cursor-pointer shadow-sm active:scale-95 ml-auto"
+              title="Drive to next checkpoint"
+            >
+              <span>Next Stop</span>
+              <ArrowRight className="w-3 h-3" />
+            </button>
           </div>
         </div>
       </div>
@@ -508,12 +635,19 @@ export function FrameScrollHero({ onEnterShowroom }) {
         </div>
       </div>
 
-      {/* SUBTLE SCROLL PROMPT AT BOTTOM */}
+      {/* SUBTLE INTERACTIVE SCROLL PROMPT AT BOTTOM */}
       {displayPercent < 80 && (
-        <div className="absolute bottom-4 left-0 right-0 text-center pointer-events-none z-20 flex items-center justify-center gap-1.5 text-[10px] font-mono uppercase tracking-widest text-slate-400/80 transition-opacity">
-          <span>Scroll wheel / swipe to drive car</span>
-          <ChevronDown className="w-3.5 h-3.5 text-amber-400 animate-bounce" />
-        </div>
+        <button
+          onClick={goToNextCheckpoint}
+          className="absolute bottom-4 left-0 right-0 mx-auto w-fit z-20 flex items-center justify-center gap-2 px-4 py-1.5 rounded-full bg-[#0A0D14]/85 hover:bg-black/95 border border-white/10 hover:border-amber-400/40 text-[10px] font-mono uppercase tracking-widest text-slate-300 hover:text-amber-400 backdrop-blur-md shadow-lg transition-all cursor-pointer pointer-events-auto group"
+        >
+          <span>
+            {activeCheckpoint === 0
+              ? 'Scroll or Click to Drive • Stop 1: Atelier Philosophy'
+              : `Scroll or Click for Next Stop • Checkpoint ${Math.min(4, activeCheckpoint + 1)} of 4`}
+          </span>
+          <ChevronDown className="w-3.5 h-3.5 text-amber-400 group-hover:translate-y-0.5 transition-transform" />
+        </button>
       )}
     </div>
   );
