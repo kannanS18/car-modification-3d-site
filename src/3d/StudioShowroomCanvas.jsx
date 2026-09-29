@@ -230,6 +230,54 @@ function MiniWheelTurntable({ wheelType, setWheelType, onOpenSandbox }) {
   );
 }
 
+// 3D Miniature Model Node for the 2-Car Circular Bubbles
+function MiniCarModel({ model }) {
+  const baseUrl = import.meta.env.BASE_URL || '/';
+  const tharGLTF = useGLTF(`${baseUrl}models/thar.glb`);
+  const ferrariGLTF = useGLTF(`${baseUrl}models/ferrari.glb`);
+
+  const tharScene = useMemo(() => tharGLTF.scene.clone(true), [tharGLTF.scene]);
+  const ferrariScene = useMemo(() => ferrariGLTF.scene.clone(true), [ferrariGLTF.scene]);
+
+  const groupRef = useRef();
+
+  useFrame((_, delta) => {
+    if (groupRef.current) {
+      groupRef.current.rotation.y += delta * 1.1;
+    }
+  });
+
+  return (
+    <group ref={groupRef}>
+      {model === 'thar' ? (
+        <group scale={0.78} position={[0, -0.05, 0]} rotation={[0, -Math.PI / 2, 0]}>
+          <primitive object={tharScene} />
+        </group>
+      ) : (
+        <group scale={0.42} position={[0, -0.06, 0]} rotation={[0, 0, 0]}>
+          <primitive object={ferrariScene} />
+        </group>
+      )}
+    </group>
+  );
+}
+
+// Mini 3D Car inside Circular Bubble (Only the car model, zero words)
+function MiniBubbleCarCanvas({ model }) {
+  return (
+    <Canvas
+      camera={{ position: [2.1, 1.1, 2.3], fov: 38 }}
+      gl={{ antialias: true, alpha: true, powerPreference: 'low-power' }}
+      dpr={1}
+    >
+      <ambientLight intensity={1.8} />
+      <directionalLight position={[3, 3, 3]} intensity={2.8} />
+      <directionalLight position={[-3, -1, -2]} intensity={1.4} color="#00E5FF" />
+      <MiniCarModel model={model} />
+    </Canvas>
+  );
+}
+
 // 3D Vehicle Node on Showroom Plane
 function VehicleShowroom({
   carModel = 'thar',
@@ -599,32 +647,36 @@ export function StudioShowroomCanvas({
             </div>
           </div>
 
-          {/* THE 2 VEHICLE BUBBLE ICONS (RIGHT HERE NEAR THE SECOND IMAGE AS ASKED!) */}
-          <div className="glass-panel p-1 rounded-full border border-[#00E5FF]/40 backdrop-blur-xl bg-[#080C14]/95 shadow-[0_0_20px_rgba(0,0,0,0.8)] flex items-center gap-1">
-            {/* Thar Bubble Icon */}
+          {/* THE 2 INDIVIDUAL VEHICLE BUBBLES - ONLY 3D CAR MODEL INSIDE, ZERO WORDS */}
+          <div className="flex items-center gap-2.5">
+            {/* Thar Individual Circular Bubble */}
             <button
               onClick={() => handleSelectVehicle('thar')}
-              className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-bold transition-all cursor-pointer ${
+              className={`relative w-12 h-12 rounded-full overflow-hidden transition-all duration-300 cursor-pointer flex items-center justify-center ${
                 carModel === 'thar'
-                  ? 'bg-[#00E5FF] text-black shadow-[0_0_12px_#00E5FF] scale-105'
-                  : 'text-gray-300 hover:text-white hover:bg-white/10'
+                  ? 'border-2 border-[#00E5FF] shadow-[0_0_16px_#00E5FF] ring-2 ring-[#00E5FF]/60 bg-gradient-to-b from-[#00E5FF]/30 to-[#080C14] scale-110'
+                  : 'border-2 border-white/20 hover:border-[#00E5FF]/60 bg-[#080C14]/90 opacity-70 hover:opacity-100 hover:scale-105'
               }`}
+              title="Mahindra Thar 4x4"
             >
-              <span className="text-sm">🚙</span>
-              <span>Thar</span>
+              <div className="w-full h-full pointer-events-none">
+                <MiniBubbleCarCanvas model="thar" />
+              </div>
             </button>
 
-            {/* Supercar Bubble Icon */}
+            {/* Supercar Individual Circular Bubble */}
             <button
               onClick={() => handleSelectVehicle('ferrari')}
-              className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-bold transition-all cursor-pointer ${
+              className={`relative w-12 h-12 rounded-full overflow-hidden transition-all duration-300 cursor-pointer flex items-center justify-center ${
                 carModel === 'ferrari'
-                  ? 'bg-[#00E5FF] text-black shadow-[0_0_12px_#00E5FF] scale-105'
-                  : 'text-gray-300 hover:text-white hover:bg-white/10'
+                  ? 'border-2 border-[#00E5FF] shadow-[0_0_16px_#00E5FF] ring-2 ring-[#00E5FF]/60 bg-gradient-to-b from-[#00E5FF]/30 to-[#080C14] scale-110'
+                  : 'border-2 border-white/20 hover:border-[#00E5FF]/60 bg-[#080C14]/90 opacity-70 hover:opacity-100 hover:scale-105'
               }`}
+              title="Ferrari 458 Supercar"
             >
-              <span className="text-sm">🏎️</span>
-              <span>Supercar</span>
+              <div className="w-full h-full pointer-events-none">
+                <MiniBubbleCarCanvas model="ferrari" />
+              </div>
             </button>
           </div>
         </div>
