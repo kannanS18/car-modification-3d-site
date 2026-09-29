@@ -77,25 +77,27 @@ export function TharFittedWheelSet({ wheelType }) {
 
   // 5 Axle Hub Coordinates on Thar local coordinate space (calculated from OEM geometry)
   const hubs = [
-    { id: 'FL', pos: [-0.530, -0.145, -0.320], rotY: Math.PI, isSpare: false },
-    { id: 'FR', pos: [-0.530, -0.145, 0.320], rotY: 0, isSpare: false },
-    { id: 'RL', pos: [0.455, -0.145, -0.320], rotY: Math.PI, isSpare: false },
-    { id: 'RR', pos: [0.455, -0.145, 0.320], rotY: 0, isSpare: false },
-    { id: 'Spare', pos: [0.872, 0.091, 0.000], rotY: Math.PI / 2, isSpare: true },
+    { id: 'FL', pos: [-0.530, -0.170, -0.320], rotY: Math.PI, isSpare: false },
+    { id: 'FR', pos: [-0.530, -0.170, 0.320], rotY: 0, isSpare: false },
+    { id: 'RL', pos: [0.455, -0.170, -0.320], rotY: Math.PI, isSpare: false },
+    { id: 'RR', pos: [0.455, -0.170, 0.320], rotY: 0, isSpare: false },
+    { id: 'Spare', pos: [0.872, 0.080, 0.000], rotY: Math.PI / 2, isSpare: true },
   ];
+
+  const wheelScale = 0.148;
 
   return (
     <group>
       {hubs.map((hub) => (
         <group key={hub.id} position={hub.pos} rotation={[0, hub.rotY, 0]}>
           {(wheelType === 'user_custom' || wheelType === 'custom' || wheelType === 'user_wheel') && (
-            <UserWheelAssembly scale={0.298} />
+            <UserWheelAssembly scale={wheelScale} />
           )}
           {wheelType === 'user_rim' && (
-            <UserRimNode scale={0.298 * 0.57} />
+            <UserRimNode scale={wheelScale * 0.57} />
           )}
           {wheelType === 'user_tyre' && (
-            <UserTyreNode scale={0.298} />
+            <UserTyreNode scale={wheelScale} />
           )}
         </group>
       ))}
