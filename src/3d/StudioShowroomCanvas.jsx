@@ -296,6 +296,222 @@ function Bespoke3DWheelSet({ wheelType }) {
   );
 }
 
+// Single Standalone 3D Wheel for isolated turntable preview
+function SingleWheelDisplay({ wheelType }) {
+  const meshRef = useRef();
+
+  useFrame((_, delta) => {
+    if (meshRef.current) {
+      meshRef.current.rotation.y += delta * 1.1;
+    }
+  });
+
+  const isBronze = wheelType === 'dakar_bronze';
+  const isTitanium = wheelType === 'titanium_spider';
+  const isOEM = !wheelType || wheelType === 'oem';
+
+  const rimColor = isBronze ? '#8C6832' : isTitanium ? '#A0ABBA' : '#141517';
+  const rimMetalness = isBronze ? 0.85 : isTitanium ? 0.95 : 0.75;
+  const rimRoughness = isBronze ? 0.32 : isTitanium ? 0.20 : 0.45;
+  const beadlockColor = isBronze ? '#1F2024' : isTitanium ? '#E2E8F0' : '#DC2626';
+
+  return (
+    <group ref={meshRef} scale={1.05}>
+      {/* Main Vulcanized Rubber Tyre */}
+      <mesh rotation={[Math.PI / 2, 0, 0]}>
+        <cylinderGeometry args={[0.163, 0.163, 0.098, 32]} />
+        <meshStandardMaterial color="#131416" roughness={0.92} metalness={0.02} />
+      </mesh>
+
+      {/* Sidewall Shoulders */}
+      <mesh position={[0, 0, 0.038]}>
+        <torusGeometry args={[0.136, 0.027, 16, 32]} />
+        <meshStandardMaterial color="#16171A" roughness={0.88} metalness={0.05} />
+      </mesh>
+      <mesh position={[0, 0, -0.038]}>
+        <torusGeometry args={[0.136, 0.027, 16, 32]} />
+        <meshStandardMaterial color="#16171A" roughness={0.88} metalness={0.05} />
+      </mesh>
+
+      {/* 3D Knobby Lugs */}
+      {!isTitanium && !isOEM &&
+        Array.from({ length: 18 }).map((_, li) => {
+          const ang = (li / 18) * Math.PI * 2;
+          return (
+            <mesh
+              key={li}
+              position={[Math.cos(ang) * 0.162, Math.sin(ang) * 0.162, 0]}
+              rotation={[0, 0, ang]}
+            >
+              <boxGeometry args={[0.015, 0.009, 0.088]} />
+              <meshStandardMaterial color="#111214" roughness={0.95} metalness={0.01} />
+            </mesh>
+          );
+        })}
+
+      {/* Rim Barrel */}
+      <mesh rotation={[Math.PI / 2, 0, 0]}>
+        <cylinderGeometry args={[0.104, 0.104, 0.088, 32, 1, true]} />
+        <meshStandardMaterial color={isOEM ? '#8E9AA8' : rimColor} roughness={rimRoughness} metalness={rimMetalness} />
+      </mesh>
+
+      {/* Outer Lip */}
+      <mesh position={[0, 0, 0.046]}>
+        <ringGeometry args={[0.096, 0.106, 32]} />
+        <meshStandardMaterial color={isOEM ? '#CBD5E1' : beadlockColor} roughness={0.25} metalness={0.9} />
+      </mesh>
+
+      {/* 16 Screws for custom wheels */}
+      {!isOEM &&
+        Array.from({ length: 16 }).map((_, bi) => {
+          const bAng = (bi / 16) * Math.PI * 2;
+          return (
+            <mesh key={bi} position={[Math.cos(bAng) * 0.101, Math.sin(bAng) * 0.101, 0.048]}>
+              <circleGeometry args={[0.003, 6]} />
+              <meshStandardMaterial color="#E2E8F0" roughness={0.2} metalness={0.95} />
+            </mesh>
+          );
+        })}
+
+      {/* Spokes */}
+      {isBronze ? (
+        Array.from({ length: 8 }).map((_, si) => {
+          const sAng = (si / 8) * Math.PI * 2;
+          return (
+            <group key={si} position={[0, 0, 0.038]} rotation={[0, 0, sAng]}>
+              <mesh position={[0, 0.052, 0]}>
+                <boxGeometry args={[0.024, 0.068, 0.010]} />
+                <meshStandardMaterial color={rimColor} roughness={rimRoughness} metalness={rimMetalness} />
+              </mesh>
+            </group>
+          );
+        })
+      ) : isTitanium ? (
+        Array.from({ length: 10 }).map((_, si) => {
+          const sAng = (si / 10) * Math.PI * 2;
+          return (
+            <group key={si} position={[0, 0, 0.040]} rotation={[0, 0, sAng + 0.1]}>
+              <mesh position={[0, 0.055, 0]}>
+                <boxGeometry args={[0.014, 0.072, 0.008]} />
+                <meshStandardMaterial color={rimColor} roughness={rimRoughness} metalness={rimMetalness} />
+              </mesh>
+            </group>
+          );
+        })
+      ) : isOEM ? (
+        Array.from({ length: 5 }).map((_, si) => {
+          const sAng = (si / 5) * Math.PI * 2;
+          return (
+            <group key={si} position={[0, 0, 0.040]} rotation={[0, 0, sAng]}>
+              <mesh position={[-0.01, 0.052, 0]}>
+                <boxGeometry args={[0.012, 0.068, 0.008]} />
+                <meshStandardMaterial color="#E2E8F0" roughness={0.15} metalness={0.95} />
+              </mesh>
+              <mesh position={[0.01, 0.052, 0]}>
+                <boxGeometry args={[0.012, 0.068, 0.008]} />
+                <meshStandardMaterial color="#1E293B" roughness={0.3} metalness={0.8} />
+              </mesh>
+            </group>
+          );
+        })
+      ) : (
+        Array.from({ length: 5 }).map((_, si) => {
+          const sAng = (si / 5) * Math.PI * 2;
+          return (
+            <group key={si} position={[0, 0, 0.039]} rotation={[0, 0, sAng]}>
+              <mesh position={[0, 0.050, 0]}>
+                <boxGeometry args={[0.028, 0.068, 0.012]} />
+                <meshStandardMaterial color={rimColor} roughness={rimRoughness} metalness={rimMetalness} />
+              </mesh>
+            </group>
+          );
+        })
+      )}
+
+      {/* Center Cap & Lug Nuts */}
+      <mesh position={[0, 0, 0.042]} rotation={[Math.PI / 2, 0, 0]}>
+        <cylinderGeometry args={[0.028, 0.028, 0.014, 24]} />
+        <meshStandardMaterial color="#0E1013" roughness={0.4} metalness={0.7} />
+      </mesh>
+      {Array.from({ length: 5 }).map((_, ni) => {
+        const nAng = (ni / 5) * Math.PI * 2;
+        return (
+          <mesh key={ni} position={[Math.cos(nAng) * 0.018, Math.sin(nAng) * 0.018, 0.046]}>
+            <circleGeometry args={[0.0035, 6]} />
+            <meshStandardMaterial color="#D4D4D8" roughness={0.2} metalness={0.95} />
+          </mesh>
+        );
+      })}
+
+      {/* Slotted Brake Rotor & Red Brembo Caliper */}
+      <group position={[0, 0, -0.016]}>
+        <mesh rotation={[Math.PI / 2, 0, 0]}>
+          <cylinderGeometry args={[0.082, 0.082, 0.006, 32]} />
+          <meshStandardMaterial color="#94A3B8" roughness={0.25} metalness={0.95} />
+        </mesh>
+        <mesh position={[0.052, 0.052, 0]}>
+          <boxGeometry args={[0.042, 0.048, 0.022]} />
+          <meshStandardMaterial color="#E11D48" roughness={0.2} metalness={0.5} />
+        </mesh>
+      </group>
+    </group>
+  );
+}
+
+// Mini 3D Wheel Turntable for the Customization Panel
+function MiniWheelTurntable({ wheelType, onOpenSandbox }) {
+  const wheelLabels = {
+    bfg_ko2: 'BFGoodrich T/A KO2 • Method Beadlock',
+    dakar_bronze: 'Dakar Rally Stage • Satin Bronze',
+    titanium_spider: 'Titanium 10-Spoke • Directional Sport',
+    oem: 'Mahindra OEM Factory 18" Diamond-Cut',
+  };
+
+  return (
+    <div className="bg-gradient-to-b from-black/95 to-[#121316] p-3 rounded-xl border border-[#FF4D00]/40 shadow-xl flex flex-col gap-2">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-1.5">
+          <div className="w-2 h-2 rounded-full bg-[#00E5FF] animate-pulse" />
+          <span className="text-[10px] font-mono font-bold tracking-widest text-white uppercase">
+            STANDALONE 3D TYRE PREVIEW
+          </span>
+        </div>
+        <span className="text-[9px] font-mono font-bold text-[#FF4D00] bg-[#FF4D00]/10 px-1.5 py-0.5 rounded border border-[#FF4D00]/30">
+          360° SPIN
+        </span>
+      </div>
+
+      {/* 3D Mini Viewport */}
+      <div className="w-full h-28 rounded-lg bg-black/80 border border-white/10 relative overflow-hidden flex items-center justify-center">
+        <Canvas camera={{ position: [0, 0, 0.46], fov: 45 }} gl={{ antialias: true, alpha: true }}>
+          <ambientLight intensity={1.0} />
+          <directionalLight position={[2, 3, 3]} intensity={2.2} />
+          <directionalLight position={[-2, -2, -2]} intensity={0.9} color="#FF6B2B" />
+          <SingleWheelDisplay wheelType={wheelType} />
+        </Canvas>
+        <div className="absolute bottom-1 right-2 text-[8px] font-mono text-gray-400 pointer-events-none">
+          ISOLATED 3D MODEL
+        </div>
+      </div>
+
+      <div className="flex items-center justify-between text-[10px] font-mono">
+        <div className="text-white font-bold truncate">
+          {wheelLabels[wheelType] || 'Selected Wheel'}
+        </div>
+      </div>
+
+      {onOpenSandbox && (
+        <button
+          onClick={onOpenSandbox}
+          className="mt-0.5 w-full py-1.5 rounded-lg border border-[#00E5FF]/40 bg-[#00E5FF]/10 hover:bg-[#00E5FF]/20 text-[#00E5FF] hover:text-white text-[10px] font-mono font-bold uppercase transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+        >
+          <span>🔬 Inspect in 3D Model Sandbox</span>
+        </button>
+      )}
+    </div>
+  );
+}
+
 // 3D Car Vehicle Mesh Node
 function VehicleShowroom({
   carModel,
@@ -522,11 +738,16 @@ function VehicleShowroom({
           <pointLight
             color={underglowColor}
             intensity={6}
-            distance={3.8}
-            decay={2}
-            position={[0, 0.08, 0]}
+            distance={5}
+            position={[0, 0.1, 0]}
           />
         )}
+
+        {/* Wheel Well Illuminators */}
+        <pointLight position={[-0.62, -0.2, 0.8]} intensity={2.2} color="#FFF" distance={2} />
+        <pointLight position={[-0.62, -0.2, -0.8]} intensity={2.2} color="#FFF" distance={2} />
+        <pointLight position={[0.51, -0.2, 0.8]} intensity={2.2} color="#FFF" distance={2} />
+        <pointLight position={[0.51, -0.2, -0.8]} intensity={2.2} color="#FFF" distance={2} />
       </group>
 
       {/* Floating Sparks */}
@@ -538,14 +759,8 @@ function VehicleShowroom({
         <meshStandardMaterial color="#060607" roughness={0.18} metalness={0.82} />
       </mesh>
 
-      {/* Glowing Hexagonal / Square Automotive Grid Floor */}
+      {/* Glowing Automotive Grid Floor */}
       <gridHelper args={[24, 24, '#FF4D00', '#1F1F24']} position={[0, 0.005, 0]} />
-
-      {/* Outer Studio Ring Border */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.008, 0]}>
-        <ringGeometry args={[6.8, 6.9, 64]} />
-        <meshBasicMaterial color="#FF4D00" />
-      </mesh>
     </group>
   );
 }
@@ -564,6 +779,7 @@ export function StudioShowroomCanvas({
   liftActive, setLiftActive,
   subwooferActive, setSubwooferActive,
   onOpenBooking,
+  onOpenSandbox,
 }) {
   const [activeCategory, setActiveCategory] = useState('wheels'); // 'wheels' | 'livery' | 'lighting' | 'chassis'
 
@@ -710,34 +926,48 @@ export function StudioShowroomCanvas({
           </div>
         </div>
 
-        {/* Platform Vehicle Switcher */}
-        <div className="pointer-events-auto flex items-center gap-1.5 glass-panel p-1 rounded-xl border border-[#FF4D00]/40 shadow-2xl bg-black/85">
-          <button
-            onClick={() => {
-              playUiSound('tab');
-              setCarModel('thar');
-            }}
-            className={`px-3.5 py-1.5 rounded-lg text-xs font-heading font-extrabold uppercase transition-all cursor-pointer ${
-              carModel === 'thar'
-                ? 'bg-gradient-to-r from-[#FF4D00] to-[#E03B00] text-white shadow-[0_0_15px_rgba(255,77,0,0.6)]'
-                : 'text-gray-400 hover:text-white bg-transparent'
-            }`}
-          >
-            🏔️ Thar 4x4
-          </button>
-          <button
-            onClick={() => {
-              playUiSound('tab');
-              setCarModel('ferrari');
-            }}
-            className={`px-3.5 py-1.5 rounded-lg text-xs font-heading font-extrabold uppercase transition-all cursor-pointer ${
-              carModel === 'ferrari'
-                ? 'bg-gradient-to-r from-[#FF4D00] to-[#E03B00] text-white shadow-[0_0_15px_rgba(255,77,0,0.6)]'
-                : 'text-gray-400 hover:text-white bg-transparent'
-            }`}
-          >
-            🏎️ Ferrari GT3
-          </button>
+        {/* Platform Vehicle Switcher & 3D Sandbox Quick Access */}
+        <div className="flex items-center gap-2 pointer-events-auto">
+          {onOpenSandbox && (
+            <button
+              onClick={() => {
+                playUiSound('click');
+                onOpenSandbox();
+              }}
+              className="px-3.5 py-1.5 rounded-xl text-xs font-heading font-extrabold uppercase border border-[#00E5FF]/50 bg-black/85 text-[#00E5FF] hover:bg-[#00E5FF]/20 hover:text-white transition-all shadow-[0_0_15px_rgba(0,229,255,0.3)] flex items-center gap-1.5 cursor-pointer backdrop-blur-md"
+            >
+              <span>🔬 3D Model Sandbox</span>
+            </button>
+          )}
+
+          <div className="flex items-center gap-1.5 glass-panel p-1 rounded-xl border border-[#FF4D00]/40 shadow-2xl bg-black/85">
+            <button
+              onClick={() => {
+                playUiSound('tab');
+                setCarModel('thar');
+              }}
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-heading font-extrabold uppercase transition-all cursor-pointer ${
+                carModel === 'thar'
+                  ? 'bg-gradient-to-r from-[#FF4D00] to-[#E03B00] text-white shadow-[0_0_15px_rgba(255,77,0,0.6)]'
+                  : 'text-gray-400 hover:text-white bg-transparent'
+              }`}
+            >
+              🏔️ Thar 4x4
+            </button>
+            <button
+              onClick={() => {
+                playUiSound('tab');
+                setCarModel('ferrari');
+              }}
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-heading font-extrabold uppercase transition-all cursor-pointer ${
+                carModel === 'ferrari'
+                  ? 'bg-gradient-to-r from-[#FF4D00] to-[#E03B00] text-white shadow-[0_0_15px_rgba(255,77,0,0.6)]'
+                  : 'text-gray-400 hover:text-white bg-transparent'
+              }`}
+            >
+              🏎️ Ferrari GT3
+            </button>
+          </div>
         </div>
       </div>
 
@@ -757,39 +987,8 @@ export function StudioShowroomCanvas({
             </span>
           </div>
 
-          {/* DYNAMIC PERFORMANCE STAT BARS */}
-          <div className="bg-black/60 p-3 rounded-xl border border-white/10 space-y-2.5 font-mono text-[10px]">
-            <div className="flex items-center justify-between">
-              <span className="text-gray-400">TRACTION RATING:</span>
-              <span className="text-[#00E5FF] font-bold">
-                {stats.traction}% {stats.traction >= 99 ? '[MAX GRIP]' : stats.traction >= 94 ? '[RALLY SPEC]' : stats.traction >= 88 ? '[SPORT SPEC]' : '[STOCK HIGHWAY]'}
-              </span>
-            </div>
-            <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-gradient-to-r from-blue-500 to-[#00E5FF] transition-all duration-300"
-                style={{ width: `${stats.traction}%` }}
-              />
-            </div>
-
-            <div className="flex items-center justify-between pt-0.5">
-              <span className="text-gray-400">NIGHT ILLUMINATION:</span>
-              <span className="text-[#FF4D00] font-bold">
-                {stats.visibility}% {stats.visibility >= 90 ? '[BEAM POWER MAX]' : '[STANDARD BEAM]'}
-              </span>
-            </div>
-            <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-gradient-to-r from-yellow-500 to-[#FF4D00] transition-all duration-300"
-                style={{ width: `${stats.visibility}%` }}
-              />
-            </div>
-
-            <div className="flex items-center justify-between text-[9px] pt-1 text-gray-400 border-t border-white/10">
-              <span>GROUND CLEARANCE:</span>
-              <span className="text-white font-bold">{stats.clearance}</span>
-            </div>
-          </div>
+          {/* STANDALONE 3D WHEEL & TYRE TURNTABLE (Replaced Stat Bar per user requirement) */}
+          <MiniWheelTurntable wheelType={wheelType} onOpenSandbox={onOpenSandbox} />
 
           {/* REFINED CATEGORY NAVIGATION TABS */}
           <div className="grid grid-cols-4 gap-1 text-[10px] font-heading font-extrabold uppercase">

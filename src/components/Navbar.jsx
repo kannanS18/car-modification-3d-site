@@ -14,6 +14,7 @@ export function Navbar({ currentPage = 'home', onNavigate }) {
   const navLinks = [
     { id: 'home', label: 'Driving Entry (Video)' },
     { id: 'showroom', label: '3D Studio Plane', icon: Car, highlight: true },
+    { id: 'sandbox', label: '🔬 3D Model Sandbox', highlight: true },
     { id: 'services', label: 'Services' },
     { id: 'about', label: 'About Atelier' },
     { id: 'gallery', label: 'Archive' },

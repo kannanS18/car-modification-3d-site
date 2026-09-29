@@ -7,6 +7,7 @@ import { ServicesSection } from './components/ServicesSection';
 import { GallerySection } from './components/GallerySection';
 import { TestimonialsSection } from './components/TestimonialsSection';
 import { ContactSection } from './components/ContactSection';
+import { ModelSandboxView } from './components/ModelSandboxView';
 import { FooterSection } from './components/FooterSection';
 
 export default function App() {
@@ -16,7 +17,7 @@ export default function App() {
   // Vehicle Customization States for the 3D Showroom Plane
   const [carModel, setCarModel] = useState('thar'); // 'thar' (new Meshy Thar) or 'ferrari'
   const [carColor, setCarColor] = useState('original'); // 'original' (Factory Original Spec default)
-  const [wheelType, setWheelType] = useState('oem'); // 'oem' | 'mud_beadlock' | 'dakar_bronze' | 'titanium_alloy'
+  const [wheelType, setWheelType] = useState('oem'); // 'oem' | 'bfg_ko2' | 'dakar_bronze' | 'titanium_spider'
   const [bumperLights, setBumperLights] = useState(true); // Extra Bumper Fog Pod Lights
   const [roofLights, setRoofLights] = useState(true); // Extra Roof High-Power Light Bar
   const [bullBar, setBullBar] = useState(true); // Front Heavy-Duty Bull Bar & Electric Winch
@@ -31,17 +32,17 @@ export default function App() {
   useEffect(() => {
     const handleHashChange = () => {
       const hash = window.location.hash.replace('#/', '').replace('#', '');
-      if (['home', 'showroom', 'services', 'about', 'gallery', 'contact'].includes(hash)) {
+      if (['home', 'showroom', 'sandbox', 'services', 'about', 'gallery', 'contact'].includes(hash)) {
         setCurrentPage(hash);
       }
     };
 
     // On initial mount/refresh, ALWAYS default to 'home' so the driving video is seen first!
     const initialHash = window.location.hash.replace('#/', '').replace('#', '');
-    if (!initialHash || initialHash === 'showroom' || initialHash === 'home') {
+    if (!initialHash || initialHash === 'home') {
       setCurrentPage('home');
       window.location.hash = '#/home';
-    } else if (['services', 'about', 'gallery', 'contact'].includes(initialHash)) {
+    } else if (['showroom', 'sandbox', 'services', 'about', 'gallery', 'contact'].includes(initialHash)) {
       setCurrentPage(initialHash);
     }
 
@@ -98,7 +99,16 @@ export default function App() {
             subwooferActive={subwooferActive}
             setSubwooferActive={setSubwooferActive}
             onOpenBooking={() => navigateTo('contact')}
+            onOpenSandbox={() => navigateTo('sandbox')}
           />
+          <FooterSection />
+        </div>
+      )}
+
+      {/* PAGE: 3D MODEL SANDBOX & ASSET INSPECTOR */}
+      {currentPage === 'sandbox' && (
+        <div className="min-h-screen flex flex-col justify-between">
+          <ModelSandboxView onNavigate={navigateTo} />
           <FooterSection />
         </div>
       )}
