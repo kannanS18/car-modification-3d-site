@@ -17,6 +17,16 @@ import {
   Volume2,
   Award,
 } from 'lucide-react';
+import {
+  TharStockOEMWheel,
+  BFGoodrichKO2Wheel,
+  DakarBronzeWheel,
+  TitaniumSpiderWheel,
+  KCHilitesBumperPods,
+  CurvedRoofLightBar,
+  OverlandBullBar,
+  TharFittedWheelSet,
+} from './HighDefCustomParts';
 
 // Browser Web Audio API Sound Synthesizer for tactile game audio feedback
 const playUiSound = (type = 'click') => {
@@ -136,166 +146,6 @@ function SubwooferBox({ active }) {
   );
 }
 
-// ==========================================
-// ==========================================
-// BESPOKE 3D OFF-ROAD WHEEL & TYRE PACKAGES
-// ==========================================
-function Bespoke3DWheelSet({ wheelType }) {
-  if (!wheelType || wheelType === 'oem') return null;
-
-  // 5 Axle Hub Coordinates on Thar in local Thar coordinates
-  const hubs = [
-    { id: 'FL', pos: [-0.620, -0.245, -0.357], rotY: Math.PI, isSpare: false },
-    { id: 'FR', pos: [-0.620, -0.245, 0.352], rotY: 0, isSpare: false },
-    { id: 'RL', pos: [0.508, -0.245, -0.356], rotY: Math.PI, isSpare: false },
-    { id: 'RR', pos: [0.508, -0.245, 0.351], rotY: 0, isSpare: false },
-    { id: 'Spare', pos: [0.905, 0.070, -0.001], rotY: Math.PI / 2, isSpare: true },
-  ];
-
-  const isBronze = wheelType === 'dakar_bronze';
-  const isTitanium = wheelType === 'titanium_spider';
-
-  const rimColor = isBronze ? '#8C6832' : isTitanium ? '#A0ABBA' : '#141517';
-  const rimMetalness = isBronze ? 0.85 : isTitanium ? 0.95 : 0.75;
-  const rimRoughness = isBronze ? 0.32 : isTitanium ? 0.20 : 0.45;
-  const beadlockColor = isBronze ? '#1F2024' : isTitanium ? '#E2E8F0' : '#DC2626';
-
-  return (
-    <group>
-      {hubs.map((hub) => (
-        <group key={hub.id} position={hub.pos} rotation={[0, hub.rotY, 0]}>
-          {/* Main Vulcanized Rubber Tyre Tread */}
-          <mesh rotation={[Math.PI / 2, 0, 0]} castShadow receiveShadow>
-            <cylinderGeometry args={[0.163, 0.163, 0.098, 32]} />
-            <meshStandardMaterial color="#131416" roughness={0.92} metalness={0.02} />
-          </mesh>
-
-          {/* Outer & Inner Sidewall Shoulder Bevels */}
-          <mesh position={[0, 0, 0.038]} rotation={[0, 0, 0]}>
-            <torusGeometry args={[0.136, 0.027, 16, 32]} />
-            <meshStandardMaterial color="#16171A" roughness={0.88} metalness={0.05} />
-          </mesh>
-          <mesh position={[0, 0, -0.038]} rotation={[0, 0, 0]}>
-            <torusGeometry args={[0.136, 0.027, 16, 32]} />
-            <meshStandardMaterial color="#16171A" roughness={0.88} metalness={0.05} />
-          </mesh>
-
-          {/* 3D Off-Road Knobby Tread Lugs around circumference */}
-          {!isTitanium &&
-            Array.from({ length: 18 }).map((_, li) => {
-              const ang = (li / 18) * Math.PI * 2;
-              return (
-                <mesh
-                  key={li}
-                  position={[Math.cos(ang) * 0.162, Math.sin(ang) * 0.162, 0]}
-                  rotation={[0, 0, ang]}
-                  castShadow
-                >
-                  <boxGeometry args={[0.015, 0.009, 0.088]} />
-                  <meshStandardMaterial color="#111214" roughness={0.95} metalness={0.01} />
-                </mesh>
-              );
-            })}
-
-          {/* Deep-Dish Inset Rim Barrel */}
-          <mesh rotation={[Math.PI / 2, 0, 0]}>
-            <cylinderGeometry args={[0.104, 0.104, 0.088, 32, 1, true]} />
-            <meshStandardMaterial color={rimColor} roughness={rimRoughness} metalness={rimMetalness} />
-          </mesh>
-
-          {/* Outer Rim Lip */}
-          <mesh position={[0, 0, 0.046]} rotation={[0, 0, 0]}>
-            <ringGeometry args={[0.096, 0.106, 32]} />
-            <meshStandardMaterial color={beadlockColor} roughness={0.25} metalness={0.9} />
-          </mesh>
-
-          {/* 16 Beadlock Socket Screws */}
-          {Array.from({ length: 16 }).map((_, bi) => {
-            const bAng = (bi / 16) * Math.PI * 2;
-            return (
-              <mesh key={bi} position={[Math.cos(bAng) * 0.101, Math.sin(bAng) * 0.101, 0.048]}>
-                <circleGeometry args={[0.003, 6]} />
-                <meshStandardMaterial color="#E2E8F0" roughness={0.2} metalness={0.95} />
-              </mesh>
-            );
-          })}
-
-          {/* Rim Face / Spokes */}
-          {isBronze ? (
-            /* Dakar 8-Window Rally Dish */
-            Array.from({ length: 8 }).map((_, si) => {
-              const sAng = (si / 8) * Math.PI * 2;
-              return (
-                <group key={si} position={[0, 0, 0.038]} rotation={[0, 0, sAng]}>
-                  <mesh position={[0, 0.052, 0]}>
-                    <boxGeometry args={[0.024, 0.068, 0.010]} />
-                    <meshStandardMaterial color={rimColor} roughness={rimRoughness} metalness={rimMetalness} />
-                  </mesh>
-                </group>
-              );
-            })
-          ) : isTitanium ? (
-            /* 10-Spoke Directional Sport Alloy */
-            Array.from({ length: 10 }).map((_, si) => {
-              const sAng = (si / 10) * Math.PI * 2;
-              return (
-                <group key={si} position={[0, 0, 0.040]} rotation={[0, 0, sAng + 0.1]}>
-                  <mesh position={[0, 0.055, 0]}>
-                    <boxGeometry args={[0.014, 0.072, 0.008]} />
-                    <meshStandardMaterial color={rimColor} roughness={rimRoughness} metalness={rimMetalness} />
-                  </mesh>
-                </group>
-              );
-            })
-          ) : (
-            /* BFG Method Beadlock 5-Spoke Star */
-            Array.from({ length: 5 }).map((_, si) => {
-              const sAng = (si / 5) * Math.PI * 2;
-              return (
-                <group key={si} position={[0, 0, 0.039]} rotation={[0, 0, sAng]}>
-                  <mesh position={[0, 0.050, 0]}>
-                    <boxGeometry args={[0.028, 0.068, 0.012]} />
-                    <meshStandardMaterial color={rimColor} roughness={rimRoughness} metalness={rimMetalness} />
-                  </mesh>
-                </group>
-              );
-            })
-          )}
-
-          {/* Center Hub & 5 Hex Lug Nuts */}
-          <mesh position={[0, 0, 0.042]} rotation={[Math.PI / 2, 0, 0]}>
-            <cylinderGeometry args={[0.028, 0.028, 0.014, 24]} />
-            <meshStandardMaterial color="#0E1013" roughness={0.4} metalness={0.7} />
-          </mesh>
-          {Array.from({ length: 5 }).map((_, ni) => {
-            const nAng = (ni / 5) * Math.PI * 2;
-            return (
-              <mesh key={ni} position={[Math.cos(nAng) * 0.018, Math.sin(nAng) * 0.018, 0.046]}>
-                <circleGeometry args={[0.0035, 6]} />
-                <meshStandardMaterial color="#D4D4D8" roughness={0.2} metalness={0.95} />
-              </mesh>
-            );
-          })}
-
-          {/* Behind-the-Wheel Slotted Brake Rotor & Brembo Caliper (Running wheels only) */}
-          {!hub.isSpare && (
-            <group position={[0, 0, -0.016]}>
-              <mesh rotation={[Math.PI / 2, 0, 0]}>
-                <cylinderGeometry args={[0.082, 0.082, 0.006, 32]} />
-                <meshStandardMaterial color="#94A3B8" roughness={0.25} metalness={0.95} />
-              </mesh>
-              <mesh position={[0.052, 0.052, 0]}>
-                <boxGeometry args={[0.042, 0.048, 0.022]} />
-                <meshStandardMaterial color="#E11D48" roughness={0.2} metalness={0.5} />
-              </mesh>
-            </group>
-          )}
-        </group>
-      ))}
-    </group>
-  );
-}
-
 // Single Standalone 3D Wheel for isolated turntable preview
 function SingleWheelDisplay({ wheelType }) {
   const meshRef = useRef();
@@ -306,154 +156,12 @@ function SingleWheelDisplay({ wheelType }) {
     }
   });
 
-  const isBronze = wheelType === 'dakar_bronze';
-  const isTitanium = wheelType === 'titanium_spider';
-  const isOEM = !wheelType || wheelType === 'oem';
-
-  const rimColor = isBronze ? '#8C6832' : isTitanium ? '#A0ABBA' : '#141517';
-  const rimMetalness = isBronze ? 0.85 : isTitanium ? 0.95 : 0.75;
-  const rimRoughness = isBronze ? 0.32 : isTitanium ? 0.20 : 0.45;
-  const beadlockColor = isBronze ? '#1F2024' : isTitanium ? '#E2E8F0' : '#DC2626';
-
   return (
-    <group ref={meshRef} scale={1.05}>
-      {/* Main Vulcanized Rubber Tyre */}
-      <mesh rotation={[Math.PI / 2, 0, 0]}>
-        <cylinderGeometry args={[0.163, 0.163, 0.098, 32]} />
-        <meshStandardMaterial color="#131416" roughness={0.92} metalness={0.02} />
-      </mesh>
-
-      {/* Sidewall Shoulders */}
-      <mesh position={[0, 0, 0.038]}>
-        <torusGeometry args={[0.136, 0.027, 16, 32]} />
-        <meshStandardMaterial color="#16171A" roughness={0.88} metalness={0.05} />
-      </mesh>
-      <mesh position={[0, 0, -0.038]}>
-        <torusGeometry args={[0.136, 0.027, 16, 32]} />
-        <meshStandardMaterial color="#16171A" roughness={0.88} metalness={0.05} />
-      </mesh>
-
-      {/* 3D Knobby Lugs */}
-      {!isTitanium && !isOEM &&
-        Array.from({ length: 18 }).map((_, li) => {
-          const ang = (li / 18) * Math.PI * 2;
-          return (
-            <mesh
-              key={li}
-              position={[Math.cos(ang) * 0.162, Math.sin(ang) * 0.162, 0]}
-              rotation={[0, 0, ang]}
-            >
-              <boxGeometry args={[0.015, 0.009, 0.088]} />
-              <meshStandardMaterial color="#111214" roughness={0.95} metalness={0.01} />
-            </mesh>
-          );
-        })}
-
-      {/* Rim Barrel */}
-      <mesh rotation={[Math.PI / 2, 0, 0]}>
-        <cylinderGeometry args={[0.104, 0.104, 0.088, 32, 1, true]} />
-        <meshStandardMaterial color={isOEM ? '#8E9AA8' : rimColor} roughness={rimRoughness} metalness={rimMetalness} />
-      </mesh>
-
-      {/* Outer Lip */}
-      <mesh position={[0, 0, 0.046]}>
-        <ringGeometry args={[0.096, 0.106, 32]} />
-        <meshStandardMaterial color={isOEM ? '#CBD5E1' : beadlockColor} roughness={0.25} metalness={0.9} />
-      </mesh>
-
-      {/* 16 Screws for custom wheels */}
-      {!isOEM &&
-        Array.from({ length: 16 }).map((_, bi) => {
-          const bAng = (bi / 16) * Math.PI * 2;
-          return (
-            <mesh key={bi} position={[Math.cos(bAng) * 0.101, Math.sin(bAng) * 0.101, 0.048]}>
-              <circleGeometry args={[0.003, 6]} />
-              <meshStandardMaterial color="#E2E8F0" roughness={0.2} metalness={0.95} />
-            </mesh>
-          );
-        })}
-
-      {/* Spokes */}
-      {isBronze ? (
-        Array.from({ length: 8 }).map((_, si) => {
-          const sAng = (si / 8) * Math.PI * 2;
-          return (
-            <group key={si} position={[0, 0, 0.038]} rotation={[0, 0, sAng]}>
-              <mesh position={[0, 0.052, 0]}>
-                <boxGeometry args={[0.024, 0.068, 0.010]} />
-                <meshStandardMaterial color={rimColor} roughness={rimRoughness} metalness={rimMetalness} />
-              </mesh>
-            </group>
-          );
-        })
-      ) : isTitanium ? (
-        Array.from({ length: 10 }).map((_, si) => {
-          const sAng = (si / 10) * Math.PI * 2;
-          return (
-            <group key={si} position={[0, 0, 0.040]} rotation={[0, 0, sAng + 0.1]}>
-              <mesh position={[0, 0.055, 0]}>
-                <boxGeometry args={[0.014, 0.072, 0.008]} />
-                <meshStandardMaterial color={rimColor} roughness={rimRoughness} metalness={rimMetalness} />
-              </mesh>
-            </group>
-          );
-        })
-      ) : isOEM ? (
-        Array.from({ length: 5 }).map((_, si) => {
-          const sAng = (si / 5) * Math.PI * 2;
-          return (
-            <group key={si} position={[0, 0, 0.040]} rotation={[0, 0, sAng]}>
-              <mesh position={[-0.01, 0.052, 0]}>
-                <boxGeometry args={[0.012, 0.068, 0.008]} />
-                <meshStandardMaterial color="#E2E8F0" roughness={0.15} metalness={0.95} />
-              </mesh>
-              <mesh position={[0.01, 0.052, 0]}>
-                <boxGeometry args={[0.012, 0.068, 0.008]} />
-                <meshStandardMaterial color="#1E293B" roughness={0.3} metalness={0.8} />
-              </mesh>
-            </group>
-          );
-        })
-      ) : (
-        Array.from({ length: 5 }).map((_, si) => {
-          const sAng = (si / 5) * Math.PI * 2;
-          return (
-            <group key={si} position={[0, 0, 0.039]} rotation={[0, 0, sAng]}>
-              <mesh position={[0, 0.050, 0]}>
-                <boxGeometry args={[0.028, 0.068, 0.012]} />
-                <meshStandardMaterial color={rimColor} roughness={rimRoughness} metalness={rimMetalness} />
-              </mesh>
-            </group>
-          );
-        })
-      )}
-
-      {/* Center Cap & Lug Nuts */}
-      <mesh position={[0, 0, 0.042]} rotation={[Math.PI / 2, 0, 0]}>
-        <cylinderGeometry args={[0.028, 0.028, 0.014, 24]} />
-        <meshStandardMaterial color="#0E1013" roughness={0.4} metalness={0.7} />
-      </mesh>
-      {Array.from({ length: 5 }).map((_, ni) => {
-        const nAng = (ni / 5) * Math.PI * 2;
-        return (
-          <mesh key={ni} position={[Math.cos(nAng) * 0.018, Math.sin(nAng) * 0.018, 0.046]}>
-            <circleGeometry args={[0.0035, 6]} />
-            <meshStandardMaterial color="#D4D4D8" roughness={0.2} metalness={0.95} />
-          </mesh>
-        );
-      })}
-
-      {/* Slotted Brake Rotor & Red Brembo Caliper */}
-      <group position={[0, 0, -0.016]}>
-        <mesh rotation={[Math.PI / 2, 0, 0]}>
-          <cylinderGeometry args={[0.082, 0.082, 0.006, 32]} />
-          <meshStandardMaterial color="#94A3B8" roughness={0.25} metalness={0.95} />
-        </mesh>
-        <mesh position={[0.052, 0.052, 0]}>
-          <boxGeometry args={[0.042, 0.048, 0.022]} />
-          <meshStandardMaterial color="#E11D48" roughness={0.2} metalness={0.5} />
-        </mesh>
-      </group>
+    <group ref={meshRef} scale={0.48}>
+      {wheelType === 'bfg_ko2' && <BFGoodrichKO2Wheel />}
+      {wheelType === 'dakar_bronze' && <DakarBronzeWheel />}
+      {wheelType === 'titanium_spider' && <TitaniumSpiderWheel />}
+      {(!wheelType || wheelType === 'oem') && <TharStockOEMWheel />}
     </group>
   );
 }
@@ -702,7 +410,24 @@ function VehicleShowroom({
         {carModel === 'thar' ? (
           <group scale={1.8} position={[0, 0.77, 0]} rotation={[0, -Math.PI / 2, 0]}>
             <primitive object={tharScene} />
-            <Bespoke3DWheelSet wheelType={wheelType} />
+            <TharFittedWheelSet wheelType={wheelType} />
+
+            {/* Modular 3D Off-Road Accessories */}
+            {bumperLights && (
+              <group position={[-1.02, 0.05, 0]} rotation={[0, Math.PI / 2, 0]}>
+                <KCHilitesBumperPods scale={0.82} />
+              </group>
+            )}
+            {roofLights && (
+              <group position={[-0.22, 0.62, 0]} rotation={[0, Math.PI / 2, 0]}>
+                <CurvedRoofLightBar scale={0.70} />
+              </group>
+            )}
+            {bullBar && (
+              <group position={[-1.08, -0.06, 0]} rotation={[0, Math.PI / 2, 0]}>
+                <OverlandBullBar scale={0.65} />
+              </group>
+            )}
           </group>
         ) : (
           <group scale={0.9} position={[0, 0.05, 0]}>
