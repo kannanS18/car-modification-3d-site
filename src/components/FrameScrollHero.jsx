@@ -248,18 +248,36 @@ export function FrameScrollHero({ onEnterShowroom }) {
     }
   }, []);
 
-  // DISCRETE SMOOTH CHECKPOINT CONTROLLER: ONE SCROLL GLIDES SMOOTHLY TO NEXT/PREV STOP
+  // DIRECT JUMP TO SPECIFIC CHECKPOINT (FOR INTERACTIVE DOTS)
+  const jumpToCheckpoint = useCallback((idx) => {
+    if (idx >= 0 && idx < CHECKPOINTS.length) {
+      activeCheckpointRef.current = idx;
+      setActiveCheckpoint(idx);
+      targetFrameRef.current = CHECKPOINTS[idx].frame;
+      if (CHECKPOINTS[idx].frame < TOTAL_FRAMES - 10) {
+        hasTriggeredRef.current = false;
+        setIsTransitioning(false);
+      }
+    }
+  }, []);
+
+  // DISCRETE SMOOTH CHECKPOINT CONTROLLER: PREVENTS MOBILE PAGE SCROLL DOWN
   useEffect(() => {
     let wheelDeltaAccumulator = 0;
     let touchDeltaAccumulator = 0;
     let touchStartY = 0;
     let lastStepTime = 0;
     let resetWheelTimer = null;
+    let isInteractingHero = false;
 
     const onWheel = (e) => {
       // If user is scrolled down into the 3D showroom plane, allow native page scrolling!
       if (window.scrollY > 40) {
         return;
+      }
+
+      if (e.cancelable && window.scrollY <= 10) {
+        e.preventDefault();
       }
 
       const now = Date.now();
@@ -274,8 +292,7 @@ export function FrameScrollHero({ onEnterShowroom }) {
       // FORWARD SCROLL (wheel down): Glides smoothly to next checkpoint stop
       if (e.deltaY > 0 || wheelDeltaAccumulator > 25) {
         if (activeCheckpointRef.current < CHECKPOINTS.length - 1) {
-          e.preventDefault();
-          if (timeSinceLastStep > 480) {
+          if (timeSinceLastStep > 400) {
             lastStepTime = now;
             wheelDeltaAccumulator = 0;
             goToNextCheckpoint();
@@ -291,8 +308,7 @@ export function FrameScrollHero({ onEnterShowroom }) {
       // REVERSE SCROLL (wheel up): Glides smoothly to previous checkpoint stop
       else if (e.deltaY < 0 || wheelDeltaAccumulator < -25) {
         if (window.scrollY <= 10 && activeCheckpointRef.current > 0) {
-          e.preventDefault();
-          if (timeSinceLastStep > 480) {
+          if (timeSinceLastStep > 400) {
             lastStepTime = now;
             wheelDeltaAccumulator = 0;
             goToPrevCheckpoint();
@@ -302,12 +318,23 @@ export function FrameScrollHero({ onEnterShowroom }) {
     };
 
     const onTouchStart = (e) => {
-      touchStartY = e.touches[0].clientY;
-      touchDeltaAccumulator = 0;
+      if (window.scrollY <= 20) {
+        isInteractingHero = true;
+        touchStartY = e.touches[0].clientY;
+        touchDeltaAccumulator = 0;
+      } else {
+        isInteractingHero = false;
+      }
     };
 
     const onTouchMove = (e) => {
-      if (window.scrollY > 40) return;
+      if (!isInteractingHero || window.scrollY > 20) return;
+
+      // CRUCIAL: Immediately cancel browser's native downward viewport scroll!
+      if (e.cancelable) {
+        e.preventDefault();
+      }
+
       const currentY = e.touches[0].clientY;
       const deltaY = touchStartY - currentY;
       touchStartY = currentY;
@@ -317,12 +344,11 @@ export function FrameScrollHero({ onEnterShowroom }) {
       const timeSinceLastStep = now - lastStepTime;
 
       // Touch swipe up: Step forward to next checkpoint
-      if (touchDeltaAccumulator > 30) {
+      if (touchDeltaAccumulator > 25) {
+        touchDeltaAccumulator = 0;
         if (activeCheckpointRef.current < CHECKPOINTS.length - 1) {
-          e.preventDefault();
-          if (timeSinceLastStep > 480) {
+          if (timeSinceLastStep > 380) {
             lastStepTime = now;
-            touchDeltaAccumulator = 0;
             goToNextCheckpoint();
           }
         } else {
@@ -333,16 +359,20 @@ export function FrameScrollHero({ onEnterShowroom }) {
         }
       }
       // Touch swipe down: Step backward to previous checkpoint
-      else if (touchDeltaAccumulator < -30) {
-        if (window.scrollY <= 10 && activeCheckpointRef.current > 0) {
-          e.preventDefault();
-          if (timeSinceLastStep > 480) {
+      else if (touchDeltaAccumulator < -25) {
+        touchDeltaAccumulator = 0;
+        if (activeCheckpointRef.current > 0) {
+          if (timeSinceLastStep > 380) {
             lastStepTime = now;
-            touchDeltaAccumulator = 0;
             goToPrevCheckpoint();
           }
         }
       }
+    };
+
+    const onTouchEnd = () => {
+      isInteractingHero = false;
+      touchDeltaAccumulator = 0;
     };
 
     const onKeyDown = (e) => {
@@ -361,12 +391,14 @@ export function FrameScrollHero({ onEnterShowroom }) {
     window.addEventListener('wheel', onWheel, { passive: false });
     window.addEventListener('touchstart', onTouchStart, { passive: true });
     window.addEventListener('touchmove', onTouchMove, { passive: false });
+    window.addEventListener('touchend', onTouchEnd, { passive: true });
     window.addEventListener('keydown', onKeyDown);
 
     return () => {
       window.removeEventListener('wheel', onWheel);
       window.removeEventListener('touchstart', onTouchStart);
       window.removeEventListener('touchmove', onTouchMove);
+      window.removeEventListener('touchend', onTouchEnd);
       window.removeEventListener('keydown', onKeyDown);
       clearTimeout(resetWheelTimer);
     };
@@ -420,7 +452,7 @@ export function FrameScrollHero({ onEnterShowroom }) {
   }, [op1, op2, op3, op4]);
 
   return (
-    <div className="relative w-full h-screen bg-[#0A0D14] overflow-hidden select-none z-0">
+    <div className="relative w-full h-[100dvh] bg-[#0A0D14] overflow-hidden select-none z-0 touch-none overscroll-none">
       {/* Loading Overlay */}
       {imagesLoaded < 3 && (
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-black z-40 gap-3">
@@ -454,62 +486,68 @@ export function FrameScrollHero({ onEnterShowroom }) {
       {/* Subtle Vignette Gradient */}
       <div className="absolute inset-0 bg-gradient-to-t from-[#0A0D14] via-transparent to-black/60 pointer-events-none" />
 
-      {/* CLEAN MINIMAL TOP HEADER (NO CLUTTERED BANNER CHECKPOINT BUTTONS) */}
-      <div className="absolute top-24 right-4 sm:right-8 z-30 pointer-events-auto flex items-center gap-2.5">
+      {/* CLEAN MINIMAL TOP HEADER */}
+      <div className="absolute top-20 sm:top-24 right-3 sm:right-8 z-30 pointer-events-auto flex items-center gap-2">
         {displayPercent > 5 && (
           <button
             onClick={resetToBeginning}
-            className="px-3.5 py-1.5 rounded-full bg-black/40 hover:bg-black/70 border border-white/10 text-slate-300 hover:text-white text-xs font-mono flex items-center gap-1.5 transition-all cursor-pointer backdrop-blur-md shadow-md"
+            className="px-3 py-1.5 rounded-full bg-black/60 hover:bg-black/90 border border-white/10 text-slate-300 hover:text-white text-xs font-mono flex items-center gap-1.5 transition-all cursor-pointer backdrop-blur-md shadow-md active:scale-95"
             title="Restart highway drive"
           >
-            <RotateCcw className="w-3.5 h-3.5 text-amber-400" />
+            <RotateCcw className="w-3 h-3 text-amber-400" />
             <span className="hidden sm:inline">Restart</span>
           </button>
         )}
 
         <button
           onClick={onEnterShowroom}
-          className="px-4 py-2 rounded-full font-heading font-black text-xs uppercase tracking-wider flex items-center gap-1.5 bg-[#0C1018]/80 hover:bg-amber-500 text-amber-300 hover:text-black border border-amber-500/30 shadow-lg backdrop-blur-xl transition-all cursor-pointer active:scale-95"
+          className="px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full font-heading font-black text-xs uppercase tracking-wider flex items-center gap-1.5 bg-[#0C1018]/90 hover:bg-amber-500 text-amber-300 hover:text-black border border-amber-500/30 shadow-lg backdrop-blur-xl transition-all cursor-pointer active:scale-95"
         >
-          <span>{displayPercent >= 90 ? 'Reveal 3D Plane' : 'Skip to 3D'}</span>
+          <span>{displayPercent >= 90 ? 'Reveal 3D' : 'Skip to 3D'}</span>
           <ArrowRight className="w-3.5 h-3.5" />
         </button>
       </div>
 
-      {/* POPUP 1: HIGHWAY DRIVE - IN THE EMPTY GAP ON THE RIGHT (FADES IN & FADES OUT) */}
+      {/* POPUP 1: HIGHWAY DRIVE (TOP ON MOBILE FOR FULL CAR VISIBILITY, RIGHT ON DESKTOP) */}
       <div
         className={`fixed sm:absolute z-30 transition-all duration-500 ease-out pointer-events-none ${
           isMobile
-            ? 'bottom-10 left-4 right-4 mx-auto max-w-[390px]'
+            ? 'top-20 left-3 right-3 mx-auto max-w-[380px]'
             : 'right-6 lg:right-16 top-1/2 -translate-y-1/2 max-w-[420px]'
         }`}
         style={{
           opacity: op1,
           transform: isMobile
-            ? `translateY(${(1 - op1) * 20}px)`
+            ? `translateY(${(1 - op1) * -12}px)`
             : `translate(${(1 - op1) * 25}px, -50%)`,
           pointerEvents: op1 > 0.2 ? 'auto' : 'none',
         }}
       >
-        <div className="p-6 sm:p-7 rounded-3xl bg-[#090C14]/85 border border-white/15 ring-1 ring-amber-400/25 backdrop-blur-2xl shadow-[0_24px_60px_rgba(0,0,0,0.92)] text-left">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/15 border border-amber-500/30 text-[10px] font-mono font-bold text-amber-400 uppercase tracking-widest mb-3">
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
-            <span>ATELIER PHILOSOPHY</span>
+        <div className="p-4 sm:p-7 rounded-2xl sm:rounded-3xl bg-[#090C14]/90 border border-white/15 ring-1 ring-amber-400/25 backdrop-blur-2xl shadow-[0_20px_50px_rgba(0,0,0,0.92)] text-left">
+          <div className="flex items-center justify-between gap-2 mb-2 sm:mb-3">
+            <div className="inline-flex items-center gap-2 px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full bg-amber-500/15 border border-amber-500/30 text-[9px] sm:text-[10px] font-mono font-bold text-amber-400 uppercase tracking-widest">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
+              <span>STOP 01 • ATELIER PHILOSOPHY</span>
+            </div>
+            <span className="text-[10px] font-mono text-slate-400 hidden sm:inline">1 / 4</span>
           </div>
-          <h3 className="text-lg sm:text-2xl font-heading font-black uppercase text-white tracking-wide leading-tight mb-2.5">
+
+          <h3 className="text-base sm:text-2xl font-heading font-black uppercase text-white tracking-wide leading-tight mb-1.5 sm:mb-2.5">
             WE CRAFT CUSTOM BUILDS WITH OBSESSIVE CARE
           </h3>
-          <p className="text-xs sm:text-sm text-slate-300 font-body leading-relaxed mb-4">
-            Every machine that enters our Silverstone atelier receives bespoke engineering — dyno-proven power, millimeter-gap composite fabrication, and hand-tailored interiors built for true automotive connoisseurs.
+
+          <p className="text-xs sm:text-sm text-slate-300 font-body leading-relaxed mb-3 sm:mb-4 line-clamp-3 sm:line-clamp-none">
+            Every machine that enters our Silverstone atelier receives bespoke engineering — dyno-proven power, millimeter-gap composite fabrication, and hand-tailored interiors.
           </p>
-          <div className="flex items-center justify-between pt-3 border-t border-white/10 text-[11px] font-mono font-bold text-amber-300">
+
+          <div className="flex items-center justify-between pt-2.5 sm:pt-3 border-t border-white/10 text-[10px] sm:text-[11px] font-mono font-bold text-amber-300">
             <div className="flex flex-wrap gap-1.5">
-              <span className="px-2.5 py-1 rounded-full bg-white/5 border border-white/10">Bespoke Commission</span>
-              <span className="px-2.5 py-1 rounded-full bg-white/5 border border-white/10">Silverstone Atelier</span>
+              <span className="px-2 py-0.5 rounded-full bg-white/5 border border-white/10">Bespoke Spec</span>
+              <span className="px-2 py-0.5 rounded-full bg-white/5 border border-white/10">Silverstone</span>
             </div>
             <button
               onClick={goToNextCheckpoint}
-              className="px-3 py-1.5 rounded-full bg-amber-500/20 hover:bg-amber-400 text-amber-300 hover:text-black border border-amber-500/40 font-heading text-xs font-bold uppercase tracking-wider flex items-center gap-1 transition-all cursor-pointer shadow-sm active:scale-95 ml-auto"
+              className="px-3 py-1 sm:py-1.5 rounded-full bg-amber-500/20 hover:bg-amber-400 text-amber-300 hover:text-black border border-amber-500/40 font-heading text-xs font-bold uppercase tracking-wider flex items-center gap-1 transition-all cursor-pointer shadow-sm active:scale-95 ml-auto"
               title="Drive to next checkpoint"
             >
               <span>Next Stop</span>
@@ -519,115 +557,145 @@ export function FrameScrollHero({ onEnterShowroom }) {
         </div>
       </div>
 
-      {/* POPUP 2: TURNING INTO COMPOUND - IN THE EMPTY GAP ON THE LEFT (FADES IN & FADES OUT) */}
+      {/* POPUP 2: CHASSIS & SUSPENSION (TOP ON MOBILE, LEFT ON DESKTOP) */}
       <div
         className={`fixed sm:absolute z-30 transition-all duration-500 ease-out pointer-events-none ${
           isMobile
-            ? 'bottom-10 left-4 right-4 mx-auto max-w-[390px]'
+            ? 'top-20 left-3 right-3 mx-auto max-w-[380px]'
             : 'left-6 lg:left-16 top-1/2 -translate-y-1/2 max-w-[420px]'
         }`}
         style={{
           opacity: op2,
           transform: isMobile
-            ? `translateY(${(1 - op2) * 20}px)`
+            ? `translateY(${(1 - op2) * -12}px)`
             : `translate(${-(1 - op2) * 25}px, -50%)`,
           pointerEvents: op2 > 0.2 ? 'auto' : 'none',
         }}
       >
-        <div className="p-6 sm:p-7 rounded-3xl bg-[#090C14]/85 border border-white/15 ring-1 ring-amber-400/25 backdrop-blur-2xl shadow-[0_24px_60px_rgba(0,0,0,0.92)] text-left">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/15 border border-amber-500/30 text-[10px] font-mono font-bold text-amber-400 uppercase tracking-widest mb-3">
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
-            <span>EXPEDITION & CHASSIS SERVICES</span>
+        <div className="p-4 sm:p-7 rounded-2xl sm:rounded-3xl bg-[#090C14]/90 border border-white/15 ring-1 ring-amber-400/25 backdrop-blur-2xl shadow-[0_20px_50px_rgba(0,0,0,0.92)] text-left">
+          <div className="flex items-center justify-between gap-2 mb-2 sm:mb-3">
+            <div className="inline-flex items-center gap-2 px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full bg-amber-500/15 border border-amber-500/30 text-[9px] sm:text-[10px] font-mono font-bold text-amber-400 uppercase tracking-widest">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
+              <span>STOP 02 • EXPEDITION CHASSIS</span>
+            </div>
+            <span className="text-[10px] font-mono text-slate-400 hidden sm:inline">2 / 4</span>
           </div>
-          <h3 className="text-lg sm:text-2xl font-heading font-black uppercase text-white tracking-wide leading-tight mb-2.5">
+
+          <h3 className="text-base sm:text-2xl font-heading font-black uppercase text-white tracking-wide leading-tight mb-1.5 sm:mb-2.5">
             PERFORMANCE SUSPENSION & TERRAIN DEFENSE
           </h3>
-          <p className="text-xs sm:text-sm text-slate-300 font-body leading-relaxed mb-4">
-            Stage-3 nitrogen remote-reservoir dampers, forged monoblock beadlock wheels, and high-clearance expedition geometry engineered to conquer 18,000ft mountain passes.
+
+          <p className="text-xs sm:text-sm text-slate-300 font-body leading-relaxed mb-3 sm:mb-4 line-clamp-3 sm:line-clamp-none">
+            Stage-3 nitrogen remote-reservoir dampers, forged monoblock beadlock wheels, and high-clearance expedition geometry engineered to conquer extreme mountain passes.
           </p>
-          <div className="flex items-center justify-between pt-3 border-t border-white/10 text-[11px] font-mono font-bold text-amber-300">
+
+          <div className="flex items-center justify-between pt-2.5 sm:pt-3 border-t border-white/10 text-[10px] sm:text-[11px] font-mono font-bold text-amber-300">
             <div className="flex flex-wrap gap-1.5">
-              <span className="px-2.5 py-1 rounded-full bg-white/5 border border-white/10">Stage-3 Nitrogen Lift</span>
-              <span className="px-2.5 py-1 rounded-full bg-white/5 border border-white/10">Forged Beadlocks</span>
+              <span className="px-2 py-0.5 rounded-full bg-white/5 border border-white/10">Stage-3 Lift</span>
+              <span className="px-2 py-0.5 rounded-full bg-white/5 border border-white/10">Beadlocks</span>
             </div>
-            <button
-              onClick={goToNextCheckpoint}
-              className="px-3 py-1.5 rounded-full bg-amber-500/20 hover:bg-amber-400 text-amber-300 hover:text-black border border-amber-500/40 font-heading text-xs font-bold uppercase tracking-wider flex items-center gap-1 transition-all cursor-pointer shadow-sm active:scale-95 ml-auto"
-              title="Drive to next checkpoint"
-            >
-              <span>Next Stop</span>
-              <ArrowRight className="w-3 h-3" />
-            </button>
+            <div className="flex items-center gap-1.5 ml-auto">
+              <button
+                onClick={goToPrevCheckpoint}
+                className="px-2.5 py-1 sm:py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-slate-300 hover:text-white text-xs font-mono transition-all cursor-pointer"
+                title="Previous stop"
+              >
+                Prev
+              </button>
+              <button
+                onClick={goToNextCheckpoint}
+                className="px-3 py-1 sm:py-1.5 rounded-full bg-amber-500/20 hover:bg-amber-400 text-amber-300 hover:text-black border border-amber-500/40 font-heading text-xs font-bold uppercase tracking-wider flex items-center gap-1 transition-all cursor-pointer shadow-sm active:scale-95"
+                title="Drive to next checkpoint"
+              >
+                <span>Next Stop</span>
+                <ArrowRight className="w-3 h-3" />
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* POPUP 3: WORKSHOP ENTRY - IN THE EMPTY GAP ON THE RIGHT (FADES IN & FADES OUT) */}
+      {/* POPUP 3: AEROSPACE COMPOSITE (TOP ON MOBILE, RIGHT ON DESKTOP) */}
       <div
         className={`fixed sm:absolute z-30 transition-all duration-500 ease-out pointer-events-none ${
           isMobile
-            ? 'bottom-10 left-4 right-4 mx-auto max-w-[390px]'
+            ? 'top-20 left-3 right-3 mx-auto max-w-[380px]'
             : 'right-6 lg:right-16 top-1/2 -translate-y-1/2 max-w-[420px]'
         }`}
         style={{
           opacity: op3,
           transform: isMobile
-            ? `translateY(${(1 - op3) * 20}px)`
+            ? `translateY(${(1 - op3) * -12}px)`
             : `translate(${(1 - op3) * 25}px, -50%)`,
           pointerEvents: op3 > 0.2 ? 'auto' : 'none',
         }}
       >
-        <div className="p-6 sm:p-7 rounded-3xl bg-[#090C14]/85 border border-white/15 ring-1 ring-amber-400/25 backdrop-blur-2xl shadow-[0_24px_60px_rgba(0,0,0,0.92)] text-left">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/15 border border-amber-500/30 text-[10px] font-mono font-bold text-amber-400 uppercase tracking-widest mb-3">
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
-            <span>AEROSPACE COMPOSITE & DEFENSE</span>
+        <div className="p-4 sm:p-7 rounded-2xl sm:rounded-3xl bg-[#090C14]/90 border border-white/15 ring-1 ring-amber-400/25 backdrop-blur-2xl shadow-[0_20px_50px_rgba(0,0,0,0.92)] text-left">
+          <div className="flex items-center justify-between gap-2 mb-2 sm:mb-3">
+            <div className="inline-flex items-center gap-2 px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full bg-amber-500/15 border border-amber-500/30 text-[9px] sm:text-[10px] font-mono font-bold text-amber-400 uppercase tracking-widest">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
+              <span>STOP 03 • COMPOSITE & ARMOR</span>
+            </div>
+            <span className="text-[10px] font-mono text-slate-400 hidden sm:inline">3 / 4</span>
           </div>
-          <h3 className="text-lg sm:text-2xl font-heading font-black uppercase text-white tracking-wide leading-tight mb-2.5">
+
+          <h3 className="text-base sm:text-2xl font-heading font-black uppercase text-white tracking-wide leading-tight mb-1.5 sm:mb-2.5">
             AUTOCLAVE CARBON & 9H CERAMIC ARMOR
           </h3>
-          <p className="text-xs sm:text-sm text-slate-300 font-body leading-relaxed mb-4">
-            Aerodynamic dry carbon splitters, valved Inconel performance downpipes, and multi-layer 10-mil self-healing PPF ceramic armor protecting high-strike body panels against extreme debris.
+
+          <p className="text-xs sm:text-sm text-slate-300 font-body leading-relaxed mb-3 sm:mb-4 line-clamp-3 sm:line-clamp-none">
+            Aerodynamic dry carbon splitters, valved Inconel performance downpipes, and multi-layer 10-mil self-healing PPF ceramic armor protecting body panels.
           </p>
-          <div className="flex items-center justify-between pt-3 border-t border-white/10 text-[11px] font-mono font-bold text-amber-300">
+
+          <div className="flex items-center justify-between pt-2.5 sm:pt-3 border-t border-white/10 text-[10px] sm:text-[11px] font-mono font-bold text-amber-300">
             <div className="flex flex-wrap gap-1.5">
-              <span className="px-2.5 py-1 rounded-full bg-white/5 border border-white/10">Dry Carbon Aero</span>
-              <span className="px-2.5 py-1 rounded-full bg-white/5 border border-white/10">9H Ceramic Armor</span>
+              <span className="px-2 py-0.5 rounded-full bg-white/5 border border-white/10">Dry Carbon</span>
+              <span className="px-2 py-0.5 rounded-full bg-white/5 border border-white/10">9H Shield</span>
             </div>
-            <button
-              onClick={goToNextCheckpoint}
-              className="px-3 py-1.5 rounded-full bg-amber-500/20 hover:bg-amber-400 text-amber-300 hover:text-black border border-amber-500/40 font-heading text-xs font-bold uppercase tracking-wider flex items-center gap-1 transition-all cursor-pointer shadow-sm active:scale-95 ml-auto"
-              title="Drive to next checkpoint"
-            >
-              <span>Next Stop</span>
-              <ArrowRight className="w-3 h-3" />
-            </button>
+            <div className="flex items-center gap-1.5 ml-auto">
+              <button
+                onClick={goToPrevCheckpoint}
+                className="px-2.5 py-1 sm:py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-slate-300 hover:text-white text-xs font-mono transition-all cursor-pointer"
+                title="Previous stop"
+              >
+                Prev
+              </button>
+              <button
+                onClick={goToNextCheckpoint}
+                className="px-3 py-1 sm:py-1.5 rounded-full bg-amber-500/20 hover:bg-amber-400 text-amber-300 hover:text-black border border-amber-500/40 font-heading text-xs font-bold uppercase tracking-wider flex items-center gap-1 transition-all cursor-pointer shadow-sm active:scale-95"
+                title="Drive to next checkpoint"
+              >
+                <span>Next Stop</span>
+                <ArrowRight className="w-3 h-3" />
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* POPUP 4: WORKSHOP DOCKING - CENTERED (FADES IN & FADES OUT) */}
+      {/* POPUP 4: WORKSHOP DOCKING (BOTTOM DOCK) */}
       <div
-        className="fixed sm:absolute z-30 transition-all duration-500 ease-out left-1/2 -translate-x-1/2 bottom-8 sm:bottom-12 max-w-[460px] w-[92%] sm:w-full pointer-events-none"
+        className="fixed sm:absolute z-30 transition-all duration-500 ease-out left-3 right-3 sm:left-1/2 sm:-translate-x-1/2 bottom-5 sm:bottom-12 max-w-[460px] sm:w-full mx-auto pointer-events-none"
         style={{
           opacity: op4,
-          transform: `translate(-50%, ${(1 - op4) * 20}px)`,
+          transform: `translate(${isMobile ? '0' : '-50%'}, ${(1 - op4) * 20}px)`,
           pointerEvents: op4 > 0.2 ? 'auto' : 'none',
         }}
       >
-        <div className="p-6 sm:p-7 rounded-3xl bg-[#090C14]/90 border border-white/15 ring-1 ring-amber-400/30 backdrop-blur-2xl shadow-[0_24px_60px_rgba(0,0,0,0.95)] text-center">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/15 border border-amber-500/30 text-[10px] font-mono font-bold text-amber-400 uppercase tracking-widest mb-3">
+        <div className="p-4 sm:p-7 rounded-2xl sm:rounded-3xl bg-[#090C14]/95 border border-white/15 ring-1 ring-amber-400/30 backdrop-blur-2xl shadow-[0_24px_60px_rgba(0,0,0,0.95)] text-center">
+          <div className="inline-flex items-center gap-2 px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full bg-amber-500/15 border border-amber-500/30 text-[9px] sm:text-[10px] font-mono font-bold text-amber-400 uppercase tracking-widest mb-2 sm:mb-3">
             <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
-            <span>WORKSHOP DOCKING COMPLETE</span>
+            <span>STOP 04 • WORKSHOP DOCKING COMPLETE</span>
           </div>
-          <h3 className="text-lg sm:text-2xl font-heading font-black uppercase text-white tracking-wide leading-tight mb-2">
+          <h3 className="text-base sm:text-2xl font-heading font-black uppercase text-white tracking-wide leading-tight mb-1 sm:mb-2">
             HYDRAULIC LIFT ENGAGED • ENTER 3D ATELIER
           </h3>
-          <p className="text-xs sm:text-sm text-slate-300 font-body leading-relaxed mb-5">
-            The vehicle is aligned on the hoist. Scroll down or click below to enter the interactive 3D showroom plane.
+          <p className="text-xs sm:text-sm text-slate-300 font-body leading-relaxed mb-3 sm:mb-5">
+            The vehicle is aligned on the hoist. Tap below to inspect, customize paint & wheels in the 3D studio.
           </p>
           <button
             onClick={onEnterShowroom}
-            className="w-full py-3.5 px-6 rounded-2xl font-heading font-black text-xs sm:text-sm uppercase tracking-wider flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-black shadow-lg shadow-amber-950/40 hover:shadow-xl transition-all cursor-pointer"
+            className="w-full py-3 sm:py-3.5 px-6 rounded-xl sm:rounded-2xl font-heading font-black text-xs sm:text-sm uppercase tracking-wider flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-black shadow-lg shadow-amber-950/40 hover:shadow-xl transition-all cursor-pointer active:scale-98"
           >
             <span>Reveal 3D Showroom Plane</span>
             <ArrowRight className="w-4 h-4" />
@@ -635,19 +703,46 @@ export function FrameScrollHero({ onEnterShowroom }) {
         </div>
       </div>
 
-      {/* SUBTLE INTERACTIVE SCROLL PROMPT AT BOTTOM */}
-      {displayPercent < 80 && (
-        <button
-          onClick={goToNextCheckpoint}
-          className="absolute bottom-4 left-0 right-0 mx-auto w-fit z-20 flex items-center justify-center gap-2 px-4 py-1.5 rounded-full bg-[#0A0D14]/85 hover:bg-black/95 border border-white/10 hover:border-amber-400/40 text-[10px] font-mono uppercase tracking-widest text-slate-300 hover:text-amber-400 backdrop-blur-md shadow-lg transition-all cursor-pointer pointer-events-auto group"
-        >
-          <span>
-            {activeCheckpoint === 0
-              ? 'Scroll or Click to Drive • Stop 1: Atelier Philosophy'
-              : `Scroll or Click for Next Stop • Checkpoint ${Math.min(4, activeCheckpoint + 1)} of 4`}
-          </span>
-          <ChevronDown className="w-3.5 h-3.5 text-amber-400 group-hover:translate-y-0.5 transition-transform" />
-        </button>
+      {/* SLEEK MOBILE & DESKTOP CHECKPOINT NAVIGATOR AT BOTTOM */}
+      {displayPercent < 82 && (
+        <div className="absolute bottom-4 left-0 right-0 z-20 flex flex-col items-center gap-1.5 pointer-events-auto select-none">
+          {/* Minimal 4-Checkpoint Switcher Pills */}
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/70 border border-white/10 backdrop-blur-xl shadow-lg">
+            {[1, 2, 3, 4].map((step) => {
+              const isCurrent = activeCheckpoint === step;
+              const isPassed = activeCheckpoint > step;
+              return (
+                <button
+                  key={step}
+                  onClick={() => jumpToCheckpoint(step)}
+                  className={`transition-all duration-300 rounded-full cursor-pointer flex items-center justify-center font-mono text-[10px] ${
+                    isCurrent
+                      ? 'w-7 h-5 bg-amber-400 text-black font-bold shadow-md shadow-amber-400/40'
+                      : isPassed
+                      ? 'w-5 h-5 bg-white/20 text-slate-300 hover:bg-white/30'
+                      : 'w-5 h-5 bg-white/5 text-slate-500 hover:bg-white/15'
+                  }`}
+                  title={`Jump to Checkpoint ${step}`}
+                >
+                  {step}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Subtle swipe / click hint */}
+          <button
+            onClick={goToNextCheckpoint}
+            className="flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-widest text-slate-400 hover:text-amber-300 transition-colors"
+          >
+            <span>
+              {activeCheckpoint === 0
+                ? 'Swipe Up / Click • Start Drive'
+                : `Swipe Up / Click • Stop ${Math.min(4, activeCheckpoint + 1)}`}
+            </span>
+            <ChevronDown className="w-3 h-3 text-amber-400 animate-bounce" />
+          </button>
+        </div>
       )}
     </div>
   );
