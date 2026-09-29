@@ -62,7 +62,7 @@ const playUiSound = (type = 'click') => {
 };
 
 // Sparks / Embers Particle Effect
-function StudioParticles({ count = 75 }) {
+function StudioParticles({ count = 25 }) {
   const particles = useMemo(() => {
     const temp = [];
     for (let i = 0; i < count; i++) {
@@ -233,8 +233,9 @@ function VehicleShowroom({
   useEffect(() => {
     tharScene.traverse((child) => {
       if (child.isMesh && child.material) {
-        child.castShadow = true;
-        child.receiveShadow = true;
+        child.castShadow = false;
+        child.receiveShadow = false;
+        child.frustumCulled = true;
 
         const mat = child.material;
         if (!mat.userData.customShaderAttached) {
@@ -334,16 +335,10 @@ function VehicleShowroom({
             position={[0, 0.1, 0]}
           />
         )}
-
-        {/* Wheel Well Illuminators */}
-        <pointLight position={[-0.62, -0.2, 0.8]} intensity={2.2} color="#FFF" distance={2} />
-        <pointLight position={[-0.62, -0.2, -0.8]} intensity={2.2} color="#FFF" distance={2} />
-        <pointLight position={[0.51, -0.2, 0.8]} intensity={2.2} color="#FFF" distance={2} />
-        <pointLight position={[0.51, -0.2, -0.8]} intensity={2.2} color="#FFF" distance={2} />
       </group>
 
-      {/* Floating Sparks */}
-      <StudioParticles count={70} />
+      {/* Floating Sparks (reduced count for performance) */}
+      <StudioParticles count={25} />
 
       {/* The Sleek Reflective Dark Showroom Floor Plane */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 0]} receiveShadow>
@@ -445,15 +440,16 @@ export function StudioShowroomCanvas({
       {/* 3D WebGL Canvas */}
       <Canvas
         shadows
-        dpr={[1, 1.5]}
+        dpr={[1, 1]}
         camera={{ position: [3.8, 2.2, 4.6], fov: 45 }}
         gl={{
-          antialias: true,
+          antialias: false,
           alpha: true,
           powerPreference: 'high-performance',
           stencil: false,
           depth: true,
         }}
+        performance={{ min: 0.5 }}
       >
         <Suspense
           fallback={
@@ -469,7 +465,7 @@ export function StudioShowroomCanvas({
         >
           <Environment preset="night" environmentIntensity={0.65} />
           <ambientLight intensity={0.5} />
-          <directionalLight position={[6, 9, 6]} intensity={1.8} castShadow shadow-mapSize={[1024, 1024]} />
+          <directionalLight position={[6, 9, 6]} intensity={1.8} castShadow shadow-mapSize={[512, 512]} />
           {/* Cyber Neon Overhead Tubes */}
           <pointLight color="#00E5FF" intensity={3} distance={15} position={[-4, 5, 2]} />
           <pointLight color="#FF4D00" intensity={3} distance={15} position={[4, 5, -2]} />
@@ -488,7 +484,8 @@ export function StudioShowroomCanvas({
             minDistance={2.5}
             maxDistance={8.5}
             maxPolarAngle={Math.PI / 2 - 0.05}
-            dampingFactor={0.05}
+            enableDamping={true}
+            dampingFactor={0.08}
           />
         </Suspense>
       </Canvas>
