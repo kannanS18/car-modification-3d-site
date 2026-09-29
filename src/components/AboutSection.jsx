@@ -9,23 +9,23 @@ export function AboutSection({ onDriveToGarage }) {
 
   return (
     <section id="about" className="relative py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto z-10">
-      <div className="glass-panel rounded-3xl p-8 sm:p-12 border border-[#FF4D00]/25 shadow-2xl relative overflow-hidden backdrop-blur-xl bg-black/70">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-[#FF4D00]/10 rounded-full blur-[100px] pointer-events-none -mr-20 -mt-20" />
+      <div className="glass-panel rounded-3xl p-8 sm:p-12 border border-white/10 shadow-2xl relative overflow-hidden backdrop-blur-xl bg-[#0F131C]/90">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-amber-500/10 rounded-full blur-[100px] pointer-events-none -mr-20 -mt-20" />
 
         <div className="max-w-3xl mb-12">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#FF4D00]/10 border border-[#FF4D00]/30 text-xs font-mono font-bold tracking-wider text-[#FF4D00] uppercase mb-4">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-xs font-semibold tracking-wider text-amber-300 uppercase mb-4">
             <Wrench className="w-3.5 h-3.5" />
             <span>{about.badge}</span>
           </div>
 
-          <h2 className="text-3xl sm:text-5xl font-bold font-heading text-white uppercase tracking-tight leading-tight">
+          <h2 className="text-3xl sm:text-5xl font-extrabold font-heading text-white uppercase tracking-tight leading-tight">
             {about.title}
           </h2>
 
-          <p className="mt-6 text-base sm:text-lg text-gray-300 leading-relaxed font-body">
+          <p className="mt-6 text-base sm:text-lg text-slate-300 leading-relaxed font-body">
             {about.p1}
           </p>
-          <p className="mt-4 text-sm sm:text-base text-gray-400 leading-relaxed font-body">
+          <p className="mt-4 text-sm sm:text-base text-slate-400 leading-relaxed font-body">
             {about.p2}
           </p>
         </div>
@@ -37,17 +37,17 @@ export function AboutSection({ onDriveToGarage }) {
             return (
               <div
                 key={idx}
-                className="p-6 rounded-2xl glass-panel border border-white/5 hover:border-[#FF4D00]/40 transition-all group"
+                className="p-6 rounded-2xl glass-panel border border-white/10 hover:border-amber-400/40 transition-all group bg-[#121620]/80"
               >
                 <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-[#FF4D00]/10 border border-[#FF4D00]/30 flex items-center justify-center text-[#FF4D00] shrink-0 group-hover:scale-110 transition-transform">
+                  <div className="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0 group-hover:scale-110 transition-transform">
                     <Icon className="w-6 h-6" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-bold font-heading text-white uppercase group-hover:text-[#FF4D00] transition-colors">
+                    <h3 className="text-lg font-bold font-heading text-white uppercase group-hover:text-amber-300 transition-colors">
                       {item.title}
                     </h3>
-                    <p className="mt-1.5 text-xs sm:text-sm text-gray-400 leading-relaxed">
+                    <p className="mt-1.5 text-xs sm:text-sm text-slate-400 leading-relaxed">
                       {item.desc}
                     </p>
                   </div>
@@ -60,15 +60,15 @@ export function AboutSection({ onDriveToGarage }) {
         {/* Banner CTA */}
         <div className="mt-10 pt-8 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <CheckCircle className="w-5 h-5 text-[#FF4D00]" />
-            <span className="text-xs sm:text-sm font-mono uppercase tracking-wider text-gray-300">
+            <CheckCircle className="w-5 h-5 text-amber-400" />
+            <span className="text-xs sm:text-sm font-semibold uppercase tracking-wider text-slate-300">
               Dyno Certified • FIA-Grade Safety • Complete Bespoke Warranty
             </span>
           </div>
 
           <button
             onClick={onDriveToGarage}
-            className="px-6 py-3 rounded-xl font-heading font-bold text-xs uppercase tracking-wider bg-[#FF4D00] hover:bg-[#E03B00] text-white shadow-[0_0_20px_rgba(255,77,0,0.3)] transition-all cursor-pointer"
+            className="px-6 py-3 rounded-xl font-heading font-black text-xs uppercase tracking-wider bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-black shadow-lg shadow-amber-950/40 transition-all cursor-pointer"
           >
             Enter 3D Modification Bay ↓
           </button>

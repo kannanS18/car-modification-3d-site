@@ -139,12 +139,13 @@ export function FrameScrollHero({ onEnterShowroom }) {
         hasTriggeredRef.current = true;
         setIsTransitioning(true);
 
-        // Smooth 600ms cross-fade into 3D Studio Plane
+        // Smooth scroll directly to the 3D Studio Showroom Plane right below!
         setTimeout(() => {
           if (onEnterShowroom) {
             onEnterShowroom();
           }
-        }, 600);
+          setIsTransitioning(false);
+        }, 400);
       }
 
       animId = requestAnimationFrame(animateLoop);
@@ -154,14 +155,13 @@ export function FrameScrollHero({ onEnterShowroom }) {
     return () => cancelAnimationFrame(animId);
   }, [drawFrame, onEnterShowroom]);
 
-  // LOCKED VIEWPORT WHEEL & TOUCH CONTROLLER (ZERO DOCUMENT SCROLL)
+  // SMOOTH VIEWPORT WHEEL & TOUCH CONTROLLER
   useEffect(() => {
     let touchStartY = 0;
 
     const advanceByDelta = (deltaY) => {
       if (deltaY < 0) {
-        // SCROLL UP: DO NOT PLAY IN REVERSE!
-        // Instantly return to the start of the video (frame 0) with the video banner!
+        // SCROLL UP: Return to start banner
         targetFrameRef.current = 0;
         currentFrameRef.current = 0;
         hasTriggeredRef.current = false;
@@ -184,8 +184,28 @@ export function FrameScrollHero({ onEnterShowroom }) {
     };
 
     const onWheel = (e) => {
-      e.preventDefault();
-      advanceByDelta(e.deltaY);
+      // If user is scrolled down into the 3D showroom plane, allow native page scrolling!
+      if (window.scrollY > 40) {
+        return;
+      }
+
+      if (e.deltaY > 0) {
+        if (currentFrameRef.current < TOTAL_FRAMES - 6) {
+          e.preventDefault();
+          advanceByDelta(e.deltaY);
+        } else {
+          // Reached end of video: smoothly transition down to 3D plane
+          if (onEnterShowroom && !hasTriggeredRef.current) {
+            hasTriggeredRef.current = true;
+            onEnterShowroom();
+          }
+        }
+      } else if (e.deltaY < 0 && window.scrollY <= 10) {
+        if (currentFrameRef.current > 0) {
+          e.preventDefault();
+          advanceByDelta(-100);
+        }
+      }
     };
 
     const onTouchStart = (e) => {
@@ -193,11 +213,20 @@ export function FrameScrollHero({ onEnterShowroom }) {
     };
 
     const onTouchMove = (e) => {
-      e.preventDefault();
+      if (window.scrollY > 40) return;
       const currentY = e.touches[0].clientY;
       const deltaY = (touchStartY - currentY) * 1.3;
       touchStartY = currentY;
-      advanceByDelta(deltaY);
+
+      if (deltaY > 0 && currentFrameRef.current < TOTAL_FRAMES - 6) {
+        e.preventDefault();
+        advanceByDelta(deltaY);
+      } else if (deltaY > 0 && currentFrameRef.current >= TOTAL_FRAMES - 6) {
+        if (onEnterShowroom && !hasTriggeredRef.current) {
+          hasTriggeredRef.current = true;
+          onEnterShowroom();
+        }
+      }
     };
 
     window.addEventListener('wheel', onWheel, { passive: false });
@@ -209,17 +238,17 @@ export function FrameScrollHero({ onEnterShowroom }) {
       window.removeEventListener('touchstart', onTouchStart);
       window.removeEventListener('touchmove', onTouchMove);
     };
-  }, []);
+  }, [onEnterShowroom, drawFrame]);
 
   const loadPercent = Math.round((imagesLoaded / TOTAL_FRAMES) * 100);
 
   return (
-    <div className="fixed inset-0 w-full h-full bg-[#0B0B0C] overflow-hidden select-none z-0">
+    <div className="relative w-full h-screen bg-[#0A0D14] overflow-hidden select-none z-0">
       {/* Loading Overlay */}
       {imagesLoaded < 3 && (
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-black z-40 gap-3">
-          <div className="w-12 h-12 border-3 border-[#FF4D00] border-t-transparent rounded-full animate-spin" />
-          <span className="text-xs font-mono uppercase tracking-widest text-[#FF4D00] font-bold">
+          <div className="w-12 h-12 border-3 border-amber-400 border-t-transparent rounded-full animate-spin" />
+          <span className="text-xs font-mono uppercase tracking-widest text-amber-400 font-bold">
             Preparing 24fps Driving Experience ({loadPercent}%)...
           </span>
         </div>
@@ -232,9 +261,9 @@ export function FrameScrollHero({ onEnterShowroom }) {
         }`}
       >
         <div className="flex flex-col items-center justify-center h-full gap-3">
-          <div className="w-10 h-10 border-2 border-[#FF4D00] border-t-transparent rounded-full animate-spin" />
+          <div className="w-10 h-10 border-2 border-amber-400 border-t-transparent rounded-full animate-spin" />
           <span className="text-xs font-mono uppercase tracking-widest text-white font-bold animate-pulse">
-            Docking on 3D Studio Plane...
+            Transitioning to 3D Studio Plane...
           </span>
         </div>
       </div>
@@ -246,7 +275,7 @@ export function FrameScrollHero({ onEnterShowroom }) {
       />
 
       {/* Subtle Vignette Gradient */}
-      <div className="absolute inset-0 bg-gradient-to-t from-[#0B0B0C]/80 via-transparent to-black/50 pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-t from-[#0A0D14] via-transparent to-black/60 pointer-events-none" />
 
       {/* Top HUD Banner */}
       <div
@@ -254,8 +283,8 @@ export function FrameScrollHero({ onEnterShowroom }) {
           displayPercent < 40 ? 'opacity-100 translate-y-0' : 'opacity-30 -translate-y-2'
         }`}
       >
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass-panel text-xs font-mono font-bold tracking-wider text-[#FF4D00] uppercase mb-2 border border-[#FF4D00]/40 backdrop-blur-md shadow-2xl">
-          <span className="w-2 h-2 rounded-full bg-[#FF4D00] animate-ping" />
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass-panel text-xs font-mono font-bold tracking-wider text-amber-300 uppercase mb-2 border border-amber-500/30 backdrop-blur-md shadow-2xl bg-black/60">
+          <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping" />
           <span>Mahindra Thar 4x4 • 30fps Ultra-Smooth Video Drive</span>
         </div>
 
@@ -263,19 +292,19 @@ export function FrameScrollHero({ onEnterShowroom }) {
           AutoForge <span className="theme-gradient-text">Motorsport Atelier</span>
         </h1>
 
-        <p className="mt-2 text-xs sm:text-sm text-gray-300 max-w-lg font-body drop-shadow">
-          Scroll down to drive the Thar into the workshop. Scroll up returns to the start banner without reverse playback.
+        <p className="mt-2 text-xs sm:text-sm text-slate-300 max-w-lg font-body drop-shadow">
+          Scroll down to drive the Thar into the workshop. When the drive concludes, the 3D Studio Plane automatically reveals below.
         </p>
       </div>
 
       {/* Bottom Floating Control Bar */}
       <div className="absolute bottom-8 left-0 right-0 max-w-3xl mx-auto px-4 pointer-events-auto z-20">
-        <div className="glass-panel p-4 rounded-2xl border border-white/10 backdrop-blur-xl flex flex-col sm:flex-row items-center justify-between gap-4 shadow-2xl bg-black/85">
+        <div className="glass-panel p-4 rounded-2xl border border-white/10 backdrop-blur-xl flex flex-col sm:flex-row items-center justify-between gap-4 shadow-2xl bg-[#0B0E14]/90">
           {/* Status & Scrub Bar */}
           <div className="w-full sm:w-auto flex-1">
             <div className="flex items-center justify-between text-xs font-mono mb-1.5">
               <span className="text-gray-300 font-bold uppercase flex items-center gap-1.5">
-                <Wrench className="w-3.5 h-3.5 text-[#FF4D00]" />
+                <Wrench className="w-3.5 h-3.5 text-amber-400" />
                 <span>
                   {displayPercent < 45
                     ? '1. Cruising City Highway'
@@ -284,13 +313,13 @@ export function FrameScrollHero({ onEnterShowroom }) {
                     : '3. Arriving on Modification Bay'}
                 </span>
               </span>
-              <span className="text-[#FF4D00] font-bold">
+              <span className="text-amber-400 font-bold">
                 {displayPercent}%
               </span>
             </div>
             <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
               <div
-                className="h-full bg-gradient-to-r from-[#FF4D00] to-yellow-500 transition-all duration-75"
+                className="h-full bg-gradient-to-r from-amber-500 to-amber-300 transition-all duration-75"
                 style={{ width: `${displayPercent}%` }}
               />
             </div>
@@ -300,32 +329,32 @@ export function FrameScrollHero({ onEnterShowroom }) {
           <div className="flex items-center gap-2 shrink-0">
             {displayPercent > 5 && (
               <button
-                onClick={() => advanceByDelta(-100)}
-                className="px-3.5 py-2.5 rounded-xl glass-panel text-gray-300 hover:text-white hover:border-[#FF4D00]/50 text-xs font-mono flex items-center gap-1.5 transition-all cursor-pointer"
+                onClick={() => {
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                  advanceByDelta(-100);
+                }}
+                className="px-3.5 py-2.5 rounded-xl glass-panel text-gray-300 hover:text-white hover:border-amber-500/50 text-xs font-mono flex items-center gap-1.5 transition-all cursor-pointer"
                 title="Return to start video banner"
               >
-                <RotateCcw className="w-3.5 h-3.5 text-[#FF4D00]" />
+                <RotateCcw className="w-3.5 h-3.5 text-amber-400" />
                 <span className="hidden sm:inline">Start Banner</span>
               </button>
             )}
 
             <button
-              onClick={() => {
-                setIsTransitioning(true);
-                setTimeout(onEnterShowroom, 400);
-              }}
-              className="px-5 py-2.5 rounded-xl font-heading font-bold text-xs uppercase tracking-wider flex items-center gap-2 bg-[#FF4D00] hover:bg-[#E03B00] text-white shadow-[0_0_25px_rgba(255,77,0,0.6)] transition-all cursor-pointer group"
+              onClick={onEnterShowroom}
+              className="px-5 py-2.5 rounded-xl font-heading font-black text-xs uppercase tracking-wider flex items-center gap-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-black shadow-lg shadow-amber-950/40 transition-all cursor-pointer group"
             >
-              <span>{displayPercent >= 90 ? 'Docking in 3D...' : 'Skip to 3D Plane'}</span>
+              <span>{displayPercent >= 90 ? 'Reveal 3D Plane' : 'Skip to 3D Plane'}</span>
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </button>
           </div>
         </div>
 
         {/* Scroll Instruction */}
-        <div className="text-center mt-2.5 flex items-center justify-center gap-1.5 text-[11px] font-mono uppercase tracking-widest text-gray-400">
+        <div className="text-center mt-2.5 flex items-center justify-center gap-1.5 text-[11px] font-mono uppercase tracking-widest text-slate-400">
           <span>Scroll Mouse Wheel / Swipe to Drive Car</span>
-          <ChevronDown className="w-3.5 h-3.5 text-[#FF4D00] animate-bounce" />
+          <ChevronDown className="w-3.5 h-3.5 text-amber-400 animate-bounce" />
         </div>
       </div>
     </div>
