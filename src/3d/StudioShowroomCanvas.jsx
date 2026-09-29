@@ -15,6 +15,13 @@ import {
   ChevronUp,
   ChevronDown,
   RotateCw,
+  SlidersHorizontal,
+  Palette,
+  Settings2,
+  Sparkles,
+  CircleDot,
+  Layers,
+  Sliders,
 } from 'lucide-react';
 import {
   UserWheelAssembly,
@@ -181,7 +188,8 @@ function MiniWheelTurntable({ wheelType, setWheelType, onOpenSandbox }) {
               : 'text-gray-400 hover:text-white hover:bg-white/10'
           }`}
         >
-          <span>🛞 Assembly</span>
+          <Disc className="w-3 h-3" />
+          <span>Assembly</span>
         </button>
         <button
           onClick={() => {
@@ -194,7 +202,8 @@ function MiniWheelTurntable({ wheelType, setWheelType, onOpenSandbox }) {
               : 'text-gray-400 hover:text-white hover:bg-white/10'
           }`}
         >
-          <span>⚙️ CAD Rim</span>
+          <CircleDot className="w-3 h-3" />
+          <span>CAD Rim</span>
         </button>
         <button
           onClick={() => {
@@ -207,7 +216,8 @@ function MiniWheelTurntable({ wheelType, setWheelType, onOpenSandbox }) {
               : 'text-gray-400 hover:text-white hover:bg-white/10'
           }`}
         >
-          <span>🏔️ 3D Tyre</span>
+          <Layers className="w-3 h-3" />
+          <span>Tyre Tread</span>
         </button>
       </div>
 
@@ -465,7 +475,7 @@ function VehicleShowroom({
   const underglowColor = (!carColor || carColor === 'original') ? '#F59E0B' : carColor;
 
   return (
-    <group position={[0, -0.6, 0]}>
+    <group position={[0, -0.46, 0]}>
       {/* Moving Vehicle Group */}
       <group
         ref={groupRef}
@@ -648,7 +658,7 @@ export function StudioShowroomCanvas({
             minDistance={2.4}
             maxDistance={8.5}
             maxPolarAngle={Math.PI / 2 - 0.05}
-            target={[0, 0.1, 0]}
+            target={[0, 0.22, 0]}
             enableDamping={true}
             dampingFactor={0.08}
           />
@@ -725,7 +735,7 @@ export function StudioShowroomCanvas({
               className="px-2.5 sm:px-3.5 py-1.5 rounded-xl text-xs font-bold uppercase border border-amber-500/40 bg-[#121620]/90 text-amber-300 hover:bg-amber-500/20 hover:text-white transition-all shadow-lg flex items-center gap-1.5 cursor-pointer backdrop-blur-md"
               title="Open 3D Model Sandbox"
             >
-              <span>🔬</span>
+              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
               <span className="hidden sm:inline">3D Sandbox</span>
             </button>
           )}
@@ -743,65 +753,61 @@ export function StudioShowroomCanvas({
         />
       )}
 
-      {/* MOBILE FLOATING ACTION BAR (< md screens) - VISIBLE ONLY WHEN DRAWER IS COLLAPSED */}
+      {/* MOBILE FLOATING CONTROLLER DOCK (< md screens) - ELEGANT UNIFIED GLASS ISLAND */}
       <div
-        className={`md:hidden fixed sm:absolute bottom-3 left-3 right-3 z-30 pointer-events-auto flex flex-col gap-1.5 transition-all duration-300 ${
+        className={`md:hidden fixed sm:absolute bottom-5 left-4 right-4 z-30 pointer-events-auto flex items-center justify-center transition-all duration-300 ${
           mobileDrawerOpen
             ? 'opacity-0 pointer-events-none translate-y-4'
             : 'opacity-100 translate-y-0'
         }`}
       >
-        <div className="flex items-center gap-2">
-          {/* Primary Trigger: Open Customization Atelier Drawer */}
+        <div className="w-full max-w-[360px] p-1.5 rounded-full bg-[#0C1017]/90 border border-white/[0.12] ring-1 ring-white/5 backdrop-blur-2xl shadow-[0_16px_40px_rgba(0,0,0,0.9)] flex items-center gap-1.5">
+          {/* Main Configurator Drawer Trigger */}
           <button
             onClick={() => {
               playUiSound('tab');
               setMobileDrawerOpen(true);
             }}
-            className="flex-1 py-3 px-3.5 rounded-2xl bg-[#0F131C]/95 border border-amber-500/40 backdrop-blur-2xl shadow-[0_10px_30px_rgba(0,0,0,0.85)] text-white flex items-center justify-between active:scale-[0.98] transition-all cursor-pointer group"
+            className="flex-1 flex items-center justify-between gap-2.5 pl-1.5 pr-3 py-1 rounded-full text-left transition-all cursor-pointer group active:scale-[0.98]"
           >
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400 text-sm">
-                🛠️
+            <div className="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-amber-400 group-hover:bg-amber-500/10 group-hover:border-amber-500/30 transition-all shrink-0">
+              <SlidersHorizontal className="w-4 h-4" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="text-[11px] font-heading font-black text-white uppercase tracking-wider leading-tight flex items-center gap-1.5">
+                <span>ATELIER SPEC</span>
+                <span className="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30">
+                  {Object.values(selectedMods).filter(Boolean).length} ACTIVE
+                </span>
               </div>
-              <div className="text-left">
-                <div className="text-xs font-bold text-white tracking-wide uppercase flex items-center gap-2">
-                  <span>Tune Specs & Paint</span>
-                  <span className="text-[10px] px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 font-mono font-bold">
-                    {Object.values(selectedMods).filter(Boolean).length} Active
-                  </span>
-                </div>
-                <div className="text-[10px] text-slate-400 leading-tight">
-                  Colors • Upgrades • Parts • Stance
-                </div>
+              <div className="text-[10px] text-slate-400 font-medium tracking-normal truncate">
+                Tap to tune colors & parts
               </div>
             </div>
-            <div className="flex items-center gap-1 text-amber-400 font-bold text-xs uppercase bg-amber-500/15 px-2.5 py-1.5 rounded-xl border border-amber-500/30 group-hover:bg-amber-500/25">
-              <span>TUNE</span>
-              <ChevronUp className="w-3.5 h-3.5 animate-bounce" />
+            <div className="flex items-center gap-1 text-[10px] font-heading font-black uppercase tracking-wider px-2.5 py-1 rounded-full bg-amber-500 text-black shadow-sm group-hover:bg-amber-400 transition-all shrink-0">
+              <span>CONFIG</span>
+              <ChevronUp className="w-3 h-3" />
             </div>
           </button>
 
-          {/* 360 Spin Quick-Toggle Button */}
+          {/* Integrated Vertical Separator */}
+          <div className="w-[1px] h-6 bg-white/10 shrink-0" />
+
+          {/* Integrated 360 Spin Action */}
           <button
             onClick={() => {
               playUiSound('toggle');
               setAutoRotate(!autoRotate);
             }}
-            className={`p-3 rounded-2xl border backdrop-blur-2xl transition-all cursor-pointer flex items-center justify-center shadow-lg active:scale-95 ${
+            className={`w-9 h-9 rounded-full flex items-center justify-center transition-all cursor-pointer shrink-0 active:scale-95 ${
               autoRotate
-                ? 'border-amber-400 bg-amber-500/20 text-amber-300 shadow-[0_0_15px_rgba(245,158,11,0.3)]'
-                : 'border-white/10 bg-[#0F131C]/95 text-slate-400'
+                ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-[0_0_12px_rgba(245,158,11,0.25)]'
+                : 'text-slate-400 hover:text-white bg-white/5 border border-white/10 hover:bg-white/10'
             }`}
             title="Toggle 360 Auto-Spin"
           >
-            <RotateCw className={`w-5 h-5 ${autoRotate ? 'animate-spin' : ''}`} />
+            <RotateCw className={`w-4 h-4 ${autoRotate ? 'animate-spin' : ''}`} />
           </button>
-        </div>
-
-        {/* Interactive Gesture Hint */}
-        <div className="text-center text-[10px] font-medium text-slate-400 pointer-events-none drop-shadow">
-          👆 Drag 3D car to rotate 360° • Pinch to zoom
         </div>
       </div>
 
@@ -823,8 +829,8 @@ export function StudioShowroomCanvas({
           <div className="md:hidden flex items-center justify-between pb-2 border-b border-white/10">
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
-              <span className="text-xs font-bold uppercase tracking-wider text-white">
-                {carModel === 'thar' ? '🚙 THAR 4X4 ATELIER' : '🏎️ SUPERCAR ATELIER'}
+              <span className="text-xs font-heading font-black uppercase tracking-wider text-white">
+                {carModel === 'thar' ? 'THAR 4X4 ATELIER' : 'SUPERCAR ATELIER'}
               </span>
             </div>
             <button
@@ -832,10 +838,10 @@ export function StudioShowroomCanvas({
                 playUiSound('click');
                 setMobileDrawerOpen(false);
               }}
-              className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-300 text-xs font-bold hover:bg-amber-500/30 transition-all cursor-pointer shadow-sm active:scale-95"
+              className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 hover:bg-white/10 border border-white/15 text-slate-300 hover:text-white text-xs font-semibold transition-all cursor-pointer shadow-sm active:scale-95"
             >
               <ChevronDown className="w-3.5 h-3.5" />
-              <span>Minimize (View 3D Car)</span>
+              <span>VIEW 3D CAR</span>
             </button>
           </div>
 
@@ -847,35 +853,38 @@ export function StudioShowroomCanvas({
                 ATELIER SPECIFICATION
               </span>
             </div>
-            <span className="text-xs font-semibold text-amber-300 px-2.5 py-1 rounded-md bg-amber-500/15 border border-amber-500/30">
-              {carModel === 'thar' ? '🚙 THAR 4X4' : '🏎️ SUPERCAR'}
+            <span className="text-[10px] font-mono font-bold text-amber-300 px-2.5 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/30 tracking-wider">
+              {carModel === 'thar' ? 'THAR 4X4' : 'SUPERCAR GT3'}
             </span>
           </div>
 
           {/* Segmented Navigation Tabs */}
           <div className="grid grid-cols-4 gap-1.5 p-1 bg-black/40 rounded-xl border border-white/5">
             {[
-              { id: 'mods', label: 'Upgrades', icon: '📦' },
-              { id: 'paint', label: 'Paint', icon: '🎨' },
-              { id: 'parts', label: '3D Parts', icon: '🛞' },
-              { id: 'controls', label: 'Controls', icon: '⚙️' },
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => {
-                  playUiSound('tab');
-                  setActiveTab(tab.id);
-                }}
-                className={`py-2 px-1 rounded-lg text-xs font-bold transition-all cursor-pointer flex flex-col items-center gap-0.5 ${
-                  activeTab === tab.id
-                    ? 'bg-amber-500 text-black shadow-md font-extrabold'
-                    : 'text-slate-400 hover:text-white hover:bg-white/5'
-                }`}
-              >
-                <span className="text-sm">{tab.icon}</span>
-                <span className="text-[11px] leading-tight">{tab.label}</span>
-              </button>
-            ))}
+              { id: 'mods', label: 'Upgrades', icon: Sliders },
+              { id: 'paint', label: 'Paint', icon: Palette },
+              { id: 'parts', label: '3D Parts', icon: Disc },
+              { id: 'controls', label: 'Controls', icon: Settings2 },
+            ].map((tab) => {
+              const TabIcon = tab.icon;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => {
+                    playUiSound('tab');
+                    setActiveTab(tab.id);
+                  }}
+                  className={`py-2 px-1 rounded-lg text-xs font-bold transition-all cursor-pointer flex flex-col items-center gap-1 ${
+                    activeTab === tab.id
+                      ? 'bg-amber-500 text-black shadow-md font-extrabold'
+                      : 'text-slate-400 hover:text-white hover:bg-white/5'
+                  }`}
+                >
+                  <TabIcon className="w-4 h-4" />
+                  <span className="text-[11px] leading-tight">{tab.label}</span>
+                </button>
+              );
+            })}
           </div>
 
           {/* TAB 1: UPGRADES (LARGE, COMFORTABLE, READABLE) */}
@@ -1002,7 +1011,10 @@ export function StudioShowroomCanvas({
                       : 'text-slate-400 hover:text-white hover:bg-white/5'
                   }`}
                 >
-                  🛞 Assembly
+                  <span className="flex items-center justify-center gap-1.5">
+                    <Disc className="w-3.5 h-3.5" />
+                    <span>Assembly</span>
+                  </span>
                 </button>
                 <button
                   onClick={() => {
@@ -1015,7 +1027,10 @@ export function StudioShowroomCanvas({
                       : 'text-slate-400 hover:text-white hover:bg-white/5'
                   }`}
                 >
-                  ⚙️ CAD Rim
+                  <span className="flex items-center justify-center gap-1.5">
+                    <CircleDot className="w-3.5 h-3.5" />
+                    <span>CAD Rim</span>
+                  </span>
                 </button>
                 <button
                   onClick={() => {
@@ -1028,7 +1043,10 @@ export function StudioShowroomCanvas({
                       : 'text-slate-400 hover:text-white hover:bg-white/5'
                   }`}
                 >
-                  🏔️ 3D Tyre
+                  <span className="flex items-center justify-center gap-1.5">
+                    <Layers className="w-3.5 h-3.5" />
+                    <span>Compound Tyre</span>
+                  </span>
                 </button>
               </div>
 
