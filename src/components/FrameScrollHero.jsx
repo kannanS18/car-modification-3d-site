@@ -198,27 +198,18 @@ export function FrameScrollHero({ onEnterShowroom }) {
     let touchStartY = 0;
 
     const advanceByDelta = (deltaY) => {
-      if (deltaY < 0) {
-        // SCROLL UP: Return to start banner
-        targetFrameRef.current = 0;
-        currentFrameRef.current = 0;
-        hasTriggeredRef.current = false;
-        setIsTransitioning(false);
-        const firstImg = imagesRef.current[0];
-        if (firstImg && (firstImg.complete || firstImg.naturalWidth > 0)) {
-          drawFrame(firstImg);
-          lastDrawnFrameRef.current = 0;
-        }
-        setDisplayPercent(0);
-        return;
-      }
-
-      // SCROLL DOWN: Advance forward smoothly
-      const nextTarget = Math.min(
-        TOTAL_FRAMES - 1,
-        targetFrameRef.current + deltaY / SCROLL_SENSITIVITY
+      // Smooth bidirectional scrubbing: deltaY > 0 advances, deltaY < 0 reverses
+      const nextTarget = Math.max(
+        0,
+        Math.min(TOTAL_FRAMES - 1, targetFrameRef.current + deltaY / SCROLL_SENSITIVITY)
       );
       targetFrameRef.current = nextTarget;
+
+      // When scrubbing in reverse away from the end, reset trigger flag so transition can trigger again
+      if (nextTarget < TOTAL_FRAMES - 10) {
+        hasTriggeredRef.current = false;
+        setIsTransitioning(false);
+      }
     };
 
     const onWheel = (e) => {
@@ -239,9 +230,10 @@ export function FrameScrollHero({ onEnterShowroom }) {
           }
         }
       } else if (e.deltaY < 0 && window.scrollY <= 10) {
-        if (currentFrameRef.current > 0) {
+        // SCROLL BACKWARD: Smoothly scrub the car and popups in reverse
+        if (currentFrameRef.current > 0.1 || targetFrameRef.current > 0.1) {
           e.preventDefault();
-          advanceByDelta(-100);
+          advanceByDelta(e.deltaY);
         }
       }
     };
@@ -264,6 +256,10 @@ export function FrameScrollHero({ onEnterShowroom }) {
           hasTriggeredRef.current = true;
           onEnterShowroom();
         }
+      } else if (deltaY < 0 && (currentFrameRef.current > 0.1 || targetFrameRef.current > 0.1)) {
+        // TOUCH SWIPE DOWN: Smoothly scrub frames in reverse on mobile
+        e.preventDefault();
+        advanceByDelta(deltaY);
       }
     };
 
