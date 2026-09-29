@@ -6,23 +6,26 @@
   width: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #080B11;
+  background: #0B0E14;
 }
 ::-webkit-scrollbar-thumb {
-  background: #00E5FF;
+  background: #475569;
   border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #F59E0B;
 }
 
 .glass-panel {
-  background: rgba(11, 16, 26, 0.88);
+  background: rgba(18, 22, 32, 0.92);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(0, 229, 255, 0.25);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.65);
 }
 
 .theme-gradient-text {
-  background: linear-gradient(135deg, #00E5FF, #38BDF8, #818CF8);
+  background: linear-gradient(135deg, #F59E0B, #FBBF24, #F8FAFC);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }

@@ -57,7 +57,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0B0B0C] text-white font-body relative selection:bg-[#FF4D00] selection:text-white">
+    <div className="min-h-screen bg-[#0A0D14] text-white font-body relative selection:bg-amber-500 selection:text-black">
       {/* Global Multi-Page Navigation Bar */}
       <Navbar currentPage={currentPage} onNavigate={navigateTo} />
 

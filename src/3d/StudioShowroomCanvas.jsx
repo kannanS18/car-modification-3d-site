@@ -111,10 +111,10 @@ function StudioParticles({ count = 22 }) {
         />
       </bufferGeometry>
       <pointsMaterial
-        color="#00E5FF"
-        size={0.05}
+        color="#F59E0B"
+        size={0.035}
         transparent
-        opacity={0.75}
+        opacity={0.35}
         blending={THREE.AdditiveBlending}
       />
     </points>
@@ -292,7 +292,7 @@ function MiniBubbleCarCanvas({ model }) {
     >
       <ambientLight intensity={2.2} />
       <directionalLight position={[3, 4, 3]} intensity={3.2} />
-      <directionalLight position={[-3, -2, -2]} intensity={1.6} color="#00E5FF" />
+      <directionalLight position={[-3, -2, -2]} intensity={1.6} color="#E2E8F0" />
       <pointLight position={[0, 1, 2]} intensity={2.2} color="#FFF" />
       <MiniCarModel model={model} />
     </Canvas>
@@ -459,7 +459,7 @@ function VehicleShowroom({
   });
 
   const targetY = liftActive ? 0.8 : 0;
-  const underglowColor = (!carColor || carColor === 'original') ? '#00E5FF' : carColor;
+  const underglowColor = (!carColor || carColor === 'original') ? '#F59E0B' : carColor;
 
   return (
     <group position={[0, -0.6, 0]}>
@@ -503,28 +503,28 @@ function VehicleShowroom({
           </group>
         )}
 
-        {/* Chassis Neon Underglow */}
+        {/* Chassis Underglow (Soft warm amber/color glow) */}
         {underglow && (
           <pointLight
             color={underglowColor}
-            intensity={6}
+            intensity={4.5}
             distance={5}
             position={[0, 0.1, 0]}
           />
         )}
       </group>
 
-      {/* Floating Cyan Sparks */}
+      {/* Floating Golden Studio Dust */}
       <StudioParticles count={22} />
 
-      {/* Sleek Midnight Reflective Floor Plane */}
+      {/* Sleek Deep Charcoal Reflective Studio Floor Plane */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 0]} receiveShadow>
         <planeGeometry args={[32, 32]} />
-        <meshStandardMaterial color="#080C14" roughness={0.16} metalness={0.85} />
+        <meshStandardMaterial color="#0A0D14" roughness={0.22} metalness={0.8} />
       </mesh>
 
-      {/* Glowing Pleasant Cyan Grid Floor */}
-      <gridHelper args={[24, 24, '#00E5FF', '#121A2A']} position={[0, 0.005, 0]} />
+      {/* Architectural Studio Grid Floor (Clean Slate Gray, Non-Neon) */}
+      <gridHelper args={[24, 24, '#475569', '#1E293B']} position={[0, 0.005, 0]} />
     </group>
   );
 }
@@ -540,7 +540,7 @@ export function StudioShowroomCanvas({
   onOpenBooking,
   onOpenSandbox,
 }) {
-  const [activeTab, setActiveTab] = useState('paint'); // 'paint' | 'controls' | 'mods'
+  const [activeTab, setActiveTab] = useState('mods'); // 'mods' | 'paint' | 'parts' | 'controls'
   const [selectedMods, setSelectedMods] = useState({
     wheels: true,
     lights: true,
@@ -564,7 +564,7 @@ export function StudioShowroomCanvas({
     { name: 'Tactical Camo', hex: '#2A3D2A', displayHex: '#2A3D2A', badge: 'MIL' },
     { name: 'Monaco Gold', hex: '#D4AF37', displayHex: '#D4AF37', badge: 'ROYAL' },
     { name: 'Glacier White', hex: '#F1F5F9', displayHex: '#F1F5F9', badge: 'SNOW' },
-    { name: 'Electric Cyan', hex: '#0284C7', displayHex: '#00E5FF', badge: 'CYBER' },
+    { name: 'Cobalt Sapphire', hex: '#1E3A8A', displayHex: '#2563EB', badge: 'ROYAL' },
   ];
 
   const ferrariColors = [
@@ -578,14 +578,14 @@ export function StudioShowroomCanvas({
 
   const activeColors = carModel === 'thar' ? tharColors : ferrariColors;
 
-  // Modification upgrades (without off-roading / grip rating bars)
+  // Modification upgrades with rich, readable descriptions
   const modsList = [
-    { id: 'wheels', name: 'Forged Beadlock Alloys & AT Tyres', badge: 'WHEELS', icon: Disc },
-    { id: 'lights', name: '50" Quad Roof LED Bar & Pods', badge: 'LIGHTS', icon: Lightbulb },
-    { id: 'bullbar', name: 'Laser-Cut Winch Bull Bar Mount', badge: 'ARMOR', icon: Shield },
-    { id: 'lift', name: '+3.5" Nitrogen Reservoir Lift Kit', badge: 'CHASSIS', icon: ArrowUpRight },
-    { id: 'audio', name: 'Dual 12" Tailgate Subwoofer 2000W', badge: 'AUDIO', icon: Volume2 },
-    { id: 'exhaust', name: 'Valvetronic Stainless Cat-Back Tune', badge: 'POWER', icon: Gauge },
+    { id: 'wheels', name: 'Forged Beadlock Alloys & AT Tyres', badge: 'WHEELS', desc: 'Heavy-duty 17" beadlocks & all-terrain rubber', icon: Disc },
+    { id: 'lights', name: '50" Quad Roof LED Bar & Pods', badge: 'LIGHTS', desc: 'High-lumen auxiliary illumination', icon: Lightbulb },
+    { id: 'bullbar', name: 'Laser-Cut Winch Bull Bar Mount', badge: 'ARMOR', desc: 'High-tensile steel recovery bumper', icon: Shield },
+    { id: 'lift', name: '+3.5" Nitrogen Reservoir Lift Kit', badge: 'CHASSIS', desc: 'Stage-3 adjustable remote reservoir shocks', icon: ArrowUpRight },
+    { id: 'audio', name: 'Dual 12" Tailgate Subwoofer 2000W', badge: 'AUDIO', desc: 'Acoustic tuned marine-grade sound system', icon: Volume2 },
+    { id: 'exhaust', name: 'Valvetronic Stainless Cat-Back Tune', badge: 'POWER', desc: 'Dual-mode active valved exhaust system', icon: Gauge },
   ];
 
   const handleSelectVehicle = (model) => {
@@ -596,7 +596,7 @@ export function StudioShowroomCanvas({
   };
 
   return (
-    <div id="showroom-plane" className="relative w-full h-[760px] md:h-[880px] bg-[#070A10] overflow-hidden select-none border-y border-[#00E5FF]/20 font-body">
+    <div id="showroom-plane" className="relative w-full h-[760px] md:h-[880px] bg-[#0A0D14] overflow-hidden select-none border-y border-white/10 font-body">
       {/* 3D WebGL Canvas */}
       <Canvas
         shadows
@@ -614,21 +614,21 @@ export function StudioShowroomCanvas({
         <Suspense
           fallback={
             <Html center>
-              <div className="flex flex-col items-center gap-3 p-5 rounded-2xl glass-panel shadow-2xl border border-[#00E5FF]/40 bg-black/90">
-                <div className="w-10 h-10 border-3 border-[#00E5FF] border-t-transparent rounded-full animate-spin" />
-                <span className="text-xs font-mono uppercase tracking-widest text-[#00E5FF] font-bold">
-                  INITIALIZING GAME ENGINE 3D STUDIO...
+              <div className="flex flex-col items-center gap-3 p-5 rounded-2xl glass-panel shadow-2xl border border-white/10 bg-[#121620]/95">
+                <div className="w-10 h-10 border-3 border-amber-400 border-t-transparent rounded-full animate-spin" />
+                <span className="text-xs font-mono uppercase tracking-widest text-amber-400 font-bold">
+                  INITIALIZING ATELIER 3D STUDIO...
                 </span>
               </div>
             </Html>
           }
         >
-          <Environment preset="night" environmentIntensity={0.65} />
-          <ambientLight intensity={0.6} />
-          <directionalLight position={[6, 9, 6]} intensity={1.8} castShadow shadow-mapSize={[512, 512]} />
-          {/* Pleasant Cyan & Platinum Overhead Tubes */}
-          <pointLight color="#00E5FF" intensity={3.5} distance={16} position={[-4, 5, 2]} />
-          <pointLight color="#38BDF8" intensity={2.5} distance={16} position={[4, 5, -2]} />
+          <Environment preset="city" environmentIntensity={0.65} />
+          <ambientLight intensity={1.2} />
+          <directionalLight position={[6, 10, 6]} intensity={2.2} castShadow shadow-mapSize={[512, 512]} />
+          {/* Warm Daylight & Platinum Studio Softlights */}
+          <pointLight color="#FFF6EB" intensity={2.8} distance={16} position={[-4, 6, 2]} />
+          <pointLight color="#E2E8F0" intensity={2.2} distance={16} position={[4, 6, -2]} />
 
           <VehicleShowroom
             carModel={carModel}
@@ -650,18 +650,18 @@ export function StudioShowroomCanvas({
         </Suspense>
       </Canvas>
 
-      {/* TOP GAMING HUD BAR (WITH BUBBLE VEHICLE SELECTOR LOCATED RIGHT HERE NEAR TITLE!) */}
+      {/* TOP ATELIER HUD BAR (WITH BUBBLE VEHICLE SELECTOR) */}
       <div className="absolute top-5 left-5 right-5 flex items-center justify-between pointer-events-none z-20">
-        {/* Left Group: Title Banner + Vehicle Bubble Switcher (Exactly where user requested in Image 2!) */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2.5 pointer-events-auto">
-          {/* Game Title Tag (Image 2) */}
-          <div className="glass-panel px-3.5 py-1.5 rounded-xl border border-[#00E5FF]/30 flex items-center gap-2.5 backdrop-blur-xl bg-[#080C14]/90 shadow-2xl">
-            <div className="w-2 h-2 rounded-full bg-[#00E5FF] animate-ping" />
-            <div className="text-left font-mono">
-              <div className="text-[9px] text-gray-400 uppercase tracking-widest leading-tight">ATELIER TUNING SUITE</div>
-              <div className="text-[11px] font-bold text-white uppercase tracking-wider flex items-center gap-1.5 leading-tight">
+        {/* Left Group: Title Banner + Vehicle Bubble Switcher */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 pointer-events-auto">
+          {/* Atelier Title Tag */}
+          <div className="px-4 py-2 rounded-xl border border-white/10 flex items-center gap-3 backdrop-blur-xl bg-[#121620]/90 shadow-xl">
+            <div className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse" />
+            <div className="text-left">
+              <div className="text-[10px] text-slate-400 uppercase tracking-widest leading-tight font-medium">ATELIER TUNING SUITE</div>
+              <div className="text-xs sm:text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2 leading-tight">
                 <span>{carModel === 'thar' ? 'MAHINDRA THAR 4X4 • AUTHENTIC SPEC' : 'FERRARI 458 GT3 • SUPERCAR ATELIER'}</span>
-                <span className="text-[8px] px-1.5 py-0.2 rounded-full bg-[#00E5FF]/20 text-[#00E5FF] border border-[#00E5FF]/40 font-mono font-bold">
+                <span className="text-[10px] px-2 py-0.5 rounded-md bg-amber-500/15 text-amber-300 border border-amber-500/30 font-bold">
                   {carModel === 'thar' ? '4X4 SUV' : 'SUPERCAR'}
                 </span>
               </div>
@@ -675,8 +675,8 @@ export function StudioShowroomCanvas({
               onClick={() => handleSelectVehicle('thar')}
               className={`relative w-[76px] h-[76px] sm:w-[84px] sm:h-[84px] shrink-0 rounded-full overflow-hidden transition-all duration-300 cursor-pointer flex items-center justify-center ${
                 carModel === 'thar'
-                  ? 'border-2 border-[#00E5FF] shadow-[0_0_28px_rgba(0,229,255,0.7)] ring-2 ring-[#00E5FF]/70 bg-gradient-to-b from-[#00E5FF]/25 to-[#080C14] scale-105'
-                  : 'border-2 border-white/30 hover:border-[#00E5FF]/70 bg-[#080C14]/90 opacity-80 hover:opacity-100 hover:scale-105 shadow-xl'
+                  ? 'border-2 border-amber-400 shadow-[0_4px_25px_rgba(245,158,11,0.35)] ring-2 ring-amber-400/40 bg-gradient-to-b from-amber-500/20 to-[#121620] scale-105'
+                  : 'border-2 border-white/20 hover:border-amber-400/50 bg-[#121620]/90 opacity-80 hover:opacity-100 hover:scale-105 shadow-xl'
               }`}
               title="Mahindra Thar 4x4"
             >
@@ -690,8 +690,8 @@ export function StudioShowroomCanvas({
               onClick={() => handleSelectVehicle('ferrari')}
               className={`relative w-[76px] h-[76px] sm:w-[84px] sm:h-[84px] shrink-0 rounded-full overflow-hidden transition-all duration-300 cursor-pointer flex items-center justify-center ${
                 carModel === 'ferrari'
-                  ? 'border-2 border-[#00E5FF] shadow-[0_0_28px_rgba(0,229,255,0.7)] ring-2 ring-[#00E5FF]/70 bg-gradient-to-b from-[#00E5FF]/25 to-[#080C14] scale-105'
-                  : 'border-2 border-white/30 hover:border-[#00E5FF]/70 bg-[#080C14]/90 opacity-80 hover:opacity-100 hover:scale-105 shadow-xl'
+                  ? 'border-2 border-amber-400 shadow-[0_4px_25px_rgba(245,158,11,0.35)] ring-2 ring-amber-400/40 bg-gradient-to-b from-amber-500/20 to-[#121620] scale-105'
+                  : 'border-2 border-white/20 hover:border-amber-400/50 bg-[#121620]/90 opacity-80 hover:opacity-100 hover:scale-105 shadow-xl'
               }`}
               title="Ferrari 458 Supercar"
             >
@@ -710,7 +710,7 @@ export function StudioShowroomCanvas({
                 playUiSound('click');
                 onOpenSandbox();
               }}
-              className="px-3 py-1 rounded-xl text-xs font-heading font-extrabold uppercase border border-[#00E5FF]/50 bg-black/85 text-[#00E5FF] hover:bg-[#00E5FF]/20 hover:text-white transition-all shadow-[0_0_15px_rgba(0,229,255,0.25)] flex items-center gap-1.5 cursor-pointer backdrop-blur-md"
+              className="px-3.5 py-1.5 rounded-xl text-xs font-bold uppercase border border-amber-500/40 bg-[#121620]/90 text-amber-300 hover:bg-amber-500/20 hover:text-white transition-all shadow-lg flex items-center gap-2 cursor-pointer backdrop-blur-md"
             >
               <span>🔬 3D Model Sandbox</span>
             </button>
@@ -718,35 +718,29 @@ export function StudioShowroomCanvas({
         </div>
       </div>
 
-      {/* RIGHT-SIDE COMPACT GAMING TUNING HUD (FITS ENTIRELY ON SCREEN - ZERO SCROLLING NEEDED) */}
-      <div className="absolute top-20 right-5 w-[330px] sm:w-[355px] z-30 pointer-events-auto flex flex-col">
-        <div className="glass-panel p-3 sm:p-3.5 rounded-2xl border border-[#00E5FF]/40 backdrop-blur-2xl bg-[#080C14]/92 shadow-[0_0_35px_rgba(0,0,0,0.85)] flex flex-col gap-2 max-h-[calc(100vh-120px)] overflow-hidden">
+      {/* RIGHT-SIDE LUXURY TUNING ATELIER SUITE (SPACIOUS, HIGH CONTRAST, EYE-PLEASING) */}
+      <div className="absolute top-20 right-4 sm:right-6 w-[360px] sm:w-[420px] z-30 pointer-events-auto flex flex-col">
+        <div className="p-4 sm:p-5 rounded-2xl border border-white/10 backdrop-blur-2xl bg-[#0F131C]/95 shadow-[0_20px_50px_rgba(0,0,0,0.85)] flex flex-col gap-3.5 max-h-[calc(100vh-110px)] overflow-hidden">
           {/* Header */}
-          <div className="flex items-center justify-between border-b border-white/10 pb-1.5">
-            <div className="flex items-center gap-1.5">
-              <Crosshair className="w-3.5 h-3.5 text-[#00E5FF] animate-spin" style={{ animationDuration: '10s' }} />
-              <span className="text-xs font-heading font-black tracking-widest uppercase text-white">
-                TUNING HUD
+          <div className="flex items-center justify-between border-b border-white/10 pb-2.5">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+              <span className="text-xs font-bold tracking-widest uppercase text-white font-sans">
+                ATELIER SPECIFICATION
               </span>
             </div>
-            <span className="text-[9px] font-mono text-[#00E5FF] font-bold px-2 py-0.5 rounded bg-[#00E5FF]/10 border border-[#00E5FF]/30">
+            <span className="text-xs font-semibold text-amber-300 px-2.5 py-1 rounded-md bg-amber-500/15 border border-amber-500/30">
               {carModel === 'thar' ? '🚙 THAR 4X4' : '🏎️ SUPERCAR'}
             </span>
           </div>
 
-          {/* Standalone 3D Parts Studio (Alone in widget, 360 spin & drag) */}
-          <MiniWheelTurntable
-            wheelType={wheelType}
-            setWheelType={setWheelType}
-            onOpenSandbox={onOpenSandbox}
-          />
-
-          {/* Gaming Segmented Navigation Tabs */}
-          <div className="grid grid-cols-3 gap-1 text-[10px] font-heading font-extrabold uppercase">
+          {/* Segmented Navigation Tabs */}
+          <div className="grid grid-cols-4 gap-1.5 p-1 bg-black/40 rounded-xl border border-white/5">
             {[
-              { id: 'paint', label: '🎨 Paint' },
-              { id: 'controls', label: '⚙️ Controls' },
-              { id: 'mods', label: '📦 Upgrades' },
+              { id: 'mods', label: 'Upgrades', icon: '📦' },
+              { id: 'paint', label: 'Paint', icon: '🎨' },
+              { id: 'parts', label: '3D Parts', icon: '🛞' },
+              { id: 'controls', label: 'Controls', icon: '⚙️' },
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -754,27 +748,85 @@ export function StudioShowroomCanvas({
                   playUiSound('tab');
                   setActiveTab(tab.id);
                 }}
-                className={`py-1.5 px-1 rounded-xl border text-center transition-all cursor-pointer ${
+                className={`py-2 px-1 rounded-lg text-xs font-bold transition-all cursor-pointer flex flex-col items-center gap-0.5 ${
                   activeTab === tab.id
-                    ? 'border-[#00E5FF] bg-[#00E5FF]/20 text-white shadow-[0_0_10px_rgba(0,229,255,0.3)]'
-                    : 'border-white/10 text-gray-400 hover:text-white bg-white/5'
+                    ? 'bg-amber-500 text-black shadow-md font-extrabold'
+                    : 'text-slate-400 hover:text-white hover:bg-white/5'
                 }`}
               >
-                {tab.label}
+                <span className="text-sm">{tab.icon}</span>
+                <span className="text-[11px] leading-tight">{tab.label}</span>
               </button>
             ))}
           </div>
 
-          {/* TAB 1: PAINT SWATCHES (COMPACT, NO SCROLLING) */}
-          {activeTab === 'paint' && (
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between text-[9px] font-mono">
-                <span className="text-gray-400 font-bold uppercase">FINISH:</span>
-                <span className="text-[#00E5FF] font-bold">
-                  {activeColors.find((c) => c.hex === carColor)?.name || 'Custom'}
+          {/* TAB 1: UPGRADES (LARGE, COMFORTABLE, READABLE) */}
+          {activeTab === 'mods' && (
+            <div className="space-y-2 max-h-[290px] overflow-y-auto pr-1">
+              <div className="flex items-center justify-between text-xs text-slate-400 font-medium px-1">
+                <span>AVAILABLE UPGRADES</span>
+                <span className="text-amber-400 font-semibold">
+                  {Object.values(selectedMods).filter(Boolean).length} / {modsList.length} INSTALLED
                 </span>
               </div>
-              <div className="grid grid-cols-2 gap-1.5 max-h-[145px] overflow-y-auto pr-0.5 scrollbar-none">
+              {modsList.map((mod) => {
+                const isChecked = !!selectedMods[mod.id];
+                const Icon = mod.icon;
+                return (
+                  <button
+                    key={mod.id}
+                    onClick={() => toggleMod(mod.id)}
+                    className={`w-full p-3 rounded-xl border text-left transition-all cursor-pointer flex items-center justify-between gap-3 ${
+                      isChecked
+                        ? 'border-amber-500/50 bg-amber-500/10 text-white'
+                        : 'border-white/10 bg-white/[0.03] hover:bg-white/[0.07] text-slate-300'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 border ${
+                        isChecked
+                          ? 'bg-amber-500/20 border-amber-500/40 text-amber-300'
+                          : 'bg-white/5 border-white/10 text-slate-400'
+                      }`}>
+                        <Icon className="w-4 h-4" />
+                      </div>
+                      <div className="min-w-0">
+                        <div className="text-xs sm:text-sm font-semibold text-white truncate">
+                          {mod.name}
+                        </div>
+                        <div className="text-[11px] text-slate-400 truncate">
+                          {mod.desc || 'Precision Atelier Equipment'}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className="text-[11px] font-semibold px-2 py-0.5 rounded bg-white/10 text-slate-300 border border-white/10">
+                        {mod.badge}
+                      </span>
+                      <div className={`w-5 h-5 rounded-full flex items-center justify-center border text-[10px] font-bold ${
+                        isChecked
+                          ? 'bg-amber-500 border-amber-400 text-black'
+                          : 'border-white/20 text-transparent'
+                      }`}>
+                        ✓
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          {/* TAB 2: PAINT SWATCHES (GENEROUS, CLEAR, HIGH CONTRAST) */}
+          {activeTab === 'paint' && (
+            <div className="space-y-2.5 max-h-[290px] overflow-y-auto pr-1">
+              <div className="flex items-center justify-between text-xs px-1">
+                <span className="text-slate-400 font-semibold uppercase">ACTIVE FINISH:</span>
+                <span className="text-amber-400 font-bold">
+                  {activeColors.find((c) => c.hex === carColor)?.name || 'Factory Crimson'}
+                </span>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
                 {activeColors.map((c) => {
                   const isSelected = carColor === c.hex;
                   return (
@@ -784,18 +836,23 @@ export function StudioShowroomCanvas({
                         playUiSound('spin');
                         setCarColor(c.hex);
                       }}
-                      className={`p-1.5 rounded-lg border text-left flex items-center gap-2 transition-all cursor-pointer ${
+                      className={`p-2.5 rounded-xl border text-left flex items-center gap-2.5 transition-all cursor-pointer ${
                         isSelected
-                          ? 'border-[#00E5FF] bg-[#00E5FF]/25 text-white font-bold shadow-[0_0_8px_rgba(0,229,255,0.4)]'
-                          : 'border-white/10 text-gray-300 hover:text-white bg-white/5'
+                          ? 'border-amber-400 bg-amber-500/15 text-white font-bold shadow-md shadow-amber-950/30'
+                          : 'border-white/10 text-slate-300 hover:text-white bg-white/[0.04] hover:bg-white/[0.08]'
                       }`}
                     >
                       <span
-                        className="w-4 h-4 rounded-full shrink-0 border border-white/40 shadow"
+                        className="w-5 h-5 rounded-full shrink-0 border-2 border-white/40 shadow-md"
                         style={{ backgroundColor: c.displayHex }}
                       />
-                      <div className="leading-none truncate text-[9px] font-mono font-bold">
-                        {c.name}
+                      <div className="truncate">
+                        <div className="text-xs font-semibold text-white truncate">
+                          {c.name}
+                        </div>
+                        <div className="text-[10px] text-slate-400 uppercase font-mono">
+                          {c.badge}
+                        </div>
                       </div>
                     </button>
                   );
@@ -804,23 +861,99 @@ export function StudioShowroomCanvas({
             </div>
           )}
 
-          {/* TAB 2: CONTROLS & HOIST (2x2 GRID, NO SCROLLING) */}
+          {/* TAB 3: 3D PARTS VIEWER (SPACIOUS 360° TURNTABLE) */}
+          {activeTab === 'parts' && (
+            <div className="space-y-2.5">
+              <div className="flex items-center justify-between text-xs px-1">
+                <span className="text-slate-400 font-semibold uppercase">COMPONENT INSPECTION</span>
+                <span className="text-[11px] font-semibold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
+                  360° TURNTABLE
+                </span>
+              </div>
+
+              {/* Part Switcher Pills */}
+              <div className="grid grid-cols-3 gap-1.5 p-1 bg-black/40 rounded-xl border border-white/10">
+                <button
+                  onClick={() => {
+                    playUiSound('tab');
+                    setWheelType('user_custom');
+                  }}
+                  className={`py-1.5 px-2 rounded-lg text-xs font-semibold transition-all cursor-pointer text-center ${
+                    wheelType === 'user_custom'
+                      ? 'bg-amber-500 text-black font-bold shadow'
+                      : 'text-slate-400 hover:text-white hover:bg-white/5'
+                  }`}
+                >
+                  🛞 Assembly
+                </button>
+                <button
+                  onClick={() => {
+                    playUiSound('tab');
+                    setWheelType('user_rim');
+                  }}
+                  className={`py-1.5 px-2 rounded-lg text-xs font-semibold transition-all cursor-pointer text-center ${
+                    wheelType === 'user_rim'
+                      ? 'bg-amber-500 text-black font-bold shadow'
+                      : 'text-slate-400 hover:text-white hover:bg-white/5'
+                  }`}
+                >
+                  ⚙️ CAD Rim
+                </button>
+                <button
+                  onClick={() => {
+                    playUiSound('tab');
+                    setWheelType('user_tyre');
+                  }}
+                  className={`py-1.5 px-2 rounded-lg text-xs font-semibold transition-all cursor-pointer text-center ${
+                    wheelType === 'user_tyre'
+                      ? 'bg-amber-500 text-black font-bold shadow'
+                      : 'text-slate-400 hover:text-white hover:bg-white/5'
+                  }`}
+                >
+                  🏔️ 3D Tyre
+                </button>
+              </div>
+
+              {/* 3D Turntable Canvas */}
+              <div className="w-full h-44 rounded-xl bg-black/60 border border-white/10 relative overflow-hidden flex items-center justify-center">
+                <Canvas
+                  camera={{ position: [0.22, 0.1, 0.44], fov: 40 }}
+                  gl={{ antialias: true, alpha: true, powerPreference: 'low-power' }}
+                  dpr={1.5}
+                >
+                  <ambientLight intensity={1.8} />
+                  <directionalLight position={[3, 3, 3]} intensity={3.0} />
+                  <directionalLight position={[-3, -1, -2]} intensity={1.2} color="#E2E8F0" />
+                  <pointLight position={[0, 0, 1.2]} intensity={2.0} color="#FFF" />
+                  <SingleWheelDisplay wheelType={wheelType} />
+                  <OrbitControls enableZoom={false} enablePan={false} dampingFactor={0.1} />
+                </Canvas>
+                <div className="absolute bottom-2 right-2 text-[10px] font-medium text-slate-400 bg-black/60 px-2 py-0.5 rounded border border-white/10 pointer-events-none">
+                  DRAG TO ROTATE
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 4: CONTROLS & STUDIO (SPACIOUS 2X2 CARDS) */}
           {activeTab === 'controls' && (
-            <div className="grid grid-cols-2 gap-1.5">
+            <div className="grid grid-cols-2 gap-2.5">
               {/* Hydraulic Hoist */}
               <button
                 onClick={() => {
                   playUiSound('toggle');
                   setLiftActive(!liftActive);
                 }}
-                className={`p-2 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
+                className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between gap-2 ${
                   liftActive
-                    ? 'border-[#00E5FF] bg-[#00E5FF]/20 text-white shadow-[0_0_10px_rgba(0,229,255,0.3)]'
-                    : 'border-white/10 bg-white/5 text-gray-300 hover:text-white'
+                    ? 'border-amber-400 bg-amber-500/15 text-white shadow-md'
+                    : 'border-white/10 bg-white/[0.04] text-slate-300 hover:text-white hover:bg-white/[0.08]'
                 }`}
               >
-                <div className="text-[10px] font-mono font-bold">Hydraulic Lift</div>
-                <div className="text-[8px] text-[#00E5FF] mt-1">{liftActive ? 'ELEVATED +0.8M' : 'GROUNDED'}</div>
+                <div className="text-xs font-bold text-white">Hydraulic Lift</div>
+                <div className="text-[11px] font-semibold text-amber-400">
+                  {liftActive ? 'ELEVATED +0.8M' : 'GROUND LEVEL'}
+                </div>
               </button>
 
               {/* 360 Turntable */}
@@ -829,14 +962,16 @@ export function StudioShowroomCanvas({
                   playUiSound('toggle');
                   setAutoRotate(!autoRotate);
                 }}
-                className={`p-2 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
+                className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between gap-2 ${
                   autoRotate
-                    ? 'border-[#00E5FF] bg-[#00E5FF]/20 text-white shadow-[0_0_10px_rgba(0,229,255,0.3)]'
-                    : 'border-white/10 bg-white/5 text-gray-300 hover:text-white'
+                    ? 'border-amber-400 bg-amber-500/15 text-white shadow-md'
+                    : 'border-white/10 bg-white/[0.04] text-slate-300 hover:text-white hover:bg-white/[0.08]'
                 }`}
               >
-                <div className="text-[10px] font-mono font-bold">360° Turntable</div>
-                <div className="text-[8px] text-[#00E5FF] mt-1">{autoRotate ? 'ACTIVE SPIN' : 'PAUSED'}</div>
+                <div className="text-xs font-bold text-white">360° Turntable</div>
+                <div className="text-[11px] font-semibold text-amber-400">
+                  {autoRotate ? 'ACTIVE SPIN' : 'PAUSED'}
+                </div>
               </button>
 
               {/* Headlights */}
@@ -845,80 +980,56 @@ export function StudioShowroomCanvas({
                   playUiSound('toggle');
                   setHeadlights(!headlights);
                 }}
-                className={`p-2 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
+                className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between gap-2 ${
                   headlights
-                    ? 'border-[#00E5FF] bg-[#00E5FF]/20 text-white shadow-[0_0_10px_rgba(0,229,255,0.3)]'
-                    : 'border-white/10 bg-white/5 text-gray-300 hover:text-white'
+                    ? 'border-amber-400 bg-amber-500/15 text-white shadow-md'
+                    : 'border-white/10 bg-white/[0.04] text-slate-300 hover:text-white hover:bg-white/[0.08]'
                 }`}
               >
-                <div className="text-[10px] font-mono font-bold">Headlight Beams</div>
-                <div className="text-[8px] text-[#00E5FF] mt-1">{headlights ? 'ON' : 'OFF'}</div>
+                <div className="text-xs font-bold text-white">Headlight Beams</div>
+                <div className="text-[11px] font-semibold text-amber-400">
+                  {headlights ? 'ILLUMINATED' : 'OFF'}
+                </div>
               </button>
 
-              {/* Neon Underglow */}
+              {/* Atmosphere Underglow */}
               <button
                 onClick={() => {
                   playUiSound('toggle');
                   setUnderglow(!underglow);
                 }}
-                className={`p-2 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
+                className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between gap-2 ${
                   underglow
-                    ? 'border-[#00E5FF] bg-[#00E5FF]/20 text-white shadow-[0_0_10px_rgba(0,229,255,0.3)]'
-                    : 'border-white/10 bg-white/5 text-gray-300 hover:text-white'
+                    ? 'border-amber-400 bg-amber-500/15 text-white shadow-md'
+                    : 'border-white/10 bg-white/[0.04] text-slate-300 hover:text-white hover:bg-white/[0.08]'
                 }`}
               >
-                <div className="text-[10px] font-mono font-bold">Chassis Underglow</div>
-                <div className="text-[8px] text-[#00E5FF] mt-1">{underglow ? 'ILLUMINATED' : 'OFF'}</div>
+                <div className="text-xs font-bold text-white">Chassis Underglow</div>
+                <div className="text-[11px] font-semibold text-amber-400">
+                  {underglow ? 'ILLUMINATED' : 'OFF'}
+                </div>
               </button>
             </div>
           )}
 
-          {/* TAB 3: UPGRADES (CLEAN COMPACT LIST, NO BARS, NO SCROLLING) */}
-          {activeTab === 'mods' && (
-            <div className="space-y-1 max-h-[145px] overflow-y-auto pr-0.5 scrollbar-none">
-              {modsList.map((mod) => {
-                const isChecked = !!selectedMods[mod.id];
-                return (
-                  <div
-                    key={mod.id}
-                    onClick={() => toggleMod(mod.id)}
-                    className={`px-2.5 py-1.5 rounded-lg border text-left transition-all cursor-pointer flex items-center justify-between ${
-                      isChecked
-                        ? 'border-[#00E5FF]/60 bg-[#00E5FF]/15 text-white'
-                        : 'border-white/10 bg-white/5 text-gray-400 hover:text-white'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2 truncate">
-                      <div className={`w-1.5 h-1.5 rounded-full ${isChecked ? 'bg-[#00E5FF]' : 'bg-gray-600'}`} />
-                      <span className="text-[9px] font-mono font-bold truncate">{mod.name}</span>
-                    </div>
-                    <span className="text-[7px] font-mono font-bold px-1 py-0.2 rounded bg-black/40 text-[#00E5FF] border border-[#00E5FF]/30">
-                      {mod.badge}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-
           {/* COMMISSION CTA BUTTON */}
-          <div className="pt-1.5 border-t border-white/10">
+          <div className="pt-2 border-t border-white/10">
             <button
               onClick={() => {
                 playUiSound('click');
                 if (onOpenBooking) onOpenBooking();
               }}
-              className="w-full py-2.5 rounded-xl font-heading font-black text-xs uppercase tracking-wider bg-gradient-to-r from-[#00E5FF] to-[#0284C7] text-black hover:text-white shadow-[0_0_20px_rgba(0,229,255,0.4)] hover:shadow-[0_0_30px_rgba(0,229,255,0.7)] transition-all cursor-pointer flex items-center justify-center gap-2"
+              className="w-full py-3.5 px-4 rounded-xl font-heading font-black text-sm uppercase tracking-wider bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-black shadow-lg shadow-amber-950/40 hover:shadow-xl transition-all cursor-pointer flex items-center justify-center gap-2"
             >
               <span>COMMISSION SPECIFICATION</span>
-              <Zap className="w-3.5 h-3.5 fill-current" />
+              <Zap className="w-4 h-4 fill-current" />
             </button>
           </div>
         </div>
 
-        {/* BOTTOM GAMEPAD CONTROLLER HINTS */}
-        <div className="mt-1.5 text-center text-[9px] font-mono text-gray-400 bg-black/70 px-3 py-1 rounded-xl border border-white/10 backdrop-blur-md">
-          <span className="text-[#00E5FF] font-bold">[L-CLICK + DRAG]</span> 360° ORBIT • <span className="text-[#38BDF8] font-bold">[SCROLL]</span> ZOOM
+        {/* BOTTOM GAMEPAD / MOUSE CONTROLLER HINTS */}
+        <div className="mt-2 text-center text-xs font-medium text-slate-400 bg-[#0F131C]/90 px-4 py-1.5 rounded-xl border border-white/10 backdrop-blur-md shadow-lg">
+          <span className="text-amber-300 font-semibold">[L-CLICK + DRAG]</span> 360° ORBIT • <span className="text-slate-200 font-semibold">[SCROLL]</span> ZOOM
         </div>
       </div>
 
