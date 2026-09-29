@@ -269,11 +269,11 @@ function MiniCarModel({ model }) {
     <group ref={groupRef}>
       <Center precise>
         {model === 'thar' ? (
-          <group scale={1.45} rotation={[0, -Math.PI / 2, 0]}>
+          <group scale={0.88} rotation={[0, -Math.PI / 2, 0]}>
             <primitive object={tharScene} />
           </group>
         ) : (
-          <group scale={0.82} rotation={[0, 0, 0]}>
+          <group scale={0.46} rotation={[0, 0, 0]}>
             <primitive object={ferrariScene} />
           </group>
         )}
@@ -282,11 +282,11 @@ function MiniCarModel({ model }) {
   );
 }
 
-// Mini 3D Car inside Circular Bubble (Centered, enlarged, zero words)
+// Mini 3D Car inside Circular Bubble (Centered, neatly framed, zero words)
 function MiniBubbleCarCanvas({ model }) {
   return (
     <Canvas
-      camera={{ position: [1.9, 0.75, 1.9], fov: 38 }}
+      camera={{ position: [2.2, 1.1, 2.2], fov: 38 }}
       gl={{ antialias: true, alpha: true, powerPreference: 'low-power' }}
       dpr={1.5}
     >
