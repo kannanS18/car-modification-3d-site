@@ -1,6 +1,6 @@
 import React, { Suspense, useRef, useMemo, useEffect, useState } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { OrbitControls, Environment, Html, useGLTF } from '@react-three/drei';
+import { OrbitControls, Environment, Html, useGLTF, Center } from '@react-three/drei';
 import * as THREE from 'three';
 import {
   Crosshair,
@@ -230,49 +230,70 @@ function MiniWheelTurntable({ wheelType, setWheelType, onOpenSandbox }) {
   );
 }
 
-// 3D Miniature Model Node for the 2-Car Circular Bubbles
+// 3D Miniature Model Node for the 2-Car Circular Bubbles (Centered & Scaled Up)
 function MiniCarModel({ model }) {
   const baseUrl = import.meta.env.BASE_URL || '/';
   const tharGLTF = useGLTF(`${baseUrl}models/thar.glb`);
   const ferrariGLTF = useGLTF(`${baseUrl}models/ferrari.glb`);
 
   const tharScene = useMemo(() => tharGLTF.scene.clone(true), [tharGLTF.scene]);
-  const ferrariScene = useMemo(() => ferrariGLTF.scene.clone(true), [ferrariGLTF.scene]);
+  const ferrariScene = useMemo(() => {
+    const clone = ferrariGLTF.scene.clone(true);
+    const ferrariPaintMat = new THREE.MeshPhysicalMaterial({
+      color: new THREE.Color('#D32F2F'),
+      metalness: 0.85,
+      roughness: 0.16,
+      clearcoat: 1.0,
+      clearcoatRoughness: 0.04,
+      reflectivity: 0.95,
+    });
+    clone.traverse((child) => {
+      if (child.isMesh && child.material) {
+        if (child.name === 'body' || child.material?.name === 'Body_Color') {
+          child.material = ferrariPaintMat;
+        }
+      }
+    });
+    return clone;
+  }, [ferrariGLTF.scene]);
 
   const groupRef = useRef();
 
   useFrame((_, delta) => {
     if (groupRef.current) {
-      groupRef.current.rotation.y += delta * 1.1;
+      groupRef.current.rotation.y += delta * 0.9;
     }
   });
 
   return (
     <group ref={groupRef}>
-      {model === 'thar' ? (
-        <group scale={0.78} position={[0, -0.05, 0]} rotation={[0, -Math.PI / 2, 0]}>
-          <primitive object={tharScene} />
-        </group>
-      ) : (
-        <group scale={0.42} position={[0, -0.06, 0]} rotation={[0, 0, 0]}>
-          <primitive object={ferrariScene} />
-        </group>
-      )}
+      <Center precise>
+        {model === 'thar' ? (
+          <group scale={1.45} rotation={[0, -Math.PI / 2, 0]}>
+            <primitive object={tharScene} />
+          </group>
+        ) : (
+          <group scale={0.82} rotation={[0, 0, 0]}>
+            <primitive object={ferrariScene} />
+          </group>
+        )}
+      </Center>
     </group>
   );
 }
 
-// Mini 3D Car inside Circular Bubble (Only the car model, zero words)
+// Mini 3D Car inside Circular Bubble (Centered, enlarged, zero words)
 function MiniBubbleCarCanvas({ model }) {
   return (
     <Canvas
-      camera={{ position: [2.1, 1.1, 2.3], fov: 38 }}
+      camera={{ position: [1.9, 0.75, 1.9], fov: 38 }}
       gl={{ antialias: true, alpha: true, powerPreference: 'low-power' }}
-      dpr={1}
+      dpr={1.5}
     >
-      <ambientLight intensity={1.8} />
-      <directionalLight position={[3, 3, 3]} intensity={2.8} />
-      <directionalLight position={[-3, -1, -2]} intensity={1.4} color="#00E5FF" />
+      <ambientLight intensity={2.2} />
+      <directionalLight position={[3, 4, 3]} intensity={3.2} />
+      <directionalLight position={[-3, -2, -2]} intensity={1.6} color="#00E5FF" />
+      <pointLight position={[0, 1, 2]} intensity={2.2} color="#FFF" />
       <MiniCarModel model={model} />
     </Canvas>
   );
@@ -648,18 +669,18 @@ export function StudioShowroomCanvas({
           </div>
 
           {/* THE 2 INDIVIDUAL VEHICLE BUBBLES - ONLY 3D CAR MODEL INSIDE, ZERO WORDS */}
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-3.5">
             {/* Thar Individual Circular Bubble */}
             <button
               onClick={() => handleSelectVehicle('thar')}
-              className={`relative w-12 h-12 rounded-full overflow-hidden transition-all duration-300 cursor-pointer flex items-center justify-center ${
+              className={`relative w-[76px] h-[76px] sm:w-[84px] sm:h-[84px] shrink-0 rounded-full overflow-hidden transition-all duration-300 cursor-pointer flex items-center justify-center ${
                 carModel === 'thar'
-                  ? 'border-2 border-[#00E5FF] shadow-[0_0_16px_#00E5FF] ring-2 ring-[#00E5FF]/60 bg-gradient-to-b from-[#00E5FF]/30 to-[#080C14] scale-110'
-                  : 'border-2 border-white/20 hover:border-[#00E5FF]/60 bg-[#080C14]/90 opacity-70 hover:opacity-100 hover:scale-105'
+                  ? 'border-2 border-[#00E5FF] shadow-[0_0_28px_rgba(0,229,255,0.7)] ring-2 ring-[#00E5FF]/70 bg-gradient-to-b from-[#00E5FF]/25 to-[#080C14] scale-105'
+                  : 'border-2 border-white/30 hover:border-[#00E5FF]/70 bg-[#080C14]/90 opacity-80 hover:opacity-100 hover:scale-105 shadow-xl'
               }`}
               title="Mahindra Thar 4x4"
             >
-              <div className="w-full h-full pointer-events-none">
+              <div className="w-full h-full pointer-events-none flex items-center justify-center">
                 <MiniBubbleCarCanvas model="thar" />
               </div>
             </button>
@@ -667,14 +688,14 @@ export function StudioShowroomCanvas({
             {/* Supercar Individual Circular Bubble */}
             <button
               onClick={() => handleSelectVehicle('ferrari')}
-              className={`relative w-12 h-12 rounded-full overflow-hidden transition-all duration-300 cursor-pointer flex items-center justify-center ${
+              className={`relative w-[76px] h-[76px] sm:w-[84px] sm:h-[84px] shrink-0 rounded-full overflow-hidden transition-all duration-300 cursor-pointer flex items-center justify-center ${
                 carModel === 'ferrari'
-                  ? 'border-2 border-[#00E5FF] shadow-[0_0_16px_#00E5FF] ring-2 ring-[#00E5FF]/60 bg-gradient-to-b from-[#00E5FF]/30 to-[#080C14] scale-110'
-                  : 'border-2 border-white/20 hover:border-[#00E5FF]/60 bg-[#080C14]/90 opacity-70 hover:opacity-100 hover:scale-105'
+                  ? 'border-2 border-[#00E5FF] shadow-[0_0_28px_rgba(0,229,255,0.7)] ring-2 ring-[#00E5FF]/70 bg-gradient-to-b from-[#00E5FF]/25 to-[#080C14] scale-105'
+                  : 'border-2 border-white/30 hover:border-[#00E5FF]/70 bg-[#080C14]/90 opacity-80 hover:opacity-100 hover:scale-105 shadow-xl'
               }`}
               title="Ferrari 458 Supercar"
             >
-              <div className="w-full h-full pointer-events-none">
+              <div className="w-full h-full pointer-events-none flex items-center justify-center">
                 <MiniBubbleCarCanvas model="ferrari" />
               </div>
             </button>
