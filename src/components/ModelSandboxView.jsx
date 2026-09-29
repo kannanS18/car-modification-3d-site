@@ -19,25 +19,21 @@ import {
   UserWheelAssembly,
   UserRimNode,
   UserTyreNode,
-  MaxxisBimbraJTIWheel,
-  FuelContraRedWheel,
-  MethodBronzeKO2Wheel,
-  TharOEMDiamondWheel,
 } from '../3d/HighDefCustomParts';
 
-// Camera Auto-Focuser based on selected model category
-function CameraController({ category }) {
+// Camera Auto-Focuser based on selected model
+function CameraController({ modelId }) {
   const { camera } = useThree();
 
   useEffect(() => {
-    if (category === 'Wheels & Tyres' || category === 'User Master Models') {
-      camera.position.set(0, 0, 2.3);
-      camera.lookAt(0, 0, 0);
-    } else {
+    if (modelId === 'thar') {
       camera.position.set(3.2, 1.5, 3.6);
       camera.lookAt(0, 0.4, 0);
+    } else {
+      camera.position.set(0, 0, 2.3);
+      camera.lookAt(0, 0, 0);
     }
-  }, [category, camera]);
+  }, [modelId, camera]);
 
   return null;
 }
@@ -109,7 +105,7 @@ function SandboxStage({ activeModel, wireframe, autoRotate }) {
 export function ModelSandboxView({ onNavigate }) {
   const baseUrl = import.meta.env.BASE_URL || '/';
 
-  // Catalog of Real, Accurate 3D Wheels & Vehicles
+  // Catalog of Real, Accurate 3D Models (Only User's Authentic Assets)
   const catalog = [
     {
       id: 'user_wheel_assembly',
@@ -145,72 +141,16 @@ export function ModelSandboxView({ onNavigate }) {
       badge: 'USER TYRE • 3.5M TRIS',
     },
     {
-      id: 'maxxis_bimbra',
-      name: 'Maxxis AT-980 Bravo • Bimbra JTI Beadlock',
-      category: 'Wheels & Tyres',
-      component: MaxxisBimbraJTIWheel,
-      scale: 1.7,
-      triangles: '24,680 tris',
-      materials: 'Maxxis 980 White Lettering, Bimbra JTI Multi-Hole Machined Dish, Brembo Caliper',
-      description: 'Maxxis Bravo AT-980 (285/60 R18) all-terrain tyre with raised white lettering, paired with Bimbra JTI round multi-hole beadlock deep-dish alloy rim.',
-      badge: 'BIMBRA 4X4 SPEC',
-    },
-    {
-      id: 'fuel_contra',
-      name: 'Fuel Contra • Candy Red & Black Concave',
-      category: 'Wheels & Tyres',
-      component: FuelContraRedWheel,
-      scale: 1.7,
-      triangles: '26,820 tris',
-      materials: 'Vredestein Pinza A/T, Gloss Black with Milled Candy Red Flanks, Slotted Rotor',
-      description: 'Directional 10-blade swept spiral concave alloy in deep gloss black with CNC-milled candy red anodized accents on aggressive All-Terrain rubber.',
-      badge: 'CONCAVE BLADE',
-    },
-    {
-      id: 'method_bronze',
-      name: 'BFGoodrich KO2 • Method Bronze Forged',
-      category: 'Wheels & Tyres',
-      component: MethodBronzeKO2Wheel,
-      scale: 1.7,
-      triangles: '22,440 tris',
-      materials: 'BFGoodrich T/A KO2 Raised White Lettering, Satin Bronze Forged Dish, Black Beadlock',
-      description: 'BFGoodrich All-Terrain T/A KO2 Baja Champion tyre on Method Race Wheels satin bronze 8-window forged rally alloy with black simulated beadlock.',
-      badge: 'BAJA RALLY',
-    },
-    {
-      id: 'thar_oem',
-      name: 'Mahindra Thar 18" OEM Diamond-Cut • Ceat Czar',
-      category: 'Wheels & Tyres',
-      component: TharOEMDiamondWheel,
-      scale: 1.7,
-      triangles: '18,650 tris',
-      materials: 'Ceat Czar A/T White Lettering, Dual-Tone Machined Silver & Obsidian Black',
-      description: 'Authentic 18" Mahindra Thar factory diamond-cut alloy wheel with 5-split twin-arms, central Mahindra twin-peaks emblem, and Ceat Czar A/T rubber.',
-      badge: 'FACTORY OEM',
-    },
-    {
-      id: 'thar_split',
-      name: '2024 Red Mahindra Thar SUV',
-      category: 'Vehicles',
-      url: `${baseUrl}models/thar_split.glb`,
+      id: 'thar',
+      name: '2024 Red Mahindra Thar SUV (Meshy AI Model)',
+      category: 'User Master Models',
+      url: `${baseUrl}models/thar.glb`,
       scale: 1.8,
       rotation: [0, -Math.PI / 2, 0],
       triangles: '330,268 tris',
-      materials: 'PBR Body Color Texture, Detachable OEM Wheels Submesh',
-      description: 'The authentic 2024 Red Mahindra Thar SUV with full textured body, grille, headlights, mirrors, and detachable OEM wheels for modular custom packages.',
-      badge: 'MAIN VEHICLE',
-    },
-    {
-      id: 'ferrari',
-      name: 'Ferrari 458 GT3 Motorsport Supercar',
-      category: 'Vehicles',
-      url: `${baseUrl}models/ferrari.glb`,
-      scale: 0.9,
-      rotation: [0, 0, 0],
-      triangles: '118,500 tris',
-      materials: 'Body Paint, Carbon Aero Kit, Wheels, Clear Glass',
-      description: 'GT3 racing spec supercar with aerodynamic carbon fiber body, center-lock racing wheels, and rear boot subwoofer installation.',
-      badge: 'TRACK TUNER',
+      materials: 'Authentic Meshy AI PBR Textures (BaseColor + Normal + Roughness)',
+      description: 'Your original 2024 Red Mahindra Thar SUV 3D model exactly as provided, with original factory colors, wheels, mirrors, and trim.',
+      badge: 'USER CAR MODEL',
     },
   ];
 
@@ -358,7 +298,7 @@ export function ModelSandboxView({ onNavigate }) {
                   </Html>
                 }
               >
-                <CameraController category={activeModel.category} />
+                <CameraController modelId={activeModel.id} />
 
                 {/* Studio Lighting Presets */}
                 {lighting === 'studio' && (

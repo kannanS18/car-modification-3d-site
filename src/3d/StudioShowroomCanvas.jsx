@@ -6,23 +6,17 @@ import {
   Sliders,
   RotateCw,
   Sparkles,
-  Wrench,
-  Shield,
   Layers,
   Sun,
   Eye,
   CheckCircle,
   Crosshair,
   Zap,
-  Volume2,
-  Award,
 } from 'lucide-react';
 import {
   UserWheelAssembly,
-  MaxxisBimbraJTIWheel,
-  FuelContraRedWheel,
-  MethodBronzeKO2Wheel,
-  TharOEMDiamondWheel,
+  UserRimNode,
+  UserTyreNode,
   TharFittedWheelSet,
 } from './HighDefCustomParts';
 
@@ -119,31 +113,6 @@ function StudioParticles({ count = 75 }) {
   );
 }
 
-// Subwoofer Boot Enclosure (For Ferrari)
-function SubwooferBox({ active }) {
-  if (!active) return null;
-  return (
-    <group position={[0, 0.75, -1.2]} scale={0.65}>
-      <mesh>
-        <boxGeometry args={[1.3, 0.6, 0.5]} />
-        <meshStandardMaterial color="#141416" roughness={0.8} />
-      </mesh>
-      {[-0.35, 0.35].map((x, i) => (
-        <group key={i} position={[x, 0, 0.26]} rotation={[Math.PI / 2, 0, 0]}>
-          <mesh>
-            <torusGeometry args={[0.22, 0.02, 16, 32]} />
-            <meshBasicMaterial color="#FF4D00" />
-          </mesh>
-          <mesh position={[0, 0, -0.03]}>
-            <coneGeometry args={[0.2, 0.1, 32]} />
-            <meshStandardMaterial color="#FF4D00" metalness={0.5} roughness={0.3} />
-          </mesh>
-        </group>
-      ))}
-    </group>
-  );
-}
-
 // Single Standalone 3D Wheel for isolated turntable preview
 function SingleWheelDisplay({ wheelType }) {
   const meshRef = useRef();
@@ -156,13 +125,11 @@ function SingleWheelDisplay({ wheelType }) {
 
   return (
     <group ref={meshRef}>
-      {(wheelType === 'user_custom' || wheelType === 'custom') && (
+      {(!wheelType || wheelType === 'user_custom' || wheelType === 'custom' || wheelType === 'oem') && (
         <UserWheelAssembly scale={0.21} />
       )}
-      {wheelType === 'maxxis_bimbra' && <MaxxisBimbraJTIWheel scale={0.46} />}
-      {wheelType === 'fuel_contra' && <FuelContraRedWheel scale={0.46} />}
-      {wheelType === 'method_bronze' && <MethodBronzeKO2Wheel scale={0.46} />}
-      {(wheelType === 'thar_oem' || wheelType === 'oem') && <TharOEMDiamondWheel scale={0.46} />}
+      {wheelType === 'user_rim' && <UserRimNode scale={0.21 * 0.57} />}
+      {wheelType === 'user_tyre' && <UserTyreNode scale={0.21} />}
     </group>
   );
 }
@@ -170,12 +137,10 @@ function SingleWheelDisplay({ wheelType }) {
 // Mini 3D Wheel Turntable for the Customization Panel
 function MiniWheelTurntable({ wheelType, onOpenSandbox }) {
   const wheelLabels = {
-    user_custom: 'User Master Spec • CAD Rim & AT Tyre (4.3M Tris)',
-    maxxis_bimbra: 'Maxxis AT-980 Bravo • Bimbra JTI Beadlock (18")',
-    fuel_contra: 'Fuel Contra • Candy Red & Black Concave (18")',
-    method_bronze: 'BFGoodrich KO2 • Method Race Bronze (17")',
-    thar_oem: 'Mahindra Thar 18" OEM Diamond-Cut • Ceat Czar A/T',
-    oem: 'Mahindra Thar 18" OEM Diamond-Cut • Ceat Czar A/T',
+    user_custom: 'User Master Wheel • CAD Rim & AT Tyre (4.3M Tris)',
+    user_rim: 'User Standalone CAD Rim (rim.glb • 763k Tris)',
+    user_tyre: 'User Standalone Off-Road Tyre (tyre1.glb • 3.56M Tris)',
+    oem: 'Original Factory Stock Wheels',
   };
 
   return (
@@ -184,7 +149,7 @@ function MiniWheelTurntable({ wheelType, onOpenSandbox }) {
         <div className="flex items-center gap-1.5">
           <div className="w-2 h-2 rounded-full bg-[#00E5FF] animate-pulse" />
           <span className="text-[10px] font-mono font-bold tracking-widest text-white uppercase">
-            STANDALONE 3D TYRE PREVIEW
+            STANDALONE 3D WHEEL PREVIEW
           </span>
         </div>
         <span className="text-[9px] font-mono font-bold text-[#FF4D00] bg-[#FF4D00]/10 px-1.5 py-0.5 rounded border border-[#FF4D00]/30">
@@ -195,13 +160,14 @@ function MiniWheelTurntable({ wheelType, onOpenSandbox }) {
       {/* 3D Mini Viewport */}
       <div className="w-full h-28 rounded-lg bg-black/80 border border-white/10 relative overflow-hidden flex items-center justify-center">
         <Canvas camera={{ position: [0, 0, 0.46], fov: 45 }} gl={{ antialias: true, alpha: true }}>
-          <ambientLight intensity={1.0} />
-          <directionalLight position={[2, 3, 3]} intensity={2.2} />
+          <ambientLight intensity={1.2} />
+          <directionalLight position={[2, 3, 3]} intensity={2.5} />
           <directionalLight position={[-2, -2, -2]} intensity={0.9} color="#FF6B2B" />
+          <pointLight position={[0, 0, 1]} intensity={2.0} color="#FFF" />
           <SingleWheelDisplay wheelType={wheelType} />
         </Canvas>
         <div className="absolute bottom-1 right-2 text-[8px] font-mono text-gray-400 pointer-events-none">
-          ISOLATED 3D MODEL
+          USER 3D ASSET
         </div>
       </div>
 
@@ -223,96 +189,22 @@ function MiniWheelTurntable({ wheelType, onOpenSandbox }) {
   );
 }
 
-// 3D Car Vehicle Mesh Node
+// 3D Thar Vehicle Mesh Node (Only User's Authentic Thar Model)
 function VehicleShowroom({
-  carModel,
   carColor = 'original',
-  wheelType = 'oem',
-  bumperLights = true,
-  roofLights = true,
-  bullBar = true,
-  roofRack = true,
+  wheelType = 'user_custom',
   headlights = true,
   underglow = true,
   autoRotate = true,
   liftActive = false,
-  subwooferActive = true,
-  onSelectCategory,
 }) {
   const groupRef = useRef();
   const baseUrl = import.meta.env.BASE_URL || '/';
 
-  const ferrariGLTF = useGLTF(`${baseUrl}models/ferrari.glb`);
   const tharGLTF = useGLTF(`${baseUrl}models/thar_split.glb`);
-
-  const ferrariScene = useMemo(() => ferrariGLTF.scene.clone(true), [ferrariGLTF.scene]);
   const tharScene = useMemo(() => tharGLTF.scene.clone(true), [tharGLTF.scene]);
 
-  // Ferrari PBR Metallic Paint
-  const ferrariPaintMat = useMemo(
-    () =>
-      new THREE.MeshPhysicalMaterial({
-        color: new THREE.Color(carColor === 'original' ? '#FF2200' : carColor),
-        metalness: 0.85,
-        roughness: 0.18,
-        clearcoat: 1.0,
-        clearcoatRoughness: 0.04,
-        reflectivity: 0.95,
-      }),
-    [carColor]
-  );
-
-  const ferrariWheelMat = useMemo(
-    () =>
-      new THREE.MeshStandardMaterial({
-        color: new THREE.Color('#D4AF37'),
-        metalness: 0.9,
-        roughness: 0.2,
-      }),
-    []
-  );
-
-  const glassMat = useMemo(
-    () =>
-      new THREE.MeshPhysicalMaterial({
-        color: new THREE.Color('#0A0E17'),
-        metalness: 0.1,
-        roughness: 0.05,
-        transmission: 0.85,
-        transparent: true,
-        opacity: 0.7,
-      }),
-    []
-  );
-
-  const headlightMat = useMemo(
-    () =>
-      new THREE.MeshBasicMaterial({
-        color: headlights ? new THREE.Color('#FFFFFF') : new THREE.Color('#333333'),
-      }),
-    [headlights]
-  );
-
-  // Apply materials to Ferrari
-  useEffect(() => {
-    ferrariScene.traverse((child) => {
-      if (child.isMesh) {
-        child.castShadow = true;
-        child.receiveShadow = true;
-        if (child.name === 'body' || child.material?.name === 'Body_Color') {
-          child.material = ferrariPaintMat;
-        } else if (child.name.includes('rim') || child.name.includes('wheel')) {
-          child.material = ferrariWheelMat;
-        } else if (child.name.includes('glass') || child.material?.name?.includes('Glass')) {
-          child.material = glassMat;
-        } else if (child.name.includes('light') || child.name === 'leds') {
-          child.material = headlightMat;
-        }
-      }
-    });
-  }, [ferrariScene, ferrariPaintMat, ferrariWheelMat, glassMat, headlightMat]);
-
-  // Toggle OEM Wheels Visibility on Thar (Completely removes OEM tires when custom wheel is selected)
+  // Toggle OEM Wheels Visibility on Thar (Hides OEM tires when custom wheel/rim/tyre is selected)
   useEffect(() => {
     tharScene.traverse((child) => {
       if (child.name === 'Thar_OEM_Wheels') {
@@ -321,7 +213,7 @@ function VehicleShowroom({
     });
   }, [tharScene, wheelType]);
 
-  // Shader Uniforms for Thar Body Paint Customization (Preserves 100% of authentic textured wheels, roof, glass, and bumpers)
+  // Shader Uniforms for Thar Body Paint Customization
   const uniformsRef = useRef({
     uBodyColor: { value: new THREE.Color('#D32F2F') },
     uColorActive: { value: 0.0 },
@@ -337,7 +229,7 @@ function VehicleShowroom({
     }
   }, [carColor]);
 
-  // Apply original textured material to Thar with intelligent paint chrominance-masking shader
+  // Apply original textured material to Thar
   useEffect(() => {
     tharScene.traverse((child) => {
       if (child.isMesh && child.material) {
@@ -352,10 +244,6 @@ function VehicleShowroom({
             mat.map.anisotropy = 16;
             mat.map.needsUpdate = true;
           }
-
-          mat.envMapIntensity = 1.35;
-          mat.roughness = 0.45;
-          mat.metalness = 0.55;
 
           mat.onBeforeCompile = (shader) => {
             shader.uniforms.uBodyColor = uniformsRef.current.uBodyColor;
@@ -410,34 +298,10 @@ function VehicleShowroom({
         position={[0, targetY, 0]}
         style={{ transition: 'all 0.5s ease-out' }}
       >
-        {carModel === 'thar' ? (
-          <group scale={1.8} position={[0, 0.77, 0]} rotation={[0, -Math.PI / 2, 0]}>
-            <primitive object={tharScene} />
-            <TharFittedWheelSet wheelType={wheelType} />
-
-            {/* Modular 3D Off-Road Accessories */}
-            {bumperLights && (
-              <group position={[-1.02, 0.05, 0]} rotation={[0, Math.PI / 2, 0]}>
-                <KCHilitesBumperPods scale={0.82} />
-              </group>
-            )}
-            {roofLights && (
-              <group position={[-0.22, 0.62, 0]} rotation={[0, Math.PI / 2, 0]}>
-                <CurvedRoofLightBar scale={0.70} />
-              </group>
-            )}
-            {bullBar && (
-              <group position={[-1.08, -0.06, 0]} rotation={[0, Math.PI / 2, 0]}>
-                <OverlandBullBar scale={0.65} />
-              </group>
-            )}
-          </group>
-        ) : (
-          <group scale={0.9} position={[0, 0.05, 0]}>
-            <primitive object={ferrariScene} />
-            <SubwooferBox active={subwooferActive} />
-          </group>
-        )}
+        <group scale={1.8} position={[0, 0.77, 0]} rotation={[0, -Math.PI / 2, 0]}>
+          <primitive object={tharScene} />
+          <TharFittedWheelSet wheelType={wheelType} />
+        </group>
 
         {/* Headlight Beams */}
         {headlights && (
@@ -494,44 +358,33 @@ function VehicleShowroom({
 }
 
 export function StudioShowroomCanvas({
-  carModel, setCarModel,
   carColor = 'original', setCarColor,
-  wheelType = 'oem', setWheelType,
-  bumperLights = true, setBumperLights,
-  roofLights = true, setRoofLights,
-  bullBar = true, setBullBar,
-  roofRack = true, setRoofRack,
+  wheelType = 'user_custom', setWheelType,
   underglow, setUnderglow,
   headlights, setHeadlights,
   autoRotate, setAutoRotate,
   liftActive, setLiftActive,
-  subwooferActive, setSubwooferActive,
   onOpenBooking,
   onOpenSandbox,
 }) {
-  const [activeCategory, setActiveCategory] = useState('wheels'); // 'wheels' | 'livery' | 'lighting' | 'chassis'
+  const [activeCategory, setActiveCategory] = useState('wheels'); // 'wheels' | 'livery' | 'chassis'
 
-  // Performance Rating Scores (Dynamically calculated based on equipped mods)
+  // Performance Rating Scores
   const stats = useMemo(() => {
-    let traction = 78;
+    let traction = 85;
     if (wheelType === 'user_custom') traction = 100;
-    else if (wheelType === 'maxxis_bimbra') traction = 99;
-    else if (wheelType === 'fuel_contra') traction = 96;
-    else if (wheelType === 'method_bronze') traction = 94;
-    else if (wheelType === 'thar_oem') traction = 82;
+    else if (wheelType === 'user_tyre') traction = 98;
+    else if (wheelType === 'user_rim') traction = 95;
 
-    let visibility = 60;
-    if (headlights) visibility += 20;
-    if (roofLights) visibility += 20;
-
+    let visibility = headlights ? 100 : 60;
     let clearance = liftActive ? '310 mm (+3.5")' : '226 mm (Stock)';
 
     return { traction, visibility, clearance };
-  }, [wheelType, headlights, roofLights, liftActive]);
+  }, [wheelType, headlights, liftActive]);
 
   const colors = [
     { name: 'Factory Original Spec (Red & Black)', hex: 'original', displayHex: '#D32F2F', badge: 'OEM' },
-    { name: 'Desert Sand (Thar)', hex: '#C2A382', displayHex: '#C2A382' },
+    { name: 'Desert Sand', hex: '#C2A382', displayHex: '#C2A382' },
     { name: 'Obsidian Stealth Black', hex: '#111215', displayHex: '#111215' },
     { name: 'Army Camo Green', hex: '#2A3D2A', displayHex: '#2A3D2A' },
     { name: 'Forged Monaco Gold', hex: '#D4AF37', displayHex: '#D4AF37' },
@@ -543,52 +396,42 @@ export function StudioShowroomCanvas({
     {
       id: 'user_custom',
       name: 'User Master Spec • CAD Rim & AT Tyre',
-      specs: 'Authentic 4.3M Tri CAD Wheel • rim.glb + tyre1.glb • Precision 4x4 Fit',
+      specs: 'Your Authentic 4.3M Tri CAD Wheel (rim.glb + tyre1.glb)',
       traction: 100,
       tag: 'MASTER 100%',
       badge: 'USER 3D MODEL',
       swatch: '#1A1C20',
-      rimType: 'CAD Multi-Spoke + 3D Tread',
+      rimType: 'CAD Alloy + 3D Tread',
     },
     {
-      id: 'maxxis_bimbra',
-      name: 'Maxxis AT-980 Bravo • Bimbra JTI Beadlock',
-      specs: '18" Deep-Dish Concave Rim • 285/60 R18 All-Terrain • Milled Window Holes',
-      traction: 99,
-      tag: 'BIMBRA 99%',
-      badge: 'BIMBRA SPEC',
-      swatch: '#16171A',
-      rimType: 'Matte Black + Stainless Screws',
-    },
-    {
-      id: 'fuel_contra',
-      name: 'Fuel Contra • Candy Red & Black Concave',
-      specs: '18" Directional Spiral Blades • 285/60 R18 Pinza A/T • Anodized Red Flanks',
-      traction: 96,
-      tag: 'BLADE 96%',
-      badge: 'CONCAVE BLADE',
+      id: 'user_rim',
+      name: 'User Standalone CAD Rim (rim.glb)',
+      specs: '763k Tri Authentic CAD Multi-Spoke Alloy with Baked Textures',
+      traction: 95,
+      tag: 'RIM 95%',
+      badge: 'USER CAD RIM',
       swatch: '#DC2626',
-      rimType: 'Gloss Black + Candy Red CNC',
+      rimType: 'CAD Alloy Rim',
     },
     {
-      id: 'method_bronze',
-      name: 'BFGoodrich KO2 • Method Race Bronze',
-      specs: '17" Forged Bronze 8-Window Dish • 285/70 R17 Baja Champion Rubber',
-      traction: 94,
-      tag: 'BAJA 94%',
-      badge: 'BAJA RALLY',
-      swatch: '#A77B24',
-      rimType: 'Satin Bronze Forged + Black Ring',
+      id: 'user_tyre',
+      name: 'User Standalone Off-Road Tyre (tyre1.glb)',
+      specs: '3.56M Tri Authentic Physical Tread Mud/All-Terrain Rubber',
+      traction: 98,
+      tag: 'TYRE 98%',
+      badge: 'USER 3D TYRE',
+      swatch: '#151618',
+      rimType: '3D Tread Tyre',
     },
     {
-      id: 'thar_oem',
-      name: 'Mahindra Thar 18" OEM Diamond-Cut',
-      specs: '18" Factory Twin-Spoke Diamond-Cut Alloys • 255/65 R18 Ceat Czar A/T',
-      traction: 82,
-      tag: 'STOCK 82%',
-      badge: 'OEM FACTORY',
-      swatch: '#F1F5F9',
-      rimType: 'Machined Silver + Obsidian Black',
+      id: 'oem',
+      name: 'Original Factory Stock Wheels',
+      specs: 'Original Wheels from your Mahindra Thar GLB model',
+      traction: 85,
+      tag: 'STOCK 85%',
+      badge: 'ORIGINAL MODEL',
+      swatch: '#94A3B8',
+      rimType: 'Factory Original',
     },
   ];
 
@@ -625,19 +468,12 @@ export function StudioShowroomCanvas({
           <pointLight color="#FF4D00" intensity={3} distance={15} position={[4, 5, -2]} />
 
           <VehicleShowroom
-            carModel={carModel}
             carColor={carColor}
             wheelType={wheelType}
-            bumperLights={bumperLights}
-            roofLights={roofLights}
-            bullBar={bullBar}
-            roofRack={roofRack}
             headlights={headlights}
             underglow={underglow}
             autoRotate={autoRotate}
             liftActive={liftActive}
-            subwooferActive={subwooferActive}
-            onSelectCategory={handleCategorySwitch}
           />
 
           <OrbitControls
@@ -658,15 +494,15 @@ export function StudioShowroomCanvas({
           <div className="text-left font-mono">
             <div className="text-[10px] text-gray-400 uppercase tracking-widest">AUTOSPORT TUNING TERMINAL</div>
             <div className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
-              <span>{carModel === 'thar' ? 'MAHINDRA THAR 4X4 ADVENTURE' : 'FERRARI 458 GT3 MOTORSPORT'}</span>
+              <span>MAHINDRA THAR 4X4 • AUTHENTIC USER 3D SPEC</span>
               <span className="text-[9px] px-1.5 py-0.2 rounded bg-[#FF4D00]/30 text-[#FF4D00] border border-[#FF4D00]/50 font-mono font-bold">
-                TIER-4 MODS
+                USER ASSETS
               </span>
             </div>
           </div>
         </div>
 
-        {/* Platform Vehicle Switcher & 3D Sandbox Quick Access */}
+        {/* 3D Sandbox Quick Access */}
         <div className="flex items-center gap-2 pointer-events-auto">
           {onOpenSandbox && (
             <button
@@ -679,35 +515,6 @@ export function StudioShowroomCanvas({
               <span>🔬 3D Model Sandbox</span>
             </button>
           )}
-
-          <div className="flex items-center gap-1.5 glass-panel p-1 rounded-xl border border-[#FF4D00]/40 shadow-2xl bg-black/85">
-            <button
-              onClick={() => {
-                playUiSound('tab');
-                setCarModel('thar');
-              }}
-              className={`px-3.5 py-1.5 rounded-lg text-xs font-heading font-extrabold uppercase transition-all cursor-pointer ${
-                carModel === 'thar'
-                  ? 'bg-gradient-to-r from-[#FF4D00] to-[#E03B00] text-white shadow-[0_0_15px_rgba(255,77,0,0.6)]'
-                  : 'text-gray-400 hover:text-white bg-transparent'
-              }`}
-            >
-              🏔️ Thar 4x4
-            </button>
-            <button
-              onClick={() => {
-                playUiSound('tab');
-                setCarModel('ferrari');
-              }}
-              className={`px-3.5 py-1.5 rounded-lg text-xs font-heading font-extrabold uppercase transition-all cursor-pointer ${
-                carModel === 'ferrari'
-                  ? 'bg-gradient-to-r from-[#FF4D00] to-[#E03B00] text-white shadow-[0_0_15px_rgba(255,77,0,0.6)]'
-                  : 'text-gray-400 hover:text-white bg-transparent'
-              }`}
-            >
-              🏎️ Ferrari GT3
-            </button>
-          </div>
         </div>
       </div>
 
@@ -723,20 +530,19 @@ export function StudioShowroomCanvas({
               </span>
             </div>
             <span className="text-[10px] font-mono font-bold text-[#00E5FF] px-2 py-0.5 rounded bg-[#00E5FF]/10 border border-[#00E5FF]/40">
-              LIVE PBR
+              USER ASSETS
             </span>
           </div>
 
-          {/* STANDALONE 3D WHEEL & TYRE TURNTABLE (Replaced Stat Bar per user requirement) */}
+          {/* STANDALONE 3D WHEEL & TYRE TURNTABLE */}
           <MiniWheelTurntable wheelType={wheelType} onOpenSandbox={onOpenSandbox} />
 
-          {/* REFINED CATEGORY NAVIGATION TABS */}
-          <div className="grid grid-cols-4 gap-1 text-[10px] font-heading font-extrabold uppercase">
+          {/* CATEGORY NAVIGATION TABS */}
+          <div className="grid grid-cols-3 gap-1.5 text-[10px] font-heading font-extrabold uppercase">
             {[
-              { id: 'wheels', label: '🛞 Tyres' },
+              { id: 'wheels', label: '🛞 3D Wheels' },
               { id: 'livery', label: '🎨 Livery' },
-              { id: 'lighting', label: '💡 Lights' },
-              { id: 'chassis', label: '⚙️ Hoist' },
+              { id: 'chassis', label: '⚙️ Hoist & Spin' },
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -757,14 +563,14 @@ export function StudioShowroomCanvas({
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-[10px] font-bold text-gray-400 uppercase font-mono tracking-wider">
-                  3D WHEEL & TYRE PACKAGES:
+                  USER 3D WHEEL PACKAGES:
                 </span>
                 <span className="text-[9px] font-mono text-[#00E5FF] bg-[#00E5FF]/10 px-2 py-0.5 rounded border border-[#00E5FF]/30">
                   4 HUBS + SPARE
                 </span>
               </div>
               <p className="text-[10px] text-gray-400 leading-relaxed font-body">
-                Equipping a package unmounts the factory OEM tyres and locks authentic 3D forged wheels onto all axle hubs.
+                Equipping your custom wheel locks your authentic CAD rim and off-road tyre models onto all 5 axle hubs of the Thar.
               </p>
 
               <div className="space-y-2.5">
@@ -783,17 +589,14 @@ export function StudioShowroomCanvas({
                           : 'border-white/10 hover:border-white/25 bg-white/5 hover:bg-white/10'
                       }`}
                     >
-                      {/* Active Glow Accent Strip */}
                       {isSelected && (
                         <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#FF4D00] shadow-[0_0_8px_#FF4D00]" />
                       )}
 
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex items-center gap-2.5">
-                          {/* Wheel Color & Rim Swatch */}
                           <div
-                            className="w-7 h-7 rounded-lg border-2 border-white/20 shrink-0 flex items-center justify-center shadow-md"
-                            style={{ backgroundColor: w.colorHex }}
+                            className="w-7 h-7 rounded-lg border-2 border-white/20 shrink-0 flex items-center justify-center shadow-md bg-black/60"
                           >
                             <span
                               className="w-2.5 h-2.5 rounded-full"
@@ -811,7 +614,6 @@ export function StudioShowroomCanvas({
                           </div>
                         </div>
 
-                        {/* Traction Score Tag */}
                         <div className="text-right shrink-0">
                           <span className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded ${
                             isSelected ? 'bg-[#FF4D00] text-white' : 'bg-white/10 text-gray-300'
@@ -821,12 +623,10 @@ export function StudioShowroomCanvas({
                         </div>
                       </div>
 
-                      {/* Specs description */}
                       <div className="text-[9px] text-gray-400 mt-2 font-mono">
                         {w.specs}
                       </div>
 
-                      {/* Grip Bar & Action Row */}
                       <div className="mt-2.5 pt-2 border-t border-white/10 flex items-center justify-between text-[9px] font-mono">
                         <div className="flex items-center gap-1.5">
                           <span className="text-gray-400">TRACTION:</span>
@@ -895,92 +695,7 @@ export function StudioShowroomCanvas({
             </div>
           )}
 
-          {/* TAB CONTENT: 3. LIGHTING RIGS */}
-          {activeCategory === 'lighting' && (
-            <div className="space-y-2.5">
-              <span className="text-[10px] font-bold text-gray-400 uppercase font-mono block">
-                EXTREME OFF-ROAD LIGHTING RIGS:
-              </span>
-
-              {/* Bumper Rally Pods */}
-              <div className="flex items-center justify-between bg-white/5 p-2.5 rounded-xl border border-white/10">
-                <div>
-                  <div className="text-gray-100 font-heading uppercase text-[11px] font-bold">
-                    KC HiLiTES Bumper Rally Pods
-                  </div>
-                  <div className="text-[9px] text-gray-400">Twin finned amber fog pods + forward spot beams</div>
-                </div>
-                <input
-                  type="checkbox"
-                  checked={bumperLights}
-                  onChange={(e) => {
-                    playUiSound('toggle');
-                    setBumperLights(e.target.checked);
-                  }}
-                  className="accent-[#FF4D00] w-4 h-4 cursor-pointer"
-                />
-              </div>
-
-              {/* Roof Light Bar */}
-              <div className="flex items-center justify-between bg-white/5 p-2.5 rounded-xl border border-white/10">
-                <div>
-                  <div className="text-gray-100 font-heading uppercase text-[11px] font-bold">
-                    50" Curved Windshield Light Bar
-                  </div>
-                  <div className="text-[9px] text-gray-400">12-projector aerodynamic high-power trail beam</div>
-                </div>
-                <input
-                  type="checkbox"
-                  checked={roofLights}
-                  onChange={(e) => {
-                    playUiSound('toggle');
-                    setRoofLights(e.target.checked);
-                  }}
-                  className="accent-[#FF4D00] w-4 h-4 cursor-pointer"
-                />
-              </div>
-
-              {/* Neon Chassis Underglow */}
-              <div className="flex items-center justify-between bg-white/5 p-2.5 rounded-xl border border-white/10">
-                <div>
-                  <div className="text-gray-100 font-heading uppercase text-[11px] font-bold">
-                    Neon Chassis Underglow Kit
-                  </div>
-                  <div className="text-[9px] text-gray-400">Multi-point LED neon glow underbody illumination</div>
-                </div>
-                <input
-                  type="checkbox"
-                  checked={underglow}
-                  onChange={(e) => {
-                    playUiSound('toggle');
-                    setUnderglow(e.target.checked);
-                  }}
-                  className="accent-[#FF4D00] w-4 h-4 cursor-pointer"
-                />
-              </div>
-
-              {/* Main Projector Headlights */}
-              <div className="flex items-center justify-between bg-white/5 p-2.5 rounded-xl border border-white/10">
-                <div>
-                  <div className="text-gray-100 font-heading uppercase text-[11px] font-bold">
-                    Xenon High-Beam Headlights
-                  </div>
-                  <div className="text-[9px] text-gray-400">Front headlights and optical driving beams</div>
-                </div>
-                <input
-                  type="checkbox"
-                  checked={headlights}
-                  onChange={(e) => {
-                    playUiSound('toggle');
-                    setHeadlights(e.target.checked);
-                  }}
-                  className="accent-[#FF4D00] w-4 h-4 cursor-pointer"
-                />
-              </div>
-            </div>
-          )}
-
-          {/* TAB CONTENT: 5. CHASSIS & HOIST */}
+          {/* TAB CONTENT: 3. CHASSIS & HOIST */}
           {activeCategory === 'chassis' && (
             <div className="space-y-2.5">
               <span className="text-[10px] font-bold text-gray-400 uppercase font-mono block">
@@ -1028,6 +743,44 @@ export function StudioShowroomCanvas({
                   className="accent-[#FF4D00] w-4 h-4 cursor-pointer"
                 />
               </div>
+
+              {/* Headlights Toggle */}
+              <div className="flex items-center justify-between bg-white/5 p-3 rounded-xl border border-white/10">
+                <div>
+                  <div className="text-gray-100 font-heading uppercase text-[11px] font-bold">
+                    Headlight Driving Beams
+                  </div>
+                  <div className="text-[9px] text-gray-400">Forward driving projectors</div>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={headlights}
+                  onChange={(e) => {
+                    playUiSound('toggle');
+                    setHeadlights(e.target.checked);
+                  }}
+                  className="accent-[#FF4D00] w-4 h-4 cursor-pointer"
+                />
+              </div>
+
+              {/* Neon Chassis Underglow */}
+              <div className="flex items-center justify-between bg-white/5 p-3 rounded-xl border border-white/10">
+                <div>
+                  <div className="text-gray-100 font-heading uppercase text-[11px] font-bold">
+                    Chassis Underglow
+                  </div>
+                  <div className="text-[9px] text-gray-400">Ground effect illumination</div>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={underglow}
+                  onChange={(e) => {
+                    playUiSound('toggle');
+                    setUnderglow(e.target.checked);
+                  }}
+                  className="accent-[#FF4D00] w-4 h-4 cursor-pointer"
+                />
+              </div>
             </div>
           )}
 
@@ -1048,7 +801,7 @@ export function StudioShowroomCanvas({
 
         {/* BOTTOM GAMEPAD CONTROLLER HINTS */}
         <div className="mt-2 text-center text-[10px] font-mono text-gray-400 bg-black/70 px-3 py-1.5 rounded-xl border border-white/10 backdrop-blur-md">
-          <span className="text-[#FF4D00] font-bold">[L-CLICK + DRAG]</span> 360° ORBIT • <span className="text-[#00E5FF] font-bold">[SCROLL]</span> ZOOM • <span className="text-yellow-400 font-bold">[HOTSPOTS]</span> 3D PINS
+          <span className="text-[#FF4D00] font-bold">[L-CLICK + DRAG]</span> 360° ORBIT • <span className="text-[#00E5FF] font-bold">[SCROLL]</span> ZOOM • <span className="text-yellow-400 font-bold">[TURNTABLE]</span> 360° SPIN
         </div>
       </div>
 
