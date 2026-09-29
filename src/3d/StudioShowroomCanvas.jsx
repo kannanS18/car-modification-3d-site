@@ -12,9 +12,6 @@ import {
   ArrowUpRight,
   Gauge,
   Volume2,
-  CheckCircle,
-  Eye,
-  Sliders,
 } from 'lucide-react';
 import {
   UserWheelAssembly,
@@ -155,7 +152,7 @@ function SingleWheelDisplay({ wheelType }) {
 // Mini 3D Turntable showing standalone parts alone on screen with 3 interactive pills
 function MiniWheelTurntable({ wheelType, setWheelType, onOpenSandbox }) {
   return (
-    <div className="bg-[#090D16] p-2.5 rounded-xl border border-[#00E5FF]/30 shadow-lg flex flex-col gap-1.5">
+    <div className="bg-[#090D16] p-2 rounded-xl border border-[#00E5FF]/30 shadow-lg flex flex-col gap-1.5">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1.5">
           <div className="w-1.5 h-1.5 rounded-full bg-[#00E5FF] animate-pulse" />
@@ -227,81 +224,6 @@ function MiniWheelTurntable({ wheelType, setWheelType, onOpenSandbox }) {
         </Canvas>
         <div className="absolute bottom-1 right-2 text-[7px] font-mono text-gray-500 pointer-events-none">
           DRAG TO ROTATE
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// 3D Miniature Model Node for the 2-Car Selector Cards
-function MiniCarModel({ model }) {
-  const baseUrl = import.meta.env.BASE_URL || '/';
-  const tharGLTF = useGLTF(`${baseUrl}models/thar.glb`);
-  const ferrariGLTF = useGLTF(`${baseUrl}models/ferrari.glb`);
-
-  const tharScene = useMemo(() => tharGLTF.scene.clone(true), [tharGLTF.scene]);
-  const ferrariScene = useMemo(() => ferrariGLTF.scene.clone(true), [ferrariGLTF.scene]);
-
-  const groupRef = useRef();
-
-  useFrame((_, delta) => {
-    if (groupRef.current) {
-      groupRef.current.rotation.y += delta * 0.85;
-    }
-  });
-
-  return (
-    <group ref={groupRef}>
-      {model === 'thar' ? (
-        <group scale={0.72} position={[0, -0.05, 0]} rotation={[0, -Math.PI / 2, 0]}>
-          <primitive object={tharScene} />
-        </group>
-      ) : (
-        <group scale={0.38} position={[0, -0.08, 0]} rotation={[0, 0, 0]}>
-          <primitive object={ferrariScene} />
-        </group>
-      )}
-    </group>
-  );
-}
-
-// Sleek 3D Vehicle Selector Card with Live Rotating Miniature Model
-function VehicleSelectorCard({ model, name, subtitle, isActive, onClick }) {
-  return (
-    <div
-      onClick={onClick}
-      className={`group relative p-2 rounded-2xl border transition-all cursor-pointer flex flex-col items-center justify-between w-36 sm:w-40 h-28 backdrop-blur-xl ${
-        isActive
-          ? 'border-[#00E5FF] bg-gradient-to-b from-[#00E5FF]/20 to-[#0A0E1A]/95 shadow-[0_0_22px_rgba(0,229,255,0.4)] scale-105'
-          : 'border-white/10 hover:border-[#00E5FF]/40 bg-[#090D16]/80 hover:bg-[#090D16]'
-      }`}
-    >
-      {/* Active Indicator Pin */}
-      {isActive && (
-        <div className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#00E5FF] shadow-[0_0_8px_#00E5FF] animate-pulse" />
-      )}
-
-      {/* Mini 3D Viewport with Actual Car Model */}
-      <div className="w-full h-16 rounded-xl overflow-hidden relative flex items-center justify-center bg-black/40">
-        <Canvas
-          camera={{ position: [2.2, 1.2, 2.5], fov: 40 }}
-          gl={{ antialias: false, alpha: true, powerPreference: 'low-power' }}
-          dpr={1}
-        >
-          <ambientLight intensity={1.6} />
-          <directionalLight position={[3, 3, 3]} intensity={2.5} />
-          <directionalLight position={[-3, -1, -2]} intensity={1.2} color="#00E5FF" />
-          <MiniCarModel model={model} />
-        </Canvas>
-      </div>
-
-      {/* Text Info */}
-      <div className="text-center w-full">
-        <div className={`text-[10px] font-mono font-bold leading-tight ${isActive ? 'text-white' : 'text-gray-300'}`}>
-          {name}
-        </div>
-        <div className="text-[7px] font-mono text-[#00E5FF] font-semibold tracking-wider uppercase">
-          {subtitle}
         </div>
       </div>
     </div>
@@ -659,19 +581,51 @@ export function StudioShowroomCanvas({
         </Suspense>
       </Canvas>
 
-      {/* TOP GAMING HUD BAR */}
+      {/* TOP GAMING HUD BAR (WITH BUBBLE VEHICLE SELECTOR LOCATED RIGHT HERE NEAR TITLE!) */}
       <div className="absolute top-5 left-5 right-5 flex items-center justify-between pointer-events-none z-20">
-        {/* Game Title Tag */}
-        <div className="glass-panel px-4 py-2 rounded-xl border border-white/10 flex items-center gap-3 backdrop-blur-xl bg-black/70 shadow-2xl">
-          <div className="w-2.5 h-2.5 rounded-full bg-[#00E5FF] animate-ping" />
-          <div className="text-left font-mono">
-            <div className="text-[10px] text-gray-400 uppercase tracking-widest">ATELIER TUNING SUITE</div>
-            <div className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
-              <span>{carModel === 'thar' ? 'MAHINDRA THAR 4X4 • AUTHENTIC SPEC' : 'FERRARI 458 GT3 • SUPERCAR ATELIER'}</span>
-              <span className="text-[9px] px-1.5 py-0.2 rounded bg-[#00E5FF]/20 text-[#00E5FF] border border-[#00E5FF]/40 font-mono font-bold">
-                {carModel === 'thar' ? '4X4 SUV' : 'SUPERCAR'}
-              </span>
+        {/* Left Group: Title Banner + Vehicle Bubble Switcher (Exactly where user requested in Image 2!) */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2.5 pointer-events-auto">
+          {/* Game Title Tag (Image 2) */}
+          <div className="glass-panel px-3.5 py-1.5 rounded-xl border border-[#00E5FF]/30 flex items-center gap-2.5 backdrop-blur-xl bg-[#080C14]/90 shadow-2xl">
+            <div className="w-2 h-2 rounded-full bg-[#00E5FF] animate-ping" />
+            <div className="text-left font-mono">
+              <div className="text-[9px] text-gray-400 uppercase tracking-widest leading-tight">ATELIER TUNING SUITE</div>
+              <div className="text-[11px] font-bold text-white uppercase tracking-wider flex items-center gap-1.5 leading-tight">
+                <span>{carModel === 'thar' ? 'MAHINDRA THAR 4X4 • AUTHENTIC SPEC' : 'FERRARI 458 GT3 • SUPERCAR ATELIER'}</span>
+                <span className="text-[8px] px-1.5 py-0.2 rounded-full bg-[#00E5FF]/20 text-[#00E5FF] border border-[#00E5FF]/40 font-mono font-bold">
+                  {carModel === 'thar' ? '4X4 SUV' : 'SUPERCAR'}
+                </span>
+              </div>
             </div>
+          </div>
+
+          {/* THE 2 VEHICLE BUBBLE ICONS (RIGHT HERE NEAR THE SECOND IMAGE AS ASKED!) */}
+          <div className="glass-panel p-1 rounded-full border border-[#00E5FF]/40 backdrop-blur-xl bg-[#080C14]/95 shadow-[0_0_20px_rgba(0,0,0,0.8)] flex items-center gap-1">
+            {/* Thar Bubble Icon */}
+            <button
+              onClick={() => handleSelectVehicle('thar')}
+              className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-bold transition-all cursor-pointer ${
+                carModel === 'thar'
+                  ? 'bg-[#00E5FF] text-black shadow-[0_0_12px_#00E5FF] scale-105'
+                  : 'text-gray-300 hover:text-white hover:bg-white/10'
+              }`}
+            >
+              <span className="text-sm">🚙</span>
+              <span>Thar</span>
+            </button>
+
+            {/* Supercar Bubble Icon */}
+            <button
+              onClick={() => handleSelectVehicle('ferrari')}
+              className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-bold transition-all cursor-pointer ${
+                carModel === 'ferrari'
+                  ? 'bg-[#00E5FF] text-black shadow-[0_0_12px_#00E5FF] scale-105'
+                  : 'text-gray-300 hover:text-white hover:bg-white/10'
+              }`}
+            >
+              <span className="text-sm">🏎️</span>
+              <span>Supercar</span>
+            </button>
           </div>
         </div>
 
@@ -683,7 +637,7 @@ export function StudioShowroomCanvas({
                 playUiSound('click');
                 onOpenSandbox();
               }}
-              className="px-3.5 py-1.5 rounded-xl text-xs font-heading font-extrabold uppercase border border-[#00E5FF]/50 bg-black/85 text-[#00E5FF] hover:bg-[#00E5FF]/20 hover:text-white transition-all shadow-[0_0_15px_rgba(0,229,255,0.25)] flex items-center gap-1.5 cursor-pointer backdrop-blur-md"
+              className="px-3 py-1 rounded-xl text-xs font-heading font-extrabold uppercase border border-[#00E5FF]/50 bg-black/85 text-[#00E5FF] hover:bg-[#00E5FF]/20 hover:text-white transition-all shadow-[0_0_15px_rgba(0,229,255,0.25)] flex items-center gap-1.5 cursor-pointer backdrop-blur-md"
             >
               <span>🔬 3D Model Sandbox</span>
             </button>
@@ -691,67 +645,20 @@ export function StudioShowroomCanvas({
         </div>
       </div>
 
-      {/* BOTTOM-LEFT: THE TWO VEHICLES SELECTOR DOCK (WITH REAL ROTATING 3D MINI MODELS) */}
-      <div className="absolute bottom-6 left-6 z-30 pointer-events-auto flex flex-col gap-2">
-        <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-[#090D16]/90 border border-[#00E5FF]/30 backdrop-blur-md w-fit shadow-xl">
-          <div className="w-2 h-2 rounded-full bg-[#00E5FF] animate-pulse" />
-          <span className="text-[10px] font-mono font-bold tracking-wider text-gray-200 uppercase">
-            GARAGE VEHICLES
-          </span>
-          <span className="text-[9px] font-mono text-[#00E5FF]">
-            [TAP TO SWAP & SPIN]
-          </span>
-        </div>
-
-        {/* 2 Actual Vehicle Cards */}
-        <div className="flex items-center gap-3">
-          <VehicleSelectorCard
-            model="thar"
-            name="Mahindra Thar"
-            subtitle="4x4 Off-Road SUV"
-            isActive={carModel === 'thar'}
-            onClick={() => handleSelectVehicle('thar')}
-          />
-          <VehicleSelectorCard
-            model="ferrari"
-            name="Ferrari 458"
-            subtitle="GT3 Widebody Supercar"
-            isActive={carModel === 'ferrari'}
-            onClick={() => handleSelectVehicle('ferrari')}
-          />
-        </div>
-      </div>
-
       {/* RIGHT-SIDE COMPACT GAMING TUNING HUD (FITS ENTIRELY ON SCREEN - ZERO SCROLLING NEEDED) */}
-      <div className="absolute top-20 right-5 w-[330px] sm:w-[360px] z-30 pointer-events-auto flex flex-col">
-        <div className="glass-panel p-3.5 sm:p-4 rounded-2xl border border-[#00E5FF]/40 backdrop-blur-2xl bg-[#080C14]/90 shadow-[0_0_35px_rgba(0,0,0,0.85)] flex flex-col gap-2.5 max-h-[calc(100vh-120px)] overflow-hidden">
+      <div className="absolute top-20 right-5 w-[330px] sm:w-[355px] z-30 pointer-events-auto flex flex-col">
+        <div className="glass-panel p-3 sm:p-3.5 rounded-2xl border border-[#00E5FF]/40 backdrop-blur-2xl bg-[#080C14]/92 shadow-[0_0_35px_rgba(0,0,0,0.85)] flex flex-col gap-2 max-h-[calc(100vh-120px)] overflow-hidden">
           {/* Header */}
-          <div className="flex items-center justify-between border-b border-white/10 pb-2">
+          <div className="flex items-center justify-between border-b border-white/10 pb-1.5">
             <div className="flex items-center gap-1.5">
               <Crosshair className="w-3.5 h-3.5 text-[#00E5FF] animate-spin" style={{ animationDuration: '10s' }} />
               <span className="text-xs font-heading font-black tracking-widest uppercase text-white">
                 TUNING HUD
               </span>
             </div>
-            {/* Quick Car Pill Toggle */}
-            <div className="flex items-center bg-black/60 rounded-lg p-0.5 border border-white/10">
-              <button
-                onClick={() => handleSelectVehicle('thar')}
-                className={`px-2 py-0.5 rounded text-[9px] font-mono font-bold transition-all cursor-pointer ${
-                  carModel === 'thar' ? 'bg-[#00E5FF] text-black shadow-[0_0_8px_#00E5FF]' : 'text-gray-400 hover:text-white'
-                }`}
-              >
-                🚙 Thar
-              </button>
-              <button
-                onClick={() => handleSelectVehicle('ferrari')}
-                className={`px-2 py-0.5 rounded text-[9px] font-mono font-bold transition-all cursor-pointer ${
-                  carModel === 'ferrari' ? 'bg-[#00E5FF] text-black shadow-[0_0_8px_#00E5FF]' : 'text-gray-400 hover:text-white'
-                }`}
-              >
-                🏎️ Supercar
-              </button>
-            </div>
+            <span className="text-[9px] font-mono text-[#00E5FF] font-bold px-2 py-0.5 rounded bg-[#00E5FF]/10 border border-[#00E5FF]/30">
+              {carModel === 'thar' ? '🚙 THAR 4X4' : '🏎️ SUPERCAR'}
+            </span>
           </div>
 
           {/* Standalone 3D Parts Studio (Alone in widget, 360 spin & drag) */}
