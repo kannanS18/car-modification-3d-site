@@ -16,26 +16,19 @@ import {
   Compass,
 } from 'lucide-react';
 import {
-  TharStockOEMWheel,
-  BFGoodrichKO2Wheel,
-  DakarBronzeWheel,
-  TitaniumSpiderWheel,
-  KCHilitesBumperPods,
-  CurvedRoofLightBar,
-  OverlandBullBar,
+  MaxxisBimbraJTIWheel,
+  FuelContraRedWheel,
+  MethodBronzeKO2Wheel,
+  TharOEMDiamondWheel,
 } from '../3d/HighDefCustomParts';
 
 // Camera Auto-Focuser based on selected model category
 function CameraController({ category }) {
   const { camera } = useThree();
-  const controlsRef = useRef();
 
   useEffect(() => {
     if (category === 'Wheels & Tyres') {
-      camera.position.set(0, 0, 1.45);
-      camera.lookAt(0, 0, 0);
-    } else if (category === 'Off-Road Lights' || category === 'Armor & Recovery') {
-      camera.position.set(0, 0, 1.75);
+      camera.position.set(0, 0, 1.35);
       camera.lookAt(0, 0, 0);
     } else {
       camera.position.set(3.2, 1.5, 3.6);
@@ -113,84 +106,51 @@ function SandboxStage({ activeModel, wireframe, autoRotate }) {
 export function ModelSandboxView({ onNavigate }) {
   const baseUrl = import.meta.env.BASE_URL || '/';
 
-  // Catalog of ALL 3D Models in the project (Cleaned, High-Def, No Broken Slices)
+  // Catalog of Real, Accurate 3D Wheels & Vehicles
   const catalog = [
     {
-      id: 'thar_oem_wheel',
-      name: 'Mahindra Thar 18" Diamond-Cut Wheel',
+      id: 'maxxis_bimbra',
+      name: 'Maxxis AT-980 Bravo • Bimbra JTI Beadlock',
       category: 'Wheels & Tyres',
-      component: TharStockOEMWheel,
+      component: MaxxisBimbraJTIWheel,
       scale: 1.15,
-      triangles: '14,280 tris',
-      materials: 'Machined Diamond-Cut Silver, Obsidian Metallic Flanks, Dueler Rubber',
-      description: 'Factory authentic 5-split twin-spoke diamond-cut alloy with Bridgestone Dueler all-season rubber, chrome lug nuts, and ventilated brake rotor.',
+      triangles: '24,680 tris',
+      materials: 'Maxxis 980 White Lettering, Bimbra JTI Multi-Hole Machined Dish, Brembo Caliper',
+      description: 'Maxxis Bravo AT-980 (285/60 R18) all-terrain tyre with raised white lettering, paired with Bimbra JTI round multi-hole beadlock deep-dish alloy rim.',
+      badge: 'BIMBRA 4X4 SPEC',
+    },
+    {
+      id: 'fuel_contra',
+      name: 'Fuel Contra • Candy Red & Black Concave',
+      category: 'Wheels & Tyres',
+      component: FuelContraRedWheel,
+      scale: 1.15,
+      triangles: '26,820 tris',
+      materials: 'Vredestein Pinza A/T, Gloss Black with Milled Candy Red Flanks, Slotted Rotor',
+      description: 'Directional 10-blade swept spiral concave alloy in deep gloss black with CNC-milled candy red anodized accents on aggressive All-Terrain rubber.',
+      badge: 'CONCAVE BLADE',
+    },
+    {
+      id: 'method_bronze',
+      name: 'BFGoodrich KO2 • Method Bronze Forged',
+      category: 'Wheels & Tyres',
+      component: MethodBronzeKO2Wheel,
+      scale: 1.15,
+      triangles: '22,440 tris',
+      materials: 'BFGoodrich T/A KO2 Raised White Lettering, Satin Bronze Forged Dish, Black Beadlock',
+      description: 'BFGoodrich All-Terrain T/A KO2 Baja Champion tyre on Method Race Wheels satin bronze 8-window forged rally alloy with black simulated beadlock.',
+      badge: 'BAJA RALLY',
+    },
+    {
+      id: 'thar_oem',
+      name: 'Mahindra Thar 18" OEM Diamond-Cut • Ceat Czar',
+      category: 'Wheels & Tyres',
+      component: TharOEMDiamondWheel,
+      scale: 1.15,
+      triangles: '18,650 tris',
+      materials: 'Ceat Czar A/T White Lettering, Dual-Tone Machined Silver & Obsidian Black',
+      description: 'Authentic 18" Mahindra Thar factory diamond-cut alloy wheel with 5-split twin-arms, central Mahindra twin-peaks emblem, and Ceat Czar A/T rubber.',
       badge: 'FACTORY OEM',
-    },
-    {
-      id: 'bfg_ko2',
-      name: 'BFGoodrich T/A KO2 • Method Beadlock',
-      category: 'Wheels & Tyres',
-      component: BFGoodrichKO2Wheel,
-      scale: 1.15,
-      triangles: '21,460 tris',
-      materials: 'Matte Satin Black Dish, Crimson Anodized Beadlock, 24 Chrome Hex Bolts',
-      description: 'Deep-dish rock-crawler beadlock wheel with red anodized locking ring, 24 individual grade-8 bolts, aggressive 3D mud-terrain lugs, and Brembo caliper.',
-      badge: '99% TRACTION',
-    },
-    {
-      id: 'dakar_bronze',
-      name: 'Dakar Rally Stage • Satin Bronze Forged',
-      category: 'Wheels & Tyres',
-      component: DakarBronzeWheel,
-      scale: 1.15,
-      triangles: '16,840 tris',
-      materials: 'Forged Satin Bronze Alloy, Black Beadlock Ring, Kevlar Rubber',
-      description: 'Dakar endurance 8-window rally dish forged alloy with rich metallic satin bronze finish, black outer beadlock, and 3-ply Kevlar mud lugs.',
-      badge: '94% TRACTION',
-    },
-    {
-      id: 'titanium_spider',
-      name: 'Titanium 10-Spoke Concave Sport Alloy',
-      category: 'Wheels & Tyres',
-      component: TitaniumSpiderWheel,
-      scale: 1.15,
-      triangles: '18,220 tris',
-      materials: 'Brushed Titanium 96% Metalness, Mirror Polished Silver Lip',
-      description: 'Directional 10-spoke motorsport concave alloy in polished titanium metallic with mirror-polished silver rim lip and low-profile performance rubber.',
-      badge: '88% TRACTION',
-    },
-    {
-      id: 'kc_hilites_pods',
-      name: 'KC HiLiTES Extreme Bumper Fog Pods',
-      category: 'Off-Road Lights',
-      component: KCHilitesBumperPods,
-      scale: 1.25,
-      triangles: '8,460 tris',
-      materials: 'Cast Aluminum Finned Housing, Amber Fluted Glass, Stone Guards',
-      description: 'Twin 6" rally off-road fog pods with rear cooling fins, chrome reflector bowls, glowing amber fluted lenses, and heavy-duty stone guard grilles.',
-      badge: 'MODULAR RIG',
-    },
-    {
-      id: 'curved_roof_light_bar',
-      name: '50" Curved Windshield Trail Light Bar',
-      category: 'Off-Road Lights',
-      component: CurvedRoofLightBar,
-      scale: 1.15,
-      triangles: '12,680 tris',
-      materials: 'Extruded Black Aluminum Heatsink, 40 Projector LEDs, Polycarbonate Lens',
-      description: '50-inch aerodynamic curved trail light bar with dual rows of high-power projector reflectors, heatsink cooling fins, and steel A-pillar brackets.',
-      badge: 'ULTRA BEAM',
-    },
-    {
-      id: 'overland_bull_bar',
-      name: 'Overland Tubular Bull Bar & Winch',
-      category: 'Armor & Recovery',
-      component: OverlandBullBar,
-      scale: 1.15,
-      triangles: '9,340 tris',
-      materials: 'Powder-Coated Tubular Steel, Synthetic Winch Cable, Red Recovery Hook',
-      description: 'Heavy-duty tubular front chassis armor with integrated electric winch spool, polished aluminum hawse fairlead, and forged red recovery tow hook.',
-      badge: 'TRAIL ARMOR',
     },
     {
       id: 'thar_split',
@@ -218,7 +178,7 @@ export function ModelSandboxView({ onNavigate }) {
     },
   ];
 
-  const [activeModelId, setActiveModelId] = useState('thar_oem_wheel');
+  const [activeModelId, setActiveModelId] = useState('maxxis_bimbra');
   const [wireframe, setWireframe] = useState(false);
   const [autoRotate, setAutoRotate] = useState(true);
   const [lighting, setLighting] = useState('studio'); // 'studio' | 'daylight' | 'cyber'
@@ -242,13 +202,13 @@ export function ModelSandboxView({ onNavigate }) {
               <span>Back to 3D Showroom</span>
             </button>
             <span className="text-gray-600">/</span>
-            <span className="text-xs font-mono text-[#00E5FF] font-bold">Model Sandbox & Asset Inspector</span>
+            <span className="text-xs font-mono text-[#00E5FF] font-bold">3D Model Sandbox & Wheel Inspector</span>
           </div>
           <h1 className="text-xl sm:text-2xl font-heading font-black uppercase tracking-wider text-white mt-1">
-            3D MODULAR COMPONENT INSPECTOR
+            MAHINDRA THAR 3D WHEEL & TYRE INSPECTOR
           </h1>
           <p className="text-xs text-gray-400 font-body">
-            Inspect every precision-engineered 3D model with 360° rotation, wireframe topology, and PBR studio lighting.
+            Accurate 3D models with true-to-life rims, raised white lettering sidewalls, deep concave dishes, and PBR studio lighting.
           </p>
         </div>
 
@@ -305,7 +265,7 @@ export function ModelSandboxView({ onNavigate }) {
         {/* LEFT MODEL CATALOG SELECTOR */}
         <div className="lg:col-span-4 flex flex-col gap-2 max-h-[680px] overflow-y-auto pr-1">
           <div className="text-[11px] font-mono uppercase tracking-widest text-gray-400 mb-1 font-bold">
-            HIGH-DEFINITION 3D MODELS ({catalog.length}):
+            AVAILABLE 3D WHEELS & TYRES ({catalog.length}):
           </div>
 
           {catalog.map((m) => {
@@ -349,7 +309,7 @@ export function ModelSandboxView({ onNavigate }) {
             {/* 3D WebGL Canvas */}
             <Canvas
               shadows
-              camera={{ position: [0, 0, 1.45], fov: 42 }}
+              camera={{ position: [0, 0, 1.35], fov: 42 }}
               gl={{ antialias: true, alpha: true }}
             >
               <Suspense
@@ -368,32 +328,32 @@ export function ModelSandboxView({ onNavigate }) {
                 {lighting === 'studio' && (
                   <>
                     <Environment preset="night" environmentIntensity={0.8} />
-                    <ambientLight intensity={1.2} />
-                    {/* Front Key Light directly onto the part face */}
-                    <directionalLight position={[2.5, 3.5, 4.5]} intensity={3.0} castShadow />
-                    {/* Soft Fill Light from opposite side to eliminate black shadows */}
-                    <directionalLight position={[-3.5, 1.5, 3.5]} intensity={1.8} color="#D1D5DB" />
-                    {/* Top / Rim Light to highlight tread and silhouette */}
-                    <directionalLight position={[0, 4.5, -2.5]} intensity={2.0} color="#FFFFFF" />
-                    {/* Direct Center Specular Point Light */}
-                    <pointLight position={[0, 0, 2.2]} intensity={2.2} distance={8} color="#FFFFFF" />
+                    <ambientLight intensity={1.3} />
+                    {/* Front Key Light directly onto the rim face */}
+                    <directionalLight position={[2.5, 3.5, 4.5]} intensity={3.5} castShadow />
+                    {/* Soft Fill Light from opposite side */}
+                    <directionalLight position={[-3.5, 1.5, 3.5]} intensity={2.0} color="#D1D5DB" />
+                    {/* Top / Rim Light */}
+                    <directionalLight position={[0, 4.5, -2.5]} intensity={2.2} color="#FFFFFF" />
+                    {/* Direct Center Specular Point Light for metallic rim highlights */}
+                    <pointLight position={[0, 0, 2.0]} intensity={3.0} distance={8} color="#FFFFFF" />
                   </>
                 )}
                 {lighting === 'daylight' && (
                   <>
                     <Environment preset="city" environmentIntensity={1.2} />
-                    <ambientLight intensity={1.4} />
-                    <directionalLight position={[5, 10, 5]} intensity={3.5} castShadow />
-                    <directionalLight position={[-4, -1, 3]} intensity={1.5} color="#93C5FD" />
+                    <ambientLight intensity={1.5} />
+                    <directionalLight position={[5, 10, 5]} intensity={4.0} castShadow />
+                    <directionalLight position={[-4, -1, 3]} intensity={2.0} color="#93C5FD" />
                   </>
                 )}
                 {lighting === 'cyber' && (
                   <>
                     <Environment preset="night" environmentIntensity={0.6} />
-                    <ambientLight intensity={0.6} />
-                    <pointLight color="#00E5FF" intensity={6} distance={10} position={[-2.5, 2.5, 2]} />
-                    <pointLight color="#FF4D00" intensity={6} distance={10} position={[2.5, 2.5, 2]} />
-                    <directionalLight position={[0, 4, 3]} intensity={2.0} color="#FFF" />
+                    <ambientLight intensity={0.7} />
+                    <pointLight color="#00E5FF" intensity={7} distance={10} position={[-2.5, 2.5, 2]} />
+                    <pointLight color="#FF4D00" intensity={7} distance={10} position={[2.5, 2.5, 2]} />
+                    <directionalLight position={[0, 4, 3]} intensity={2.5} color="#FFF" />
                   </>
                 )}
 
@@ -406,7 +366,7 @@ export function ModelSandboxView({ onNavigate }) {
                 <OrbitControls
                   makeDefault
                   enablePan={true}
-                  minDistance={0.4}
+                  minDistance={0.35}
                   maxDistance={12}
                   dampingFactor={0.05}
                 />
@@ -441,7 +401,7 @@ export function ModelSandboxView({ onNavigate }) {
                 onClick={() => onNavigate('showroom')}
                 className="px-4 py-2 rounded-lg bg-gradient-to-r from-[#FF4D00] to-[#E03B00] text-white text-xs font-heading font-extrabold uppercase shadow-[0_0_15px_rgba(255,77,0,0.5)] hover:shadow-[0_0_20px_rgba(255,77,0,0.8)] transition-all cursor-pointer"
               >
-                Mount in Showroom →
+                Mount on Thar 4x4 →
               </button>
             </div>
           </div>

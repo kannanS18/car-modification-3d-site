@@ -1,376 +1,277 @@
-import React, { useRef, useMemo } from 'react';
-import { useFrame } from '@react-three/fiber';
+import React, { useMemo } from 'react';
 import * as THREE from 'three';
 
 // =========================================================================
-// 1. FACTORY MAHINDRA THAR 18" DIAMOND-CUT ALLOY WHEEL (AUTHENTIC OEM SPEC)
+// PROCEDURAL CANVAS TEXTURE GENERATOR FOR HIGH-END AUTOMOTIVE TYRE SIDEWALLS
 // =========================================================================
-export function TharStockOEMWheel({ wireframe = false, scale = 1.0 }) {
+function createSidewallTexture(brandText, sizeText, hasWhiteLettering = true) {
+  const canvas = document.createElement('canvas');
+  canvas.width = 1024;
+  canvas.height = 1024;
+  const ctx = canvas.getContext('2d');
+
+  const cx = 512;
+  const cy = 512;
+
+  // 1. Dark vulcanized rubber base
+  ctx.fillStyle = '#17181C';
+  ctx.fillRect(0, 0, 1024, 1024);
+
+  // 2. Radial rubber grain & texture ridges
+  ctx.strokeStyle = '#111215';
+  ctx.lineWidth = 2.5;
+  for (let r = 328; r < 500; r += 7) {
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+
+  // 3. Subtle sidewall shoulder ribbing
+  ctx.strokeStyle = '#202227';
+  ctx.lineWidth = 4;
+  for (let r = 450; r < 490; r += 12) {
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+
+  // 4. Arced Curved Lettering Helper
+  function drawCurvedText(text, radius, startAngle, letterSpacing, isWhite) {
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(startAngle);
+    ctx.font = '900 38px "Arial Black", Impact, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+
+    const halfLength = (text.length - 1) / 2;
+    for (let i = 0; i < text.length; i++) {
+      const char = text[i];
+      ctx.save();
+      ctx.rotate((i - halfLength) * letterSpacing);
+      ctx.translate(0, -radius);
+      if (isWhite) {
+        // Bright raised white lettering with authentic shadow
+        ctx.fillStyle = '#FFFFFF';
+        ctx.shadowColor = '#000000';
+        ctx.shadowBlur = 6;
+        ctx.shadowOffsetX = 1;
+        ctx.shadowOffsetY = 2;
+        ctx.fillText(char, 0, 0);
+      } else {
+        // Embossed dark rubber lettering
+        ctx.fillStyle = '#262930';
+        ctx.shadowColor = '#0B0C0E';
+        ctx.shadowBlur = 4;
+        ctx.fillText(char, 0, 0);
+      }
+      ctx.restore();
+    }
+    ctx.restore();
+  }
+
+  // Top brand name (e.g. "MAXXIS BRAVO A/T 980" or "BFGOODRICH T/A KO2")
+  drawCurvedText(brandText, 412, 0, 0.052, hasWhiteLettering);
+
+  // Bottom tyre size & DOT (e.g. "285/60 R18 116H ALL-TERRAIN")
+  drawCurvedText(sizeText, 412, Math.PI, 0.046, hasWhiteLettering);
+
+  // Corner subtle safety warning text
+  drawCurvedText('SAFETY WARNING: MOUNT ONLY ON APPROVED RIMS', 355, Math.PI * 0.5, 0.032, false);
+  drawCurvedText('MAX LOAD 1250 KG  •  MAX INFLATION 50 PSI', 355, -Math.PI * 0.5, 0.032, false);
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.anisotropy = 16;
+  texture.needsUpdate = true;
+  return texture;
+}
+
+// =========================================================================
+// PROCEDURAL CANVAS TEXTURE FOR ALL-TERRAIN TREAD BLOCKS & DEEP SIPES
+// =========================================================================
+function createTreadTexture() {
+  const canvas = document.createElement('canvas');
+  canvas.width = 1024;
+  canvas.height = 256;
+  const ctx = canvas.getContext('2d');
+
+  // Deep black mud channels
+  ctx.fillStyle = '#0B0C0E';
+  ctx.fillRect(0, 0, 1024, 256);
+
+  // Draw 16 repeating rows of interlocking zig-zag all-terrain tread blocks
+  ctx.fillStyle = '#1D1E22';
+  for (let col = 0; col < 16; col++) {
+    const x = col * 64;
+
+    // Center chevron block
+    ctx.beginPath();
+    ctx.moveTo(x + 10, 80);
+    ctx.lineTo(x + 32, 60);
+    ctx.lineTo(x + 54, 80);
+    ctx.lineTo(x + 54, 120);
+    ctx.lineTo(x + 32, 100);
+    ctx.lineTo(x + 10, 120);
+    ctx.closePath();
+    ctx.fill();
+
+    // Sipes across center block
+    ctx.strokeStyle = '#0B0C0E';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(x + 16, 90);
+    ctx.lineTo(x + 48, 90);
+    ctx.stroke();
+
+    // Left shoulder block
+    ctx.beginPath();
+    ctx.rect(x + 8, 10, 48, 42);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(x + 14, 30);
+    ctx.lineTo(x + 50, 30);
+    ctx.stroke();
+
+    // Right shoulder block
+    ctx.beginPath();
+    ctx.rect(x + 8, 140, 48, 42);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(x + 14, 160);
+    ctx.lineTo(x + 50, 160);
+    ctx.stroke();
+
+    // Outer biting edge cleat
+    ctx.beginPath();
+    ctx.rect(x + 16, 195, 32, 50);
+    ctx.fill();
+  }
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.wrapS = THREE.RepeatWrapping;
+  texture.wrapT = THREE.ClampToEdgeWrapping;
+  texture.repeat.set(4, 1);
+  texture.anisotropy = 16;
+  texture.needsUpdate = true;
+  return texture;
+}
+
+// =========================================================================
+// COMMON HOLLOW TYRE CASING WITH DUAL-SIDEWALL CANVAS TEXTURES
+// =========================================================================
+function HollowTyreCasing({ brandText, sizeText, hasWhiteLettering = true, wireframe = false, scale = 1.0 }) {
+  const sidewallTex = useMemo(() => createSidewallTexture(brandText, sizeText, hasWhiteLettering), [brandText, sizeText, hasWhiteLettering]);
+  const treadTex = useMemo(() => createTreadTexture(), []);
+
   return (
     <group scale={scale}>
-      {/* 1. All-Season Tyre - Bridgestone Dueler Rubber */}
+      {/* 1. Outer Tread Cylinder (OPEN-ENDED, HOLLOW!) */}
       <mesh rotation={[Math.PI / 2, 0, 0]} castShadow receiveShadow>
-        <cylinderGeometry args={[0.40, 0.40, 0.24, 48]} />
+        <cylinderGeometry args={[0.42, 0.42, 0.26, 64, 1, true]} />
         <meshStandardMaterial
           color="#181A1D"
+          map={treadTex}
           roughness={0.88}
-          metalness={0.04}
-          wireframe={wireframe}
-        />
-      </mesh>
-
-      {/* Outer & Inner Tyre Sidewall Rounded Shoulders */}
-      {[-0.10, 0.10].map((z, i) => (
-        <mesh key={i} position={[0, 0, z]} castShadow>
-          <torusGeometry args={[0.34, 0.065, 20, 48]} />
-          <meshStandardMaterial
-            color="#1C1E22"
-            roughness={0.85}
-            metalness={0.06}
-            wireframe={wireframe}
-          />
-        </mesh>
-      ))}
-
-      {/* Highway All-Season Radial Siping / Grooves around circumference */}
-      {Array.from({ length: 32 }).map((_, gi) => {
-        const ang = (gi / 32) * Math.PI * 2;
-        return (
-          <mesh
-            key={gi}
-            position={[Math.cos(ang) * 0.401, Math.sin(ang) * 0.401, 0]}
-            rotation={[0, 0, ang]}
-          >
-            <boxGeometry args={[0.012, 0.008, 0.22]} />
-            <meshStandardMaterial
-              color="#0E1012"
-              roughness={0.95}
-              metalness={0.02}
-              wireframe={wireframe}
-            />
-          </mesh>
-        );
-      })}
-
-      {/* 2. Deep Inset Rim Barrel */}
-      <mesh rotation={[Math.PI / 2, 0, 0]}>
-        <cylinderGeometry args={[0.255, 0.255, 0.23, 48, 1, true]} />
-        <meshStandardMaterial
-          color="#15171B"
-          roughness={0.35}
-          metalness={0.88}
-          wireframe={wireframe}
-        />
-      </mesh>
-
-      {/* Outer Polished Rim Lip */}
-      <mesh position={[0, 0, 0.115]}>
-        <ringGeometry args={[0.238, 0.262, 48]} />
-        <meshStandardMaterial
-          color="#F1F5F9"
-          roughness={0.15}
-          metalness={0.96}
-          wireframe={wireframe}
-        />
-      </mesh>
-
-      {/* 3. 5-Split Twin Diamond-Cut Spokes (10 arms total) */}
-      {Array.from({ length: 5 }).map((_, si) => {
-        const baseAng = (si / 5) * Math.PI * 2;
-        return (
-          <group key={si} rotation={[0, 0, baseAng]}>
-            {/* Left Arm of Split Spoke */}
-            <group position={[-0.032, 0.125, 0.095]} rotation={[0, 0, 0.08]}>
-              {/* Obsidian Black Flank */}
-              <mesh position={[0, 0, -0.012]}>
-                <boxGeometry args={[0.038, 0.17, 0.024]} />
-                <meshStandardMaterial
-                  color="#0F1115"
-                  roughness={0.25}
-                  metalness={0.85}
-                  wireframe={wireframe}
-                />
-              </mesh>
-              {/* Machined Diamond-Cut Silver Face */}
-              <mesh position={[0, 0, 0.006]}>
-                <boxGeometry args={[0.032, 0.165, 0.012]} />
-                <meshStandardMaterial
-                  color="#F8FAFC"
-                  roughness={0.12}
-                  metalness={0.98}
-                  wireframe={wireframe}
-                />
-              </mesh>
-            </group>
-
-            {/* Right Arm of Split Spoke */}
-            <group position={[0.032, 0.125, 0.095]} rotation={[0, 0, -0.08]}>
-              {/* Obsidian Black Flank */}
-              <mesh position={[0, 0, -0.012]}>
-                <boxGeometry args={[0.038, 0.17, 0.024]} />
-                <meshStandardMaterial
-                  color="#0F1115"
-                  roughness={0.25}
-                  metalness={0.85}
-                  wireframe={wireframe}
-                />
-              </mesh>
-              {/* Machined Diamond-Cut Silver Face */}
-              <mesh position={[0, 0, 0.006]}>
-                <boxGeometry args={[0.032, 0.165, 0.012]} />
-                <meshStandardMaterial
-                  color="#F8FAFC"
-                  roughness={0.12}
-                  metalness={0.98}
-                  wireframe={wireframe}
-                />
-              </mesh>
-            </group>
-          </group>
-        );
-      })}
-
-      {/* 4. Center Hub Cap & Mahindra Chrome Badge */}
-      <mesh position={[0, 0, 0.10]} rotation={[Math.PI / 2, 0, 0]}>
-        <cylinderGeometry args={[0.068, 0.068, 0.032, 32]} />
-        <meshStandardMaterial
-          color="#121316"
-          roughness={0.3}
-          metalness={0.8}
-          wireframe={wireframe}
-        />
-      </mesh>
-      <mesh position={[0, 0, 0.118]}>
-        <circleGeometry args={[0.048, 32]} />
-        <meshStandardMaterial
-          color="#CBD5E1"
-          roughness={0.15}
-          metalness={0.95}
-          wireframe={wireframe}
-        />
-      </mesh>
-
-      {/* 5 Chrome Hexagonal Lug Nuts */}
-      {Array.from({ length: 5 }).map((_, ni) => {
-        const nAng = (ni / 5) * Math.PI * 2;
-        return (
-          <mesh
-            key={ni}
-            position={[Math.cos(nAng) * 0.045, Math.sin(nAng) * 0.045, 0.116]}
-            rotation={[Math.PI / 2, 0, 0]}
-          >
-            <cylinderGeometry args={[0.0075, 0.0075, 0.012, 6]} />
-            <meshStandardMaterial
-              color="#F8FAFC"
-              roughness={0.1}
-              metalness={0.98}
-              wireframe={wireframe}
-            />
-          </mesh>
-        );
-      })}
-
-      {/* 5. Slotted Brake Rotor & Red Brembo Caliper */}
-      <group position={[0, 0, -0.04]}>
-        <mesh rotation={[Math.PI / 2, 0, 0]}>
-          <cylinderGeometry args={[0.20, 0.20, 0.016, 48]} />
-          <meshStandardMaterial
-            color="#94A3B8"
-            roughness={0.25}
-            metalness={0.95}
-            wireframe={wireframe}
-          />
-        </mesh>
-        <mesh position={[0.13, 0.13, 0.02]}>
-          <boxGeometry args={[0.10, 0.12, 0.05]} />
-          <meshStandardMaterial
-            color="#E11D48"
-            roughness={0.2}
-            metalness={0.4}
-            wireframe={wireframe}
-          />
-        </mesh>
-      </group>
-    </group>
-  );
-}
-
-// =========================================================================
-// 2. BFGOODRICH T/A KO2 ROCK-CRAWLER WITH RED ANODIZED METHOD BEADLOCK
-// =========================================================================
-export function BFGoodrichKO2Wheel({ wireframe = false, scale = 1.0 }) {
-  return (
-    <group scale={scale}>
-      {/* 1. Massive 35" Mud-Terrain Tyre Rubber */}
-      <mesh rotation={[Math.PI / 2, 0, 0]} castShadow receiveShadow>
-        <cylinderGeometry args={[0.42, 0.42, 0.27, 48]} />
-        <meshStandardMaterial
-          color="#16171A"
-          roughness={0.92}
           metalness={0.03}
           wireframe={wireframe}
         />
       </mesh>
 
-      {/* Sidewall Bulge & Shoulder Cleats */}
-      {[-0.12, 0.12].map((z, i) => (
-        <mesh key={i} position={[0, 0, z]} castShadow>
-          <torusGeometry args={[0.35, 0.075, 20, 48]} />
-          <meshStandardMaterial
-            color="#181A1D"
-            roughness={0.90}
-            metalness={0.04}
-            wireframe={wireframe}
-          />
+      {/* 2. Outer Shoulder Biting Cleats (32 Radial 3D Mud Blocks) */}
+      {Array.from({ length: 32 }).map((_, bi) => {
+        const ang = (bi / 32) * Math.PI * 2;
+        const isOffset = bi % 2 === 0;
+        return (
+          <group key={bi} position={[Math.cos(ang) * 0.421, Math.sin(ang) * 0.421, 0]} rotation={[0, 0, ang]}>
+            {/* Left Edge Shoulder Block */}
+            <mesh position={[0, 0, isOffset ? 0.08 : -0.08]} castShadow>
+              <boxGeometry args={[0.038, 0.016, 0.09]} />
+              <meshStandardMaterial color="#121316" roughness={0.94} metalness={0.02} wireframe={wireframe} />
+            </mesh>
+          </group>
+        );
+      })}
+
+      {/* 3. Front Sidewall Ring with Raised Lettering (HOLLOW CENTER r: 0.25 to 0.42) */}
+      <mesh position={[0, 0, 0.13]} castShadow>
+        <ringGeometry args={[0.252, 0.42, 64]} />
+        <meshStandardMaterial
+          color="#1A1C20"
+          map={sidewallTex}
+          roughness={0.85}
+          metalness={0.04}
+          side={THREE.DoubleSide}
+          wireframe={wireframe}
+        />
+      </mesh>
+
+      {/* 4. Rear Sidewall Ring (HOLLOW CENTER r: 0.25 to 0.42) */}
+      <mesh position={[0, 0, -0.13]} rotation={[0, Math.PI, 0]} receiveShadow>
+        <ringGeometry args={[0.252, 0.42, 64]} />
+        <meshStandardMaterial
+          color="#1A1C20"
+          map={sidewallTex}
+          roughness={0.85}
+          metalness={0.04}
+          side={THREE.DoubleSide}
+          wireframe={wireframe}
+        />
+      </mesh>
+
+      {/* 5. Sidewall Torus Shoulders for Curvature */}
+      {[-0.125, 0.125].map((z, i) => (
+        <mesh key={i} position={[0, 0, z]}>
+          <torusGeometry args={[0.395, 0.025, 16, 64]} />
+          <meshStandardMaterial color="#151619" roughness={0.88} metalness={0.03} wireframe={wireframe} />
         </mesh>
       ))}
+    </group>
+  );
+}
 
-      {/* 24 Aggressive 3D Knobby Mud-Terrain Tread Lugs */}
-      {Array.from({ length: 24 }).map((_, li) => {
-        const ang = (li / 24) * Math.PI * 2;
-        const isOffset = li % 2 === 0;
-        return (
-          <group key={li} position={[Math.cos(ang) * 0.418, Math.sin(ang) * 0.418, 0]} rotation={[0, 0, ang]}>
-            <mesh position={[0, 0, isOffset ? 0.06 : -0.06]} castShadow>
-              <boxGeometry args={[0.042, 0.024, 0.13]} />
-              <meshStandardMaterial
-                color="#121316"
-                roughness={0.95}
-                metalness={0.02}
-                wireframe={wireframe}
-              />
-            </mesh>
-          </group>
-        );
-      })}
-
-      {/* 2. Deep-Dish Matte Black Rim Barrel */}
+// =========================================================================
+// COMMON BEHIND-THE-WHEEL BRAKE DISC & RED BREMBO CALIPER
+// =========================================================================
+function BrakeAssembly({ wireframe = false }) {
+  return (
+    <group position={[0, 0, -0.04]}>
+      {/* 340mm Slotted Steel Brake Rotor */}
       <mesh rotation={[Math.PI / 2, 0, 0]}>
-        <cylinderGeometry args={[0.26, 0.26, 0.25, 48, 1, true]} />
+        <cylinderGeometry args={[0.21, 0.21, 0.016, 48]} />
         <meshStandardMaterial
-          color="#1E2024"
-          roughness={0.35}
-          metalness={0.85}
+          color="#94A3B8"
+          roughness={0.22}
+          metalness={0.96}
           wireframe={wireframe}
         />
       </mesh>
 
-      {/* 3. Gloss Anodized Crimson Red Beadlock Locking Ring */}
-      <mesh position={[0, 0, 0.132]} castShadow>
-        <ringGeometry args={[0.235, 0.268, 48]} />
-        <meshStandardMaterial
-          color="#DC2626"
-          roughness={0.22}
-          metalness={0.88}
-          wireframe={wireframe}
-        />
-      </mesh>
-      <mesh position={[0, 0, 0.126]}>
-        <torusGeometry args={[0.266, 0.012, 16, 48]} />
-        <meshStandardMaterial
-          color="#DC2626"
-          roughness={0.22}
-          metalness={0.88}
-          wireframe={wireframe}
-        />
-      </mesh>
-
-      {/* 24 Chrome Grade-8 Socket Screws around Beadlock Ring */}
-      {Array.from({ length: 24 }).map((_, bi) => {
-        const bAng = (bi / 24) * Math.PI * 2;
+      {/* Circular Rotor Holes */}
+      {Array.from({ length: 8 }).map((_, hi) => {
+        const hAng = (hi / 8) * Math.PI * 2;
         return (
-          <mesh
-            key={bi}
-            position={[Math.cos(bAng) * 0.252, Math.sin(bAng) * 0.252, 0.138]}
-            rotation={[Math.PI / 2, 0, 0]}
-          >
-            <cylinderGeometry args={[0.005, 0.005, 0.008, 6]} />
-            <meshStandardMaterial
-              color="#F8FAFC"
-              roughness={0.12}
-              metalness={0.98}
-              wireframe={wireframe}
-            />
+          <mesh key={hi} position={[Math.cos(hAng) * 0.14, Math.sin(hAng) * 0.14, 0.009]}>
+            <circleGeometry args={[0.006, 12]} />
+            <meshBasicMaterial color="#334155" />
           </mesh>
         );
       })}
 
-      {/* 4. Method 5-Spoke Star Dish with Weight Relief Ports */}
-      {Array.from({ length: 5 }).map((_, si) => {
-        const sAng = (si / 5) * Math.PI * 2;
-        return (
-          <group key={si} rotation={[0, 0, sAng]} position={[0, 0, 0.09]}>
-            <mesh position={[0, 0.12, 0]} castShadow>
-              <boxGeometry args={[0.075, 0.17, 0.032]} />
-              <meshStandardMaterial
-                color="#1B1D22"
-                roughness={0.35}
-                metalness={0.85}
-                wireframe={wireframe}
-              />
-            </mesh>
-            {/* Recessed Spoke Accent Slot */}
-            <mesh position={[0, 0.12, 0.016]}>
-              <boxGeometry args={[0.035, 0.10, 0.008]} />
-              <meshStandardMaterial
-                color="#0D0E11"
-                roughness={0.5}
-                metalness={0.6}
-                wireframe={wireframe}
-              />
-            </mesh>
-          </group>
-        );
-      })}
-
-      {/* 5. Center Hub Cap & Hex Lugs */}
-      <mesh position={[0, 0, 0.098]} rotation={[Math.PI / 2, 0, 0]}>
-        <cylinderGeometry args={[0.075, 0.075, 0.035, 32]} />
-        <meshStandardMaterial
-          color="#121316"
-          roughness={0.3}
-          metalness={0.8}
-          wireframe={wireframe}
-        />
-      </mesh>
-      {Array.from({ length: 5 }).map((_, ni) => {
-        const nAng = (ni / 5) * Math.PI * 2;
-        return (
-          <mesh
-            key={ni}
-            position={[Math.cos(nAng) * 0.046, Math.sin(nAng) * 0.046, 0.118]}
-            rotation={[Math.PI / 2, 0, 0]}
-          >
-            <cylinderGeometry args={[0.008, 0.008, 0.014, 6]} />
-            <meshStandardMaterial
-              color="#F8FAFC"
-              roughness={0.1}
-              metalness={0.98}
-              wireframe={wireframe}
-            />
-          </mesh>
-        );
-      })}
-
-      {/* 6. Brembo Cross-Drilled Slotted Brake Disc & Red Caliper */}
-      <group position={[0, 0, -0.04]}>
-        <mesh rotation={[Math.PI / 2, 0, 0]}>
-          <cylinderGeometry args={[0.21, 0.21, 0.018, 48]} />
-          <meshStandardMaterial
-            color="#94A3B8"
-            roughness={0.25}
-            metalness={0.95}
-            wireframe={wireframe}
-          />
-        </mesh>
-        <mesh position={[0.135, 0.135, 0.02]}>
-          <boxGeometry args={[0.11, 0.13, 0.055]} />
+      {/* Red Brembo 4-Piston Caliper clamped on Top-Right Quadrant */}
+      <group position={[0.135, 0.135, 0.02]} rotation={[0, 0, -0.78]}>
+        <mesh castShadow>
+          <boxGeometry args={[0.07, 0.13, 0.05]} />
           <meshStandardMaterial
             color="#DC2626"
-            roughness={0.18}
-            metalness={0.4}
+            roughness={0.2}
+            metalness={0.5}
             wireframe={wireframe}
           />
+        </mesh>
+        {/* Brembo White Logo Stripe */}
+        <mesh position={[0, 0, 0.026]}>
+          <boxGeometry args={[0.025, 0.065, 0.002]} />
+          <meshBasicMaterial color="#FFFFFF" />
         </mesh>
       </group>
     </group>
@@ -378,507 +279,370 @@ export function BFGoodrichKO2Wheel({ wireframe = false, scale = 1.0 }) {
 }
 
 // =========================================================================
-// 3. DAKAR RALLY STAGE SATIN BRONZE FORGED DISH WHEEL
+// 1. MAXXIS BRAVO AT-980 • BIMBRA JTI ROUND MULTI-HOLE BEADLOCK ALLOY
+// (Directly matches user link: https://bimbra.in/products/tyres-maxxis-980-at-285-60-r18-4/)
 // =========================================================================
-export function DakarBronzeWheel({ wireframe = false, scale = 1.0 }) {
-  const bronzeColor = '#A77B28';
+export function MaxxisBimbraJTIWheel({ wireframe = false, scale = 1.0 }) {
   return (
     <group scale={scale}>
-      {/* 1. Heavy-Duty Kevlar 3-Ply Rally Mud-Terrain Tyre */}
-      <mesh rotation={[Math.PI / 2, 0, 0]} castShadow receiveShadow>
-        <cylinderGeometry args={[0.41, 0.41, 0.26, 48]} />
-        <meshStandardMaterial
-          color="#161719"
-          roughness={0.90}
-          metalness={0.03}
-          wireframe={wireframe}
-        />
-      </mesh>
-      {[-0.11, 0.11].map((z, i) => (
-        <mesh key={i} position={[0, 0, z]} castShadow>
-          <torusGeometry args={[0.345, 0.07, 20, 48]} />
-          <meshStandardMaterial
-            color="#191B1F"
-            roughness={0.88}
-            metalness={0.04}
-            wireframe={wireframe}
-          />
-        </mesh>
-      ))}
+      {/* Authentic Maxxis Bravo AT-980 Hollow Tyre */}
+      <HollowTyreCasing
+        brandText="MAXXIS BRAVO A/T 980"
+        sizeText="285 / 60 R18 116H • ALL-TERRAIN"
+        hasWhiteLettering={true}
+        wireframe={wireframe}
+      />
 
-      {/* 20 Staggered Kevlar Mud Lugs */}
-      {Array.from({ length: 20 }).map((_, li) => {
-        const ang = (li / 20) * Math.PI * 2;
-        return (
-          <mesh
-            key={li}
-            position={[Math.cos(ang) * 0.408, Math.sin(ang) * 0.408, 0]}
-            rotation={[0, 0, ang]}
-          >
-            <boxGeometry args={[0.046, 0.022, 0.20]} />
-            <meshStandardMaterial
-              color="#101114"
-              roughness={0.95}
-              metalness={0.02}
-              wireframe={wireframe}
-            />
-          </mesh>
-        );
-      })}
-
-      {/* 2. Forged Satin Bronze Rim Barrel */}
+      {/* Deep-Dish Inset Rim Barrel (Hollow!) */}
       <mesh rotation={[Math.PI / 2, 0, 0]}>
-        <cylinderGeometry args={[0.26, 0.26, 0.24, 48, 1, true]} />
-        <meshStandardMaterial
-          color={bronzeColor}
-          roughness={0.28}
-          metalness={0.90}
-          wireframe={wireframe}
-        />
+        <cylinderGeometry args={[0.252, 0.252, 0.24, 64, 1, true]} />
+        <meshStandardMaterial color="#16171A" roughness={0.3} metalness={0.88} wireframe={wireframe} />
       </mesh>
 
-      {/* Satin Black Outer Beadlock Ring */}
-      <mesh position={[0, 0, 0.126]}>
-        <ringGeometry args={[0.235, 0.265, 48]} />
-        <meshStandardMaterial
-          color="#1B1C20"
-          roughness={0.3}
-          metalness={0.85}
-          wireframe={wireframe}
-        />
+      {/* Outer Milled Silver Beadlock Ring */}
+      <mesh position={[0, 0, 0.122]} castShadow>
+        <ringGeometry args={[0.228, 0.254, 64]} />
+        <meshStandardMaterial color="#E2E8F0" roughness={0.15} metalness={0.96} wireframe={wireframe} />
       </mesh>
-      {Array.from({ length: 16 }).map((_, bi) => {
-        const bAng = (bi / 16) * Math.PI * 2;
-        return (
-          <mesh
-            key={bi}
-            position={[Math.cos(bAng) * 0.250, Math.sin(bAng) * 0.250, 0.132]}
-            rotation={[Math.PI / 2, 0, 0]}
-          >
-            <cylinderGeometry args={[0.005, 0.005, 0.008, 6]} />
-            <meshStandardMaterial
-              color="#E2E8F0"
-              roughness={0.15}
-              metalness={0.98}
-              wireframe={wireframe}
-            />
-          </mesh>
-        );
-      })}
 
-      {/* 3. Dakar 8-Window Forged Rally Dish */}
-      {Array.from({ length: 8 }).map((_, si) => {
-        const sAng = (si / 8) * Math.PI * 2;
+      {/* 20 Bimbra JTI Circular Machined Holes & Stainless Steel Screws */}
+      {Array.from({ length: 20 }).map((_, bi) => {
+        const bAng = (bi / 20) * Math.PI * 2;
         return (
-          <group key={si} rotation={[0, 0, sAng]} position={[0, 0, 0.09]}>
-            <mesh position={[0, 0.13, 0]} castShadow>
-              <boxGeometry args={[0.065, 0.16, 0.028]} />
-              <meshStandardMaterial
-                color={bronzeColor}
-                roughness={0.26}
-                metalness={0.92}
-                wireframe={wireframe}
-              />
+          <group key={bi} position={[Math.cos(bAng) * 0.241, Math.sin(bAng) * 0.241, 0.126]}>
+            {/* Recessed black hole */}
+            <mesh>
+              <circleGeometry args={[0.008, 16]} />
+              <meshBasicMaterial color="#0A0B0D" />
+            </mesh>
+            {/* Chrome Allen Screw */}
+            <mesh position={[0, 0, 0.002]} rotation={[Math.PI / 2, 0, 0]}>
+              <cylinderGeometry args={[0.004, 0.004, 0.006, 6]} />
+              <meshStandardMaterial color="#F8FAFC" roughness={0.1} metalness={0.98} />
             </mesh>
           </group>
         );
       })}
 
-      {/* 4. Center Cap & 5 Hex Lug Nuts */}
-      <mesh position={[0, 0, 0.095]} rotation={[Math.PI / 2, 0, 0]}>
-        <cylinderGeometry args={[0.07, 0.07, 0.03, 32]} />
-        <meshStandardMaterial
-          color="#16171B"
-          roughness={0.3}
-          metalness={0.8}
-          wireframe={wireframe}
-        />
-      </mesh>
-      {Array.from({ length: 5 }).map((_, ni) => {
-        const nAng = (ni / 5) * Math.PI * 2;
-        return (
-          <mesh
-            key={ni}
-            position={[Math.cos(nAng) * 0.045, Math.sin(nAng) * 0.045, 0.115]}
-            rotation={[Math.PI / 2, 0, 0]}
-          >
-            <cylinderGeometry args={[0.0075, 0.0075, 0.012, 6]} />
-            <meshStandardMaterial
-              color="#F8FAFC"
-              roughness={0.1}
-              metalness={0.98}
-              wireframe={wireframe}
-            />
-          </mesh>
-        );
-      })}
-
-      {/* Brake Rotor & Caliper */}
-      <group position={[0, 0, -0.04]}>
-        <mesh rotation={[Math.PI / 2, 0, 0]}>
-          <cylinderGeometry args={[0.20, 0.20, 0.016, 48]} />
-          <meshStandardMaterial
-            color="#94A3B8"
-            roughness={0.25}
-            metalness={0.95}
-            wireframe={wireframe}
-          />
+      {/* Deep Concave JTI Dish Face (Positioned 5cm deep inside rim!) */}
+      <group position={[0, 0, 0.06]}>
+        {/* Slanted Concave Rim Cone */}
+        <mesh rotation={[-Math.PI / 2, 0, 0]} castShadow>
+          <cylinderGeometry args={[0.228, 0.14, 0.06, 48, 1, true]} />
+          <meshStandardMaterial color="#181A1F" roughness={0.32} metalness={0.85} wireframe={wireframe} />
         </mesh>
-        <mesh position={[0.13, 0.13, 0.02]}>
-          <boxGeometry args={[0.10, 0.12, 0.05]} />
-          <meshStandardMaterial
-            color="#E11D48"
-            roughness={0.2}
-            metalness={0.4}
-            wireframe={wireframe}
-          />
-        </mesh>
-      </group>
-    </group>
-  );
-}
 
-// =========================================================================
-// 4. TITANIUM 10-SPOKE DIRECTIONAL CONCAVE SPORT ALLOY WHEEL
-// =========================================================================
-export function TitaniumSpiderWheel({ wireframe = false, scale = 1.0 }) {
-  const titaniumColor = '#B8C4D4';
-  return (
-    <group scale={scale}>
-      {/* 1. Low-Profile High-Speed Trail Performance Rubber */}
-      <mesh rotation={[Math.PI / 2, 0, 0]} castShadow receiveShadow>
-        <cylinderGeometry args={[0.395, 0.395, 0.25, 48]} />
-        <meshStandardMaterial
-          color="#161719"
-          roughness={0.88}
-          metalness={0.04}
-          wireframe={wireframe}
-        />
-      </mesh>
-      {[-0.105, 0.105].map((z, i) => (
-        <mesh key={i} position={[0, 0, z]} castShadow>
-          <torusGeometry args={[0.335, 0.065, 20, 48]} />
-          <meshStandardMaterial
-            color="#191B1F"
-            roughness={0.85}
-            metalness={0.05}
-            wireframe={wireframe}
-          />
-        </mesh>
-      ))}
-
-      {/* 2. Deep Concave Titanium Barrel */}
-      <mesh rotation={[Math.PI / 2, 0, 0]}>
-        <cylinderGeometry args={[0.26, 0.26, 0.24, 48, 1, true]} />
-        <meshStandardMaterial
-          color={titaniumColor}
-          roughness={0.20}
-          metalness={0.96}
-          wireframe={wireframe}
-        />
-      </mesh>
-
-      {/* Mirror-Polished Silver Outer Rim Lip */}
-      <mesh position={[0, 0, 0.122]}>
-        <ringGeometry args={[0.242, 0.264, 48]} />
-        <meshStandardMaterial
-          color="#FFFFFF"
-          roughness={0.08}
-          metalness={0.98}
-          wireframe={wireframe}
-        />
-      </mesh>
-
-      {/* 3. 10 Directional Concave Aerodynamic Blade Spokes */}
-      {Array.from({ length: 10 }).map((_, si) => {
-        const sAng = (si / 10) * Math.PI * 2;
-        return (
-          <group key={si} rotation={[0, 0, sAng + 0.12]} position={[0, 0, 0.095]}>
-            <mesh position={[0, 0.13, 0]} rotation={[0.08, 0, 0]} castShadow>
-              <boxGeometry args={[0.032, 0.175, 0.022]} />
-              <meshStandardMaterial
-                color={titaniumColor}
-                roughness={0.16}
-                metalness={0.98}
-                wireframe={wireframe}
-              />
-            </mesh>
-          </group>
-        );
-      })}
-
-      {/* 4. Center Cap & Chrome Lug Nuts */}
-      <mesh position={[0, 0, 0.098]} rotation={[Math.PI / 2, 0, 0]}>
-        <cylinderGeometry args={[0.068, 0.068, 0.028, 32]} />
-        <meshStandardMaterial
-          color="#0E1012"
-          roughness={0.3}
-          metalness={0.8}
-          wireframe={wireframe}
-        />
-      </mesh>
-      {Array.from({ length: 5 }).map((_, ni) => {
-        const nAng = (ni / 5) * Math.PI * 2;
-        return (
-          <mesh
-            key={ni}
-            position={[Math.cos(nAng) * 0.044, Math.sin(nAng) * 0.044, 0.116]}
-            rotation={[Math.PI / 2, 0, 0]}
-          >
-            <cylinderGeometry args={[0.0075, 0.0075, 0.012, 6]} />
-            <meshStandardMaterial
-              color="#F8FAFC"
-              roughness={0.1}
-              metalness={0.98}
-              wireframe={wireframe}
-            />
-          </mesh>
-        );
-      })}
-
-      {/* Slotted Ventilated Rotor & Caliper */}
-      <group position={[0, 0, -0.04]}>
-        <mesh rotation={[Math.PI / 2, 0, 0]}>
-          <cylinderGeometry args={[0.20, 0.20, 0.016, 48]} />
-          <meshStandardMaterial
-            color="#94A3B8"
-            roughness={0.25}
-            metalness={0.95}
-            wireframe={wireframe}
-          />
-        </mesh>
-        <mesh position={[0.13, 0.13, 0.02]}>
-          <boxGeometry args={[0.10, 0.12, 0.05]} />
-          <meshStandardMaterial
-            color="#E11D48"
-            roughness={0.2}
-            metalness={0.4}
-            wireframe={wireframe}
-          />
-        </mesh>
-      </group>
-    </group>
-  );
-}
-
-// =========================================================================
-// 5. KC HILITES EXTREME BUMPER RALLY FOG PODS (MODULAR OFF-ROAD ACCESSORY)
-// =========================================================================
-export function KCHilitesBumperPods({ wireframe = false, scale = 1.0 }) {
-  return (
-    <group scale={scale}>
-      {[-0.28, 0.28].map((xPos, idx) => (
-        <group key={idx} position={[xPos, 0, 0]}>
-          {/* Finned Cast Aluminum Light Housing */}
-          <mesh rotation={[Math.PI / 2, 0, 0]} castShadow>
-            <cylinderGeometry args={[0.14, 0.12, 0.12, 32]} />
-            <meshStandardMaterial
-              color="#1B1C20"
-              roughness={0.35}
-              metalness={0.85}
-              wireframe={wireframe}
-            />
-          </mesh>
-
-          {/* Cooling Fins on Rear */}
-          {Array.from({ length: 5 }).map((_, fi) => (
-            <mesh key={fi} position={[0, 0, -0.02 - fi * 0.015]}>
-              <ringGeometry args={[0.08, 0.128 - fi * 0.005, 32]} />
-              <meshStandardMaterial color="#141518" roughness={0.4} metalness={0.8} />
-            </mesh>
-          ))}
-
-          {/* Chrome Inner Reflector Bowl */}
-          <mesh position={[0, 0, 0.04]} rotation={[-Math.PI / 2, 0, 0]}>
-            <coneGeometry args={[0.12, 0.06, 32, 1, true]} />
-            <meshStandardMaterial color="#F8FAFC" roughness={0.08} metalness={0.98} />
-          </mesh>
-
-          {/* Glowing Amber Fluted Glass Lens */}
-          <mesh position={[0, 0, 0.065]}>
-            <circleGeometry args={[0.135, 32]} />
-            <meshStandardMaterial
-              color="#F59E0B"
-              emissive="#F59E0B"
-              emissiveIntensity={0.65}
-              roughness={0.15}
-              metalness={0.1}
-              transparent
-              opacity={0.88}
-              wireframe={wireframe}
-            />
-          </mesh>
-
-          {/* Heavy-Duty Cross Stone Guard Grill */}
-          <mesh position={[0, 0, 0.07]}>
-            <torusGeometry args={[0.135, 0.01, 16, 32]} />
-            <meshStandardMaterial color="#111215" roughness={0.3} metalness={0.9} />
-          </mesh>
-          <mesh position={[0, 0, 0.072]}>
-            <boxGeometry args={[0.26, 0.014, 0.006]} />
-            <meshStandardMaterial color="#111215" roughness={0.3} metalness={0.9} />
-          </mesh>
-          <mesh position={[0, 0, 0.072]}>
-            <boxGeometry args={[0.014, 0.26, 0.006]} />
-            <meshStandardMaterial color="#111215" roughness={0.3} metalness={0.9} />
-          </mesh>
-
-          {/* Mounting Steel Base Bracket */}
-          <mesh position={[0, -0.15, -0.02]}>
-            <boxGeometry args={[0.08, 0.08, 0.04]} />
-            <meshStandardMaterial color="#1F2024" roughness={0.4} metalness={0.8} />
-          </mesh>
-        </group>
-      ))}
-    </group>
-  );
-}
-
-// =========================================================================
-// 6. 50-INCH CURVED WINDSHIELD TRAIL LIGHT BAR (MODULAR ACCESSORY)
-// =========================================================================
-export function CurvedRoofLightBar({ wireframe = false, scale = 1.0 }) {
-  const reflectorCount = 20;
-  return (
-    <group scale={scale}>
-      {/* Extruded Aerodynamic Black Aluminum Heatsink Bar */}
-      <mesh castShadow>
-        <boxGeometry args={[1.35, 0.09, 0.08]} />
-        <meshStandardMaterial
-          color="#16171A"
-          roughness={0.3}
-          metalness={0.88}
-          wireframe={wireframe}
-        />
-      </mesh>
-
-      {/* Top Cooling Fins */}
-      {[-0.02, 0, 0.02].map((y, yi) => (
-        <mesh key={yi} position={[0, 0.045, y]}>
-          <boxGeometry args={[1.34, 0.012, 0.006]} />
-          <meshStandardMaterial color="#111214" roughness={0.4} metalness={0.85} />
-        </mesh>
-      ))}
-
-      {/* Dual Row Reflector Projectors */}
-      <group position={[0, 0, 0.038]}>
-        {Array.from({ length: reflectorCount }).map((_, ri) => {
-          const x = -0.60 + (ri / (reflectorCount - 1)) * 1.20;
+        {/* 10 Circular Windows on Inner Dish */}
+        {Array.from({ length: 10 }).map((_, wi) => {
+          const wAng = (wi / 10) * Math.PI * 2;
           return (
-            <group key={ri} position={[x, 0, 0]}>
-              {/* Upper Projector LED */}
-              <mesh position={[0, 0.02, 0]}>
-                <circleGeometry args={[0.018, 16]} />
-                <meshStandardMaterial
-                  color="#FFFFFF"
-                  emissive="#00E5FF"
-                  emissiveIntensity={0.8}
-                  roughness={0.1}
-                  metalness={0.9}
-                />
-              </mesh>
-              {/* Lower Projector LED */}
-              <mesh position={[0, -0.02, 0]}>
-                <circleGeometry args={[0.018, 16]} />
-                <meshStandardMaterial
-                  color="#FFFFFF"
-                  emissive="#00E5FF"
-                  emissiveIntensity={0.8}
-                  roughness={0.1}
-                  metalness={0.9}
-                />
-              </mesh>
-            </group>
+            <mesh key={wi} position={[Math.cos(wAng) * 0.175, Math.sin(wAng) * 0.175, 0.015]}>
+              <circleGeometry args={[0.018, 16]} />
+              <meshBasicMaterial color="#0E1013" />
+            </mesh>
+          );
+        })}
+
+        {/* Center Hub & Red Bimbra JTI Center Cap */}
+        <mesh position={[0, 0, -0.01]} rotation={[Math.PI / 2, 0, 0]}>
+          <cylinderGeometry args={[0.075, 0.075, 0.035, 32]} />
+          <meshStandardMaterial color="#111215" roughness={0.3} metalness={0.8} />
+        </mesh>
+        <mesh position={[0, 0, 0.008]}>
+          <circleGeometry args={[0.048, 32]} />
+          <meshStandardMaterial color="#DC2626" roughness={0.2} metalness={0.6} />
+        </mesh>
+        <mesh position={[0, 0, 0.010]}>
+          <circleGeometry args={[0.024, 32]} />
+          <meshStandardMaterial color="#FFFFFF" roughness={0.2} metalness={0.9} />
+        </mesh>
+
+        {/* 5 High-Tensile Chrome Wheel Lug Nuts */}
+        {Array.from({ length: 5 }).map((_, ni) => {
+          const nAng = (ni / 5) * Math.PI * 2;
+          return (
+            <mesh key={ni} position={[Math.cos(nAng) * 0.046, Math.sin(nAng) * 0.046, 0.012]} rotation={[Math.PI / 2, 0, 0]}>
+              <cylinderGeometry args={[0.008, 0.008, 0.016, 6]} />
+              <meshStandardMaterial color="#F8FAFC" roughness={0.1} metalness={0.98} />
+            </mesh>
           );
         })}
       </group>
 
-      {/* Front High-Clarity Polycarbonate Lens */}
-      <mesh position={[0, 0, 0.044]}>
-        <boxGeometry args={[1.34, 0.082, 0.004]} />
-        <meshStandardMaterial
-          color="#E2E8F0"
-          transparent
-          opacity={0.65}
-          roughness={0.08}
-          metalness={0.1}
-        />
-      </mesh>
-
-      {/* Side Mounting Steel Brackets */}
-      {[-0.69, 0.69].map((x, i) => (
-        <mesh key={i} position={[x, -0.04, -0.02]}>
-          <boxGeometry args={[0.035, 0.12, 0.08]} />
-          <meshStandardMaterial color="#1F2024" roughness={0.3} metalness={0.9} />
-        </mesh>
-      ))}
+      {/* Brake Rotor & Brembo Caliper */}
+      <BrakeAssembly wireframe={wireframe} />
     </group>
   );
 }
 
 // =========================================================================
-// 7. HEAVY-DUTY FRONT BULL BAR & ELECTRIC WINCH (MODULAR ACCESSORY)
+// 2. FUEL CONTRA CANDY RED & GLOSS BLACK CONCAVE SPIRAL BLADE ALLOY
+// (Matches user reference image media_1790679222725.png)
 // =========================================================================
-export function OverlandBullBar({ wireframe = false, scale = 1.0 }) {
+export function FuelContraRedWheel({ wireframe = false, scale = 1.0 }) {
+  const redCandy = '#DC2626';
   return (
     <group scale={scale}>
-      {/* Main Steel Tubular Hoop */}
-      <mesh position={[0, 0.18, 0]} castShadow>
-        <boxGeometry args={[1.4, 0.05, 0.05]} />
-        <meshStandardMaterial color="#1A1C20" roughness={0.35} metalness={0.85} wireframe={wireframe} />
-      </mesh>
-      <mesh position={[0, 0.02, 0]} castShadow>
-        <boxGeometry args={[1.5, 0.06, 0.06]} />
-        <meshStandardMaterial color="#1A1C20" roughness={0.35} metalness={0.85} wireframe={wireframe} />
+      <HollowTyreCasing
+        brandText="VREDESTEIN PINZA A/T"
+        sizeText="285 / 60 R18 116T • ALL-TERRAIN"
+        hasWhiteLettering={true}
+        wireframe={wireframe}
+      />
+
+      {/* Deep-Dish Gloss Black Barrel */}
+      <mesh rotation={[Math.PI / 2, 0, 0]}>
+        <cylinderGeometry args={[0.252, 0.252, 0.24, 64, 1, true]} />
+        <meshStandardMaterial color="#0D0E11" roughness={0.18} metalness={0.92} wireframe={wireframe} />
       </mesh>
 
-      {/* Vertical Stanchions */}
-      {[-0.38, 0.38].map((x, i) => (
-        <mesh key={i} position={[x, 0.10, 0]}>
-          <boxGeometry args={[0.04, 0.22, 0.04]} />
-          <meshStandardMaterial color="#141518" roughness={0.35} metalness={0.85} wireframe={wireframe} />
+      {/* Outer Lip with Red Anodized Pinstripe */}
+      <mesh position={[0, 0, 0.122]}>
+        <ringGeometry args={[0.242, 0.254, 64]} />
+        <meshStandardMaterial color={redCandy} roughness={0.15} metalness={0.90} wireframe={wireframe} />
+      </mesh>
+
+      {/* 10 Swept Directional Turbine / Spiral Blades with Candy Red Chamfered Flanks */}
+      <group position={[0, 0, 0.05]}>
+        {Array.from({ length: 10 }).map((_, si) => {
+          const sAng = (si / 10) * Math.PI * 2;
+          return (
+            <group key={si} rotation={[0, 0, sAng]} position={[0, 0, 0]}>
+              {/* Gloss Black Main Blade Body */}
+              <group position={[0.04, 0.125, 0.035]} rotation={[0.12, 0.15, -0.32]}>
+                <mesh castShadow>
+                  <boxGeometry args={[0.038, 0.18, 0.024]} />
+                  <meshStandardMaterial color="#0A0B0E" roughness={0.16} metalness={0.95} wireframe={wireframe} />
+                </mesh>
+                {/* Milled Candy Red Left Bevel Accent */}
+                <mesh position={[-0.019, 0, 0.004]}>
+                  <boxGeometry args={[0.008, 0.178, 0.018]} />
+                  <meshStandardMaterial color={redCandy} roughness={0.12} metalness={0.92} wireframe={wireframe} />
+                </mesh>
+                {/* Milled Candy Red Right Bevel Accent */}
+                <mesh position={[0.019, 0, 0.004]}>
+                  <boxGeometry args={[0.008, 0.178, 0.018]} />
+                  <meshStandardMaterial color={redCandy} roughness={0.12} metalness={0.92} wireframe={wireframe} />
+                </mesh>
+              </group>
+            </group>
+          );
+        })}
+
+        {/* Center Concave Drop & Fuel Center Cap */}
+        <mesh position={[0, 0, 0.01]} rotation={[Math.PI / 2, 0, 0]}>
+          <cylinderGeometry args={[0.08, 0.08, 0.03, 32]} />
+          <meshStandardMaterial color="#0D0E11" roughness={0.2} metalness={0.9} />
         </mesh>
-      ))}
-
-      {/* Center Winch Plate & Drum */}
-      <mesh position={[0, -0.04, -0.04]}>
-        <boxGeometry args={[0.48, 0.16, 0.18]} />
-        <meshStandardMaterial color="#121316" roughness={0.4} metalness={0.8} wireframe={wireframe} />
-      </mesh>
-
-      {/* Spooled Synthetic Winch Cable Drum */}
-      <mesh position={[0, -0.02, -0.02]} rotation={[0, 0, Math.PI / 2]}>
-        <cylinderGeometry args={[0.055, 0.055, 0.28, 24]} />
-        <meshStandardMaterial color="#64748B" roughness={0.6} metalness={0.7} />
-      </mesh>
-
-      {/* Polished Aluminum Hawse Fairlead */}
-      <mesh position={[0, -0.04, 0.055]}>
-        <boxGeometry args={[0.26, 0.07, 0.015]} />
-        <meshStandardMaterial color="#E2E8F0" roughness={0.15} metalness={0.96} />
-      </mesh>
-      <mesh position={[0, -0.04, 0.058]}>
-        <boxGeometry args={[0.16, 0.028, 0.02]} />
-        <meshStandardMaterial color="#0B0C0E" roughness={0.5} metalness={0.3} />
-      </mesh>
-
-      {/* Forged Red Recovery Tow Hook */}
-      <group position={[0.10, -0.04, 0.08]} rotation={[0, 0, -0.3]}>
-        <mesh>
-          <torusGeometry args={[0.035, 0.012, 16, 24, Math.PI * 1.5]} />
-          <meshStandardMaterial color="#DC2626" roughness={0.2} metalness={0.5} />
+        <mesh position={[0, 0, 0.026]}>
+          <circleGeometry args={[0.05, 32]} />
+          <meshStandardMaterial color="#0A0B0D" roughness={0.2} metalness={0.9} />
         </mesh>
+        <mesh position={[0, 0, 0.028]}>
+          <circleGeometry args={[0.028, 32]} />
+          <meshStandardMaterial color={redCandy} roughness={0.15} metalness={0.88} />
+        </mesh>
+
+        {/* 5 Chrome Lug Nuts */}
+        {Array.from({ length: 5 }).map((_, ni) => {
+          const nAng = (ni / 5) * Math.PI * 2;
+          return (
+            <mesh key={ni} position={[Math.cos(nAng) * 0.048, Math.sin(nAng) * 0.048, 0.028]} rotation={[Math.PI / 2, 0, 0]}>
+              <cylinderGeometry args={[0.0075, 0.0075, 0.014, 6]} />
+              <meshStandardMaterial color="#F8FAFC" roughness={0.1} metalness={0.98} />
+            </mesh>
+          );
+        })}
       </group>
+
+      <BrakeAssembly wireframe={wireframe} />
     </group>
   );
 }
 
 // =========================================================================
-// 8. BESPOKE WHEEL ADAPTER FOR MAHINDRA THAR (MOUNTS TO ALL 5 AXLE HUBS)
+// 3. BFGOODRICH KO2 • METHOD RACE FORGED BRONZE RALLY BEADLOCK ALLOY
+// (Matches user reference image media_1790679222725.png)
+// =========================================================================
+export function MethodBronzeKO2Wheel({ wireframe = false, scale = 1.0 }) {
+  const bronzeColor = '#A77B24';
+  return (
+    <group scale={scale}>
+      <HollowTyreCasing
+        brandText="BFGOODRICH ALL-TERRAIN T/A"
+        sizeText="LT 285 / 70 R17 121S • BAJA CHAMPION"
+        hasWhiteLettering={true}
+        wireframe={wireframe}
+      />
+
+      {/* Forged Bronze Inset Rim Barrel */}
+      <mesh rotation={[Math.PI / 2, 0, 0]}>
+        <cylinderGeometry args={[0.252, 0.252, 0.24, 64, 1, true]} />
+        <meshStandardMaterial color={bronzeColor} roughness={0.25} metalness={0.92} wireframe={wireframe} />
+      </mesh>
+
+      {/* Satin Black Simulated Beadlock Outer Ring */}
+      <mesh position={[0, 0, 0.122]} castShadow>
+        <ringGeometry args={[0.230, 0.254, 64]} />
+        <meshStandardMaterial color="#1C1D21" roughness={0.3} metalness={0.85} wireframe={wireframe} />
+      </mesh>
+
+      {/* 16 Recessed Hex Screws on Beadlock */}
+      {Array.from({ length: 16 }).map((_, bi) => {
+        const bAng = (bi / 16) * Math.PI * 2;
+        return (
+          <mesh key={bi} position={[Math.cos(bAng) * 0.242, Math.sin(bAng) * 0.242, 0.126]} rotation={[Math.PI / 2, 0, 0]}>
+            <cylinderGeometry args={[0.0045, 0.0045, 0.008, 6]} />
+            <meshStandardMaterial color="#E2E8F0" roughness={0.15} metalness={0.98} />
+          </mesh>
+        );
+      })}
+
+      {/* Method 8-Window Forged Rally Dish (Deep Concave!) */}
+      <group position={[0, 0, 0.06]}>
+        {Array.from({ length: 8 }).map((_, si) => {
+          const sAng = (si / 8) * Math.PI * 2;
+          return (
+            <group key={si} rotation={[0, 0, sAng]}>
+              <mesh position={[0, 0.13, 0.02]} rotation={[0.10, 0, 0]} castShadow>
+                <boxGeometry args={[0.065, 0.165, 0.028]} />
+                <meshStandardMaterial color={bronzeColor} roughness={0.24} metalness={0.94} wireframe={wireframe} />
+              </mesh>
+            </group>
+          );
+        })}
+
+        {/* Center Hub & Black Method Cap */}
+        <mesh position={[0, 0, 0.005]} rotation={[Math.PI / 2, 0, 0]}>
+          <cylinderGeometry args={[0.075, 0.075, 0.035, 32]} />
+          <meshStandardMaterial color="#121316" roughness={0.35} metalness={0.8} />
+        </mesh>
+        <mesh position={[0, 0, 0.024]}>
+          <circleGeometry args={[0.048, 32]} />
+          <meshStandardMaterial color="#0F1013" roughness={0.2} metalness={0.9} />
+        </mesh>
+        <mesh position={[0, 0, 0.026]}>
+          <circleGeometry args={[0.024, 32]} />
+          <meshStandardMaterial color={bronzeColor} roughness={0.2} metalness={0.9} />
+        </mesh>
+
+        {/* 5 Chrome Lug Nuts */}
+        {Array.from({ length: 5 }).map((_, ni) => {
+          const nAng = (ni / 5) * Math.PI * 2;
+          return (
+            <mesh key={ni} position={[Math.cos(nAng) * 0.045, Math.sin(nAng) * 0.045, 0.025]} rotation={[Math.PI / 2, 0, 0]}>
+              <cylinderGeometry args={[0.0075, 0.0075, 0.015, 6]} />
+              <meshStandardMaterial color="#F8FAFC" roughness={0.1} metalness={0.98} />
+            </mesh>
+          );
+        })}
+      </group>
+
+      <BrakeAssembly wireframe={wireframe} />
+    </group>
+  );
+}
+
+// =========================================================================
+// 4. MAHINDRA THAR 18" FACTORY DIAMOND-CUT ALLOY • CEAT CZAR A/T
+// (Matches user reference image media_1790679222725.png)
+// =========================================================================
+export function TharOEMDiamondWheel({ wireframe = false, scale = 1.0 }) {
+  return (
+    <group scale={scale}>
+      <HollowTyreCasing
+        brandText="CEAT CZAR A/T"
+        sizeText="255 / 65 R18 110T • ALL-TERRAIN"
+        hasWhiteLettering={true}
+        wireframe={wireframe}
+      />
+
+      {/* Dark Anthracite Inset Rim Barrel */}
+      <mesh rotation={[Math.PI / 2, 0, 0]}>
+        <cylinderGeometry args={[0.252, 0.252, 0.23, 64, 1, true]} />
+        <meshStandardMaterial color="#16181C" roughness={0.3} metalness={0.88} wireframe={wireframe} />
+      </mesh>
+
+      {/* Diamond-Cut Machined Bright Outer Lip */}
+      <mesh position={[0, 0, 0.116]}>
+        <ringGeometry args={[0.238, 0.254, 64]} />
+        <meshStandardMaterial color="#F8FAFC" roughness={0.12} metalness={0.98} wireframe={wireframe} />
+      </mesh>
+
+      {/* 5-Split Twin Spokes (10 total arms) with Dual-Tone Machined Face & Obsidian Flanks */}
+      <group position={[0, 0, 0.07]}>
+        {Array.from({ length: 5 }).map((_, si) => {
+          const baseAng = (si / 5) * Math.PI * 2;
+          return (
+            <group key={si} rotation={[0, 0, baseAng]}>
+              {/* Left Spoke Arm */}
+              <group position={[-0.034, 0.125, 0.02]} rotation={[0.08, 0, 0.08]}>
+                {/* Obsidian Black Flank */}
+                <mesh position={[0, 0, -0.012]} castShadow>
+                  <boxGeometry args={[0.040, 0.17, 0.024]} />
+                  <meshStandardMaterial color="#0E1014" roughness={0.25} metalness={0.85} wireframe={wireframe} />
+                </mesh>
+                {/* Diamond-Cut Machined Silver Face */}
+                <mesh position={[0, 0, 0.006]}>
+                  <boxGeometry args={[0.034, 0.165, 0.012]} />
+                  <meshStandardMaterial color="#F8FAFC" roughness={0.10} metalness={0.98} wireframe={wireframe} />
+                </mesh>
+              </group>
+
+              {/* Right Spoke Arm */}
+              <group position={[0.034, 0.125, 0.02]} rotation={[0.08, 0, -0.08]}>
+                {/* Obsidian Black Flank */}
+                <mesh position={[0, 0, -0.012]} castShadow>
+                  <boxGeometry args={[0.040, 0.17, 0.024]} />
+                  <meshStandardMaterial color="#0E1014" roughness={0.25} metalness={0.85} wireframe={wireframe} />
+                </mesh>
+                {/* Diamond-Cut Machined Silver Face */}
+                <mesh position={[0, 0, 0.006]}>
+                  <boxGeometry args={[0.034, 0.165, 0.012]} />
+                  <meshStandardMaterial color="#F8FAFC" roughness={0.10} metalness={0.98} wireframe={wireframe} />
+                </mesh>
+              </group>
+            </group>
+          );
+        })}
+
+        {/* Center Hub & Mahindra Chrome Emblem Cap */}
+        <mesh position={[0, 0, 0.01]} rotation={[Math.PI / 2, 0, 0]}>
+          <cylinderGeometry args={[0.072, 0.072, 0.03, 32]} />
+          <meshStandardMaterial color="#111317" roughness={0.3} metalness={0.8} />
+        </mesh>
+        <mesh position={[0, 0, 0.026]}>
+          <circleGeometry args={[0.05, 32]} />
+          <meshStandardMaterial color="#E2E8F0" roughness={0.15} metalness={0.96} />
+        </mesh>
+        {/* Mahindra Chrome Twin Peaks Logo Silhouette */}
+        <mesh position={[0, 0, 0.028]}>
+          <circleGeometry args={[0.022, 32]} />
+          <meshStandardMaterial color="#0F1115" roughness={0.2} metalness={0.9} />
+        </mesh>
+
+        {/* 5 Chrome Lug Nuts */}
+        {Array.from({ length: 5 }).map((_, ni) => {
+          const nAng = (ni / 5) * Math.PI * 2;
+          return (
+            <mesh key={ni} position={[Math.cos(nAng) * 0.046, Math.sin(nAng) * 0.046, 0.026]} rotation={[Math.PI / 2, 0, 0]}>
+              <cylinderGeometry args={[0.0075, 0.0075, 0.014, 6]} />
+              <meshStandardMaterial color="#F8FAFC" roughness={0.1} metalness={0.98} />
+            </mesh>
+          );
+        })}
+      </group>
+
+      <BrakeAssembly wireframe={wireframe} />
+    </group>
+  );
+}
+
+// =========================================================================
+// BESPOKE WHEEL ADAPTER FOR MAHINDRA THAR (MOUNTS TO ALL 5 AXLE HUBS)
 // =========================================================================
 export function TharFittedWheelSet({ wheelType }) {
   if (!wheelType || wheelType === 'oem') {
-    // If OEM is selected, the split Thar mesh's Thar_OEM_Wheels is visible!
     return null;
   }
 
@@ -895,9 +659,10 @@ export function TharFittedWheelSet({ wheelType }) {
     <group>
       {hubs.map((hub) => (
         <group key={hub.id} position={hub.pos} rotation={[0, hub.rotY, 0]}>
-          {wheelType === 'bfg_ko2' && <BFGoodrichKO2Wheel scale={0.41} />}
-          {wheelType === 'dakar_bronze' && <DakarBronzeWheel scale={0.41} />}
-          {wheelType === 'titanium_spider' && <TitaniumSpiderWheel scale={0.41} />}
+          {wheelType === 'maxxis_bimbra' && <MaxxisBimbraJTIWheel scale={0.41} />}
+          {wheelType === 'fuel_contra' && <FuelContraRedWheel scale={0.41} />}
+          {wheelType === 'method_bronze' && <MethodBronzeKO2Wheel scale={0.41} />}
+          {wheelType === 'thar_oem' && <TharOEMDiamondWheel scale={0.41} />}
         </group>
       ))}
     </group>

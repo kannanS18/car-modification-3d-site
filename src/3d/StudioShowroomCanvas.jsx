@@ -18,13 +18,10 @@ import {
   Award,
 } from 'lucide-react';
 import {
-  TharStockOEMWheel,
-  BFGoodrichKO2Wheel,
-  DakarBronzeWheel,
-  TitaniumSpiderWheel,
-  KCHilitesBumperPods,
-  CurvedRoofLightBar,
-  OverlandBullBar,
+  MaxxisBimbraJTIWheel,
+  FuelContraRedWheel,
+  MethodBronzeKO2Wheel,
+  TharOEMDiamondWheel,
   TharFittedWheelSet,
 } from './HighDefCustomParts';
 
@@ -157,11 +154,11 @@ function SingleWheelDisplay({ wheelType }) {
   });
 
   return (
-    <group ref={meshRef} scale={0.48}>
-      {wheelType === 'bfg_ko2' && <BFGoodrichKO2Wheel />}
-      {wheelType === 'dakar_bronze' && <DakarBronzeWheel />}
-      {wheelType === 'titanium_spider' && <TitaniumSpiderWheel />}
-      {(!wheelType || wheelType === 'oem') && <TharStockOEMWheel />}
+    <group ref={meshRef} scale={0.46}>
+      {wheelType === 'fuel_contra' && <FuelContraRedWheel />}
+      {wheelType === 'method_bronze' && <MethodBronzeKO2Wheel />}
+      {wheelType === 'thar_oem' && <TharOEMDiamondWheel />}
+      {(!wheelType || wheelType === 'maxxis_bimbra' || wheelType === 'oem') && <MaxxisBimbraJTIWheel />}
     </group>
   );
 }
@@ -169,10 +166,11 @@ function SingleWheelDisplay({ wheelType }) {
 // Mini 3D Wheel Turntable for the Customization Panel
 function MiniWheelTurntable({ wheelType, onOpenSandbox }) {
   const wheelLabels = {
-    bfg_ko2: 'BFGoodrich T/A KO2 • Method Beadlock',
-    dakar_bronze: 'Dakar Rally Stage • Satin Bronze',
-    titanium_spider: 'Titanium 10-Spoke • Directional Sport',
-    oem: 'Mahindra OEM Factory 18" Diamond-Cut',
+    maxxis_bimbra: 'Maxxis AT-980 Bravo • Bimbra JTI Beadlock (18")',
+    fuel_contra: 'Fuel Contra • Candy Red & Black Concave (18")',
+    method_bronze: 'BFGoodrich KO2 • Method Race Bronze (17")',
+    thar_oem: 'Mahindra Thar 18" OEM Diamond-Cut • Ceat Czar A/T',
+    oem: 'Mahindra Thar 18" OEM Diamond-Cut • Ceat Czar A/T',
   };
 
   return (
@@ -536,44 +534,44 @@ export function StudioShowroomCanvas({
 
   const wheelOptions = [
     {
-      id: 'bfg_ko2',
-      name: 'BFGoodrich T/A KO2 • Method Beadlock',
-      specs: '17" Forged Rim • 285/75 R17 Rock-Crawler Lugs • Red Anodized Beadlock',
+      id: 'maxxis_bimbra',
+      name: 'Maxxis AT-980 Bravo • Bimbra JTI Beadlock',
+      specs: '18" Deep-Dish Concave Rim • 285/60 R18 All-Terrain • Milled Window Holes',
       traction: 99,
-      tag: 'OFFROAD 99%',
-      badge: 'MAX GRIP',
+      tag: 'BIMBRA 99%',
+      badge: 'BIMBRA SPEC',
+      swatch: '#16171A',
+      rimType: 'Matte Black + Stainless Screws',
+    },
+    {
+      id: 'fuel_contra',
+      name: 'Fuel Contra • Candy Red & Black Concave',
+      specs: '18" Directional Spiral Blades • 285/60 R18 Pinza A/T • Anodized Red Flanks',
+      traction: 96,
+      tag: 'BLADE 96%',
+      badge: 'CONCAVE BLADE',
       swatch: '#DC2626',
-      rimType: 'Matte Black Dish + Red Ring',
+      rimType: 'Gloss Black + Candy Red CNC',
     },
     {
-      id: 'dakar_bronze',
-      name: 'Dakar Rally Stage • Satin Bronze Forged',
-      specs: '17" Multi-Window Dish • 3-Ply Kevlar Mud-Terrain • Black Beadlock',
+      id: 'method_bronze',
+      name: 'BFGoodrich KO2 • Method Race Bronze',
+      specs: '17" Forged Bronze 8-Window Dish • 285/70 R17 Baja Champion Rubber',
       traction: 94,
-      tag: 'RALLY 94%',
-      badge: 'RALLY SPEC',
-      swatch: '#8C6832',
-      rimType: 'Satin Bronze + Black Ring',
+      tag: 'BAJA 94%',
+      badge: 'BAJA RALLY',
+      swatch: '#A77B24',
+      rimType: 'Satin Bronze Forged + Black Ring',
     },
     {
-      id: 'titanium_spider',
-      name: 'Titanium 10-Spoke • Directional Sport Alloy',
-      specs: '18" Lightweight Titanium • All-Terrain Directional • Silver Machined Lip',
-      traction: 88,
-      tag: 'SPORT 88%',
-      badge: 'PREMIUM',
-      swatch: '#A0ABBA',
-      rimType: 'Machined Titanium Finish',
-    },
-    {
-      id: 'oem',
-      name: 'Mahindra OEM Factory 18" Diamond-Cut',
-      specs: '18" Stock Mahindra Factory Alloys • Highway Spec Dueler Rubber',
-      traction: 78,
-      tag: 'STOCK 78%',
+      id: 'thar_oem',
+      name: 'Mahindra Thar 18" OEM Diamond-Cut',
+      specs: '18" Factory Twin-Spoke Diamond-Cut Alloys • 255/65 R18 Ceat Czar A/T',
+      traction: 82,
+      tag: 'STOCK 82%',
       badge: 'OEM FACTORY',
-      swatch: '#475569',
-      rimType: 'Factory Diamond-Cut Spec',
+      swatch: '#F1F5F9',
+      rimType: 'Machined Silver + Obsidian Black',
     },
   ];
 

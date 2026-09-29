@@ -17,7 +17,7 @@ export default function App() {
   // Vehicle Customization States for the 3D Showroom Plane
   const [carModel, setCarModel] = useState('thar'); // 'thar' (new Meshy Thar) or 'ferrari'
   const [carColor, setCarColor] = useState('original'); // 'original' (Factory Original Spec default)
-  const [wheelType, setWheelType] = useState('oem'); // 'oem' | 'bfg_ko2' | 'dakar_bronze' | 'titanium_spider'
+  const [wheelType, setWheelType] = useState('maxxis_bimbra'); // 'maxxis_bimbra' | 'fuel_contra' | 'method_bronze' | 'thar_oem'
   const [bumperLights, setBumperLights] = useState(true); // Extra Bumper Fog Pod Lights
   const [roofLights, setRoofLights] = useState(true); // Extra Roof High-Power Light Bar
   const [bullBar, setBullBar] = useState(true); // Front Heavy-Duty Bull Bar & Electric Winch
