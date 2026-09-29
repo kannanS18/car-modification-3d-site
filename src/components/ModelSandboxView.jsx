@@ -152,6 +152,18 @@ export function ModelSandboxView({ onNavigate }) {
       description: 'Your original 2024 Red Mahindra Thar SUV 3D model exactly as provided, with original factory colors, wheels, mirrors, and trim.',
       badge: 'USER CAR MODEL',
     },
+    {
+      id: 'ferrari',
+      name: 'Ferrari 458 Italia GT3 Widebody Supercar',
+      category: 'Supercar Atelier Models',
+      url: `${baseUrl}models/ferrari.glb`,
+      scale: 0.95,
+      rotation: [0, 0, 0],
+      triangles: '108,420 tris',
+      materials: 'Gloss Clearcoat Carbon & Alloy GT3 Body Materials',
+      description: 'Authentic Ferrari 458 Italia GT3 Widebody Supercar with carbon fiber aero splitters, rear diffuser, and racing monoblock wheels.',
+      badge: 'SUPERCAR MODEL',
+    },
   ];
 
   const [activeModelId, setActiveModelId] = useState('user_wheel_assembly');

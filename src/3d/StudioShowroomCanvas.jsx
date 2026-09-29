@@ -130,27 +130,34 @@ function SingleWheelDisplay({ wheelType }) {
 
   useFrame((_, delta) => {
     if (meshRef.current) {
-      meshRef.current.rotation.y += delta * 1.1;
+      meshRef.current.rotation.y += delta * 0.9;
     }
   });
 
   return (
-    <group ref={meshRef}>
-      {(!wheelType || wheelType === 'user_custom' || wheelType === 'custom') && (
-        <UserWheelAssembly scale={0.21} />
+    <group ref={meshRef} rotation={[0, 0.4, 0]}>
+      {wheelType === 'user_custom' && (
+        <group>
+          <UserTyreNode scale={0.21} />
+          <UserRimNode scale={0.21 * 0.57} />
+        </group>
       )}
-      {wheelType === 'user_rim' && <UserRimNode scale={0.21 * 0.57} />}
-      {wheelType === 'user_tyre' && <UserTyreNode scale={0.21} />}
+      {wheelType === 'user_rim' && (
+        <UserRimNode scale={0.21 * 0.57} />
+      )}
+      {wheelType === 'user_tyre' && (
+        <UserTyreNode scale={0.21} />
+      )}
     </group>
   );
 }
 
-// Mini 3D Turntable showing standalone parts alone on screen (without altering real car)
-function MiniWheelTurntable({ wheelType, onOpenSandbox }) {
+// Mini 3D Turntable showing standalone parts alone on screen with interactive tabs
+function MiniWheelTurntable({ wheelType, setWheelType, onOpenSandbox }) {
   const wheelLabels = {
     user_custom: 'User Master Wheel Assembly (rim.glb + tyre1.glb)',
-    user_rim: 'User CAD Alloy Wheel Rim (rim.glb)',
-    user_tyre: 'User 3D Deep Tread Off-Road Tyre (tyre1.glb)',
+    user_rim: 'User CAD Alloy Wheel Rim (rim.glb • 763k Tris)',
+    user_tyre: 'User 3D Deep Tread Off-Road Tyre (tyre1.glb • 3.56M Tris)',
   };
 
   return (
@@ -163,21 +170,69 @@ function MiniWheelTurntable({ wheelType, onOpenSandbox }) {
           </span>
         </div>
         <span className="text-[9px] font-mono font-bold text-[#FF4D00] bg-[#FF4D00]/10 px-1.5 py-0.5 rounded border border-[#FF4D00]/30">
-          360° SPIN
+          360° SPIN & ORBIT
         </span>
       </div>
 
-      {/* 3D Mini Viewport */}
-      <div className="w-full h-28 rounded-lg bg-black/80 border border-white/10 relative overflow-hidden flex items-center justify-center">
-        <Canvas camera={{ position: [0, 0, 0.46], fov: 45 }} gl={{ antialias: false, alpha: true, powerPreference: 'low-power' }} dpr={1}>
-          <ambientLight intensity={1.2} />
-          <directionalLight position={[2, 3, 3]} intensity={2.5} />
-          <directionalLight position={[-2, -2, -2]} intensity={0.9} color="#FF6B2B" />
-          <pointLight position={[0, 0, 1]} intensity={2.0} color="#FFF" />
+      {/* Part Switcher Pill Tabs directly inside widget */}
+      <div className="grid grid-cols-3 gap-1 bg-black/60 p-1 rounded-lg border border-white/10">
+        <button
+          onClick={() => {
+            playUiSound('tab');
+            setWheelType('user_custom');
+          }}
+          className={`py-1 px-1 rounded text-[9px] font-mono font-bold transition-all cursor-pointer flex items-center justify-center gap-1 ${
+            wheelType === 'user_custom'
+              ? 'bg-[#FF4D00] text-white shadow-[0_0_8px_#FF4D00]'
+              : 'text-gray-400 hover:text-white hover:bg-white/10'
+          }`}
+        >
+          <span>🛞 Assembly</span>
+        </button>
+        <button
+          onClick={() => {
+            playUiSound('tab');
+            setWheelType('user_rim');
+          }}
+          className={`py-1 px-1 rounded text-[9px] font-mono font-bold transition-all cursor-pointer flex items-center justify-center gap-1 ${
+            wheelType === 'user_rim'
+              ? 'bg-[#FF4D00] text-white shadow-[0_0_8px_#FF4D00]'
+              : 'text-gray-400 hover:text-white hover:bg-white/10'
+          }`}
+        >
+          <span>⚙️ CAD Rim</span>
+        </button>
+        <button
+          onClick={() => {
+            playUiSound('tab');
+            setWheelType('user_tyre');
+          }}
+          className={`py-1 px-1 rounded text-[9px] font-mono font-bold transition-all cursor-pointer flex items-center justify-center gap-1 ${
+            wheelType === 'user_tyre'
+              ? 'bg-[#FF4D00] text-white shadow-[0_0_8px_#FF4D00]'
+              : 'text-gray-400 hover:text-white hover:bg-white/10'
+          }`}
+        >
+          <span>🏔️ 3D Tyre</span>
+        </button>
+      </div>
+
+      {/* 3D Mini Viewport with 3/4 Perspective Camera & Orbit Controls */}
+      <div className="w-full h-32 rounded-lg bg-black/80 border border-white/10 relative overflow-hidden flex items-center justify-center">
+        <Canvas
+          camera={{ position: [0.22, 0.1, 0.44], fov: 40 }}
+          gl={{ antialias: true, alpha: true, powerPreference: 'low-power' }}
+          dpr={1}
+        >
+          <ambientLight intensity={1.4} />
+          <directionalLight position={[3, 3, 3]} intensity={3.0} />
+          <directionalLight position={[-3, -1, -2]} intensity={1.2} color="#FF6B2B" />
+          <pointLight position={[0, 0, 1.2]} intensity={2.5} color="#FFF" />
           <SingleWheelDisplay wheelType={wheelType} />
+          <OrbitControls enableZoom={false} enablePan={false} dampingFactor={0.1} />
         </Canvas>
         <div className="absolute bottom-1 right-2 text-[8px] font-mono text-gray-400 pointer-events-none">
-          USER 3D ASSETS
+          DRAG TO ORBIT
         </div>
       </div>
 
@@ -199,9 +254,10 @@ function MiniWheelTurntable({ wheelType, onOpenSandbox }) {
   );
 }
 
-// 3D Thar Vehicle Node on Showroom Plane
-// (USES ONLY THE AUTHENTIC thar.glb MODEL - ZERO ATTACHED WHEEL OVERHEAD)
+// 3D Vehicle Node on Showroom Plane
+// (SUPPORTS BOTH MAHINDRA THAR 4x4 AND SUPERCAR FERRARI GT3 WITH SPIN & SCALE-UP ENTRANCE)
 function VehicleShowroom({
+  carModel = 'thar',
   carColor = 'original',
   headlights = true,
   underglow = true,
@@ -212,20 +268,25 @@ function VehicleShowroom({
   const carGroupRef = useRef();
   const baseUrl = import.meta.env.BASE_URL || '/';
 
-  // Loads authentic single Thar model directly (clean, unified, lightweight)
+  // 1. Authentic single Thar model
   const tharGLTF = useGLTF(`${baseUrl}models/thar.glb`);
   const tharScene = useMemo(() => tharGLTF.scene.clone(true), [tharGLTF.scene]);
 
-  // Track previous color to trigger the Spin & Scale-Up entrance animation
-  const prevColorRef = useRef(carColor);
+  // 2. Supercar Ferrari model
+  const ferrariGLTF = useGLTF(`${baseUrl}models/ferrari.glb`);
+  const ferrariScene = useMemo(() => ferrariGLTF.scene.clone(true), [ferrariGLTF.scene]);
+
+  // Track previous car & color key to trigger the Spin & Scale-Up entrance animation
+  const prevKeyRef = useRef(`${carModel}_${carColor}`);
   const animProgressRef = useRef(1.0); // 1.0 = fully settled, < 1.0 = animating
 
   useEffect(() => {
-    if (prevColorRef.current !== carColor) {
-      prevColorRef.current = carColor;
+    const currentKey = `${carModel}_${carColor}`;
+    if (prevKeyRef.current !== currentKey) {
+      prevKeyRef.current = currentKey;
       animProgressRef.current = 0.0; // Trigger spin & scale-up entrance!
     }
-  }, [carColor]);
+  }, [carModel, carColor]);
 
   // Shader Uniforms for Thar Body Paint Customization
   const uniformsRef = useRef({
@@ -233,7 +294,7 @@ function VehicleShowroom({
     uColorActive: { value: 0.0 },
   });
 
-  // Dynamically update uniforms when carColor changes
+  // Dynamically update Thar uniforms when carColor changes
   useEffect(() => {
     if (!carColor || carColor === 'original' || carColor === 'default') {
       uniformsRef.current.uColorActive.value = 0.0;
@@ -296,27 +357,56 @@ function VehicleShowroom({
     });
   }, [tharScene]);
 
+  // Apply materials and dynamic body paint to Supercar Ferrari model
+  useEffect(() => {
+    const paintColor = (!carColor || carColor === 'original' || carColor === 'default') ? '#D32F2F' : carColor;
+    const ferrariPaintMat = new THREE.MeshPhysicalMaterial({
+      color: new THREE.Color(paintColor),
+      metalness: 0.85,
+      roughness: 0.16,
+      clearcoat: 1.0,
+      clearcoatRoughness: 0.04,
+      reflectivity: 0.95,
+    });
+
+    ferrariScene.traverse((child) => {
+      if (child.isMesh && child.material) {
+        child.castShadow = false;
+        child.receiveShadow = false;
+        child.frustumCulled = true;
+
+        if (child.name === 'body' || child.material?.name === 'Body_Color') {
+          child.material = ferrariPaintMat;
+        }
+      }
+    });
+  }, [ferrariScene, carColor]);
+
   // Frame Loop: Handles Spin & Scale-Up entrance animation and smooth auto-rotation
   useFrame((state, delta) => {
+    const isThar = carModel === 'thar';
+    const targetScale = isThar ? 1.8 : 0.92;
+    const baseRot = isThar ? -Math.PI / 2 : 0;
+
     if (animProgressRef.current < 1.0) {
-      // Advance entrance animation over ~0.5 seconds
+      // Advance entrance animation over ~0.45 seconds
       animProgressRef.current = Math.min(1.0, animProgressRef.current + delta * 2.2);
       const t = animProgressRef.current;
       // Cubic ease out
       const ease = 1 - Math.pow(1 - t, 3);
 
-      // Scale smoothly up from 0 to 1.8 (overshooting subtly for tactile snap)
-      const currentScale = 1.8 * Math.min(1.0, ease * 1.04);
+      // Scale smoothly up from 0 to target scale
+      const currentScale = targetScale * Math.min(1.0, ease * 1.04);
       if (carGroupRef.current) {
         carGroupRef.current.scale.set(currentScale, currentScale, currentScale);
         // Spin 720 degrees (2 full spins) into position
         const spinAngle = (1.0 - ease) * Math.PI * 4;
-        carGroupRef.current.rotation.y = -Math.PI / 2 + spinAngle;
+        carGroupRef.current.rotation.y = baseRot + spinAngle;
       }
     } else {
       if (carGroupRef.current) {
-        carGroupRef.current.scale.set(1.8, 1.8, 1.8);
-        carGroupRef.current.rotation.y = -Math.PI / 2;
+        carGroupRef.current.scale.set(targetScale, targetScale, targetScale);
+        carGroupRef.current.rotation.y = baseRot;
       }
       if (autoRotate && groupRef.current) {
         groupRef.current.rotation.y += delta * 0.35;
@@ -325,7 +415,7 @@ function VehicleShowroom({
   });
 
   const targetY = liftActive ? 0.8 : 0;
-  const underglowColor = carColor === 'original' ? '#FF4D00' : carColor;
+  const underglowColor = (!carColor || carColor === 'original') ? '#FF4D00' : carColor;
 
   return (
     <group position={[0, -0.6, 0]}>
@@ -336,13 +426,20 @@ function VehicleShowroom({
         style={{ transition: 'all 0.5s ease-out' }}
       >
         {/* Car group with spin & scale-up animation */}
-        <group ref={carGroupRef} position={[0, 0.77, 0]} rotation={[0, -Math.PI / 2, 0]} scale={1.8}>
-          <primitive object={tharScene} />
+        <group
+          ref={carGroupRef}
+          position={carModel === 'thar' ? [0, 0.77, 0] : [0, 0.32, 0]}
+        >
+          {carModel === 'thar' ? (
+            <primitive object={tharScene} />
+          ) : (
+            <primitive object={ferrariScene} />
+          )}
         </group>
 
         {/* Headlight Beams */}
         {headlights && (
-          <group position={[0, 0.4, 2.2]}>
+          <group position={carModel === 'thar' ? [0, 0.4, 2.2] : [0, 0.3, 2.0]}>
             <spotLight
               color="#FFF8E7"
               intensity={4.5}
@@ -389,6 +486,7 @@ function VehicleShowroom({
 }
 
 export function StudioShowroomCanvas({
+  carModel = 'thar', setCarModel,
   carColor = 'original', setCarColor,
   wheelType = 'user_custom', setWheelType,
   underglow, setUnderglow,
@@ -399,6 +497,7 @@ export function StudioShowroomCanvas({
   onOpenSandbox,
 }) {
   const [activeCategory, setActiveCategory] = useState('mods'); // 'mods' | 'livery' | 'chassis'
+  const [vehicleTab, setVehicleTab] = useState(carModel || 'thar'); // 'thar' | 'ferrari'
   const [selectedMods, setSelectedMods] = useState({
     wheels: true,
     lights: true,
@@ -414,77 +513,113 @@ export function StudioShowroomCanvas({
     setSelectedMods((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
-  // 7 Authentic Thar Preset Editions for the Floating Bubble Selector
+  // Sync tab with external carModel
+  useEffect(() => {
+    if (carModel) setVehicleTab(carModel);
+  }, [carModel]);
+
+  // Both Cars and their Authentic Preset Editions for the Floating Bubble Selector
   const carEditions = [
+    // 1. MAHINDRA THAR 4X4 SUV
     {
-      id: 'oem_crimson',
-      name: 'OEM Crimson',
+      id: 'thar_crimson',
+      model: 'thar',
+      name: 'Thar OEM Crimson',
       color: 'original',
       displayColor: '#D32F2F',
       accentColor: '#FF4D00',
-      badge: 'FACTORY SPEC',
-      icon: '🏎️',
-      desc: 'Factory Red & Black Two-Tone Spec',
+      badge: 'THAR 4X4',
+      icon: '🚙',
+      desc: 'Mahindra Thar 4x4 Factory Red & Black Spec',
     },
     {
-      id: 'midnight_stealth',
-      name: 'Midnight Stealth',
+      id: 'thar_stealth',
+      model: 'thar',
+      name: 'Thar Stealth',
       color: '#111215',
       displayColor: '#111215',
       accentColor: '#4B5563',
-      badge: 'OBSIDIAN MATTE',
-      icon: '🥷',
-      desc: 'All-Black Tactical Shadow Edition',
+      badge: 'THAR 4X4',
+      icon: '🖤',
+      desc: 'Mahindra Thar Midnight Matte Obsidian Edition',
     },
     {
-      id: 'dune_sahara',
-      name: 'Dune Sahara',
+      id: 'thar_sahara',
+      model: 'thar',
+      name: 'Thar Sahara Dune',
       color: '#C2A382',
       displayColor: '#C2A382',
       accentColor: '#D97706',
-      badge: 'EXPEDITION 4x4',
+      badge: 'THAR 4X4',
       icon: '🏜️',
-      desc: 'Overland Desert Safari Spec',
+      desc: 'Mahindra Thar Overland Desert Expedition Spec',
     },
     {
-      id: 'tactical_camo',
-      name: 'Army Camo',
+      id: 'thar_camo',
+      model: 'thar',
+      name: 'Thar Army Camo',
       color: '#2A3D2A',
       displayColor: '#2A3D2A',
       accentColor: '#15803D',
-      badge: 'MILITARY SPEC',
+      badge: 'THAR 4X4',
       icon: '🌲',
-      desc: 'Tactical Matte Forest Green',
+      desc: 'Mahindra Thar Tactical Military Matte Forest Drab',
+    },
+    // 2. FERRARI 458 GT3 SUPERCAR
+    {
+      id: 'ferrari_rosso',
+      model: 'ferrari',
+      name: 'Ferrari Rosso Corsa',
+      color: '#D32F2F',
+      displayColor: '#D32F2F',
+      accentColor: '#EF4444',
+      badge: 'SUPERCAR GT3',
+      icon: '🏎️',
+      desc: 'Ferrari 458 Italia GT3 Classic Italian Racing Red',
     },
     {
-      id: 'monaco_gold',
-      name: 'Monaco Gold',
-      color: '#D4AF37',
-      displayColor: '#D4AF37',
-      accentColor: '#EAB308',
-      badge: 'ROYAL BESPOKE',
-      icon: '👑',
-      desc: 'Bespoke Forged Metallic Finish',
+      id: 'ferrari_giallo',
+      model: 'ferrari',
+      name: 'Ferrari Giallo Modena',
+      color: '#EAB308',
+      displayColor: '#EAB308',
+      accentColor: '#FACC15',
+      badge: 'SUPERCAR GT3',
+      icon: '⚡',
+      desc: 'Ferrari 458 Italia GT3 Racing Yellow',
     },
     {
-      id: 'glacier_arctic',
-      name: 'Glacier White',
+      id: 'ferrari_nero',
+      model: 'ferrari',
+      name: 'Ferrari Nero Daytona',
+      color: '#111215',
+      displayColor: '#111215',
+      accentColor: '#374151',
+      badge: 'SUPERCAR GT3',
+      icon: '🥷',
+      desc: 'Ferrari 458 Italia GT3 Stealth Carbon Black',
+    },
+    {
+      id: 'ferrari_bianco',
+      model: 'ferrari',
+      name: 'Ferrari Bianco Avus',
       color: '#F1F5F9',
       displayColor: '#F1F5F9',
       accentColor: '#38BDF8',
-      badge: 'SNOW EXPLORER',
+      badge: 'SUPERCAR GT3',
       icon: '❄️',
-      desc: 'Pearl Arctic White Edition',
+      desc: 'Ferrari 458 Italia GT3 Pearl Arctic White',
     },
     {
-      id: 'riviera_blue',
-      name: 'Electric Azure',
+      id: 'ferrari_azure',
+      model: 'ferrari',
+      name: 'Ferrari Blu Corsa',
       color: '#0284C7',
       displayColor: '#0284C7',
       accentColor: '#00E5FF',
-      badge: 'CYBER AZURE',
-      icon: '⚡',
-      desc: 'High-Gloss Electric Riviera Blue',
+      badge: 'SUPERCAR GT3',
+      icon: '🌊',
+      desc: 'Ferrari 458 Italia GT3 Metallic Riviera Azure Blue',
     },
   ];
 
@@ -557,6 +692,13 @@ export function StudioShowroomCanvas({
     setActiveCategory(cat);
   };
 
+  const handleSelectEdition = (edition) => {
+    playUiSound('spin');
+    if (setCarModel) setCarModel(edition.model);
+    setCarColor(edition.color);
+    setVehicleTab(edition.model);
+  };
+
   return (
     <div id="showroom-plane" className="relative w-full h-[760px] md:h-[900px] bg-[#070709] overflow-hidden select-none border-y border-[#FF4D00]/30 font-body">
       {/* 3D WebGL Canvas */}
@@ -593,6 +735,7 @@ export function StudioShowroomCanvas({
           <pointLight color="#FF4D00" intensity={3} distance={15} position={[4, 5, -2]} />
 
           <VehicleShowroom
+            carModel={carModel}
             carColor={carColor}
             headlights={headlights}
             underglow={underglow}
@@ -619,9 +762,9 @@ export function StudioShowroomCanvas({
           <div className="text-left font-mono">
             <div className="text-[10px] text-gray-400 uppercase tracking-widest">AUTOSPORT TUNING TERMINAL</div>
             <div className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
-              <span>MAHINDRA THAR 4X4 • AUTHENTIC 3D SPEC</span>
+              <span>{carModel === 'thar' ? 'MAHINDRA THAR 4X4 • AUTHENTIC SPEC' : 'FERRARI 458 GT3 • SUPERCAR ATELIER'}</span>
               <span className="text-[9px] px-1.5 py-0.2 rounded bg-[#FF4D00]/30 text-[#FF4D00] border border-[#FF4D00]/50 font-mono font-bold">
-                USER ASSET
+                {carModel === 'thar' ? 'USER ASSET' : 'SUPERCAR'}
               </span>
             </div>
           </div>
@@ -643,28 +786,28 @@ export function StudioShowroomCanvas({
         </div>
       </div>
 
-      {/* FLOATING BUBBLE ICONS DOCK (TAP TO SPIN & SCALE UP CAR TO SHOWROOM PLANE) */}
-      <div className="absolute bottom-6 left-6 z-30 pointer-events-auto flex flex-col gap-2 max-w-[calc(100vw-390px)] hidden sm:flex">
-        <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-black/80 border border-[#FF4D00]/40 backdrop-blur-md w-fit shadow-xl">
-          <div className="w-2 h-2 rounded-full bg-[#FF4D00] animate-pulse" />
-          <span className="text-[10px] font-mono font-bold tracking-wider text-white uppercase">
-            THAR 4X4 SPEC EDITIONS
-          </span>
+      {/* FLOATING BUBBLE ICONS DOCK (TAP BUBBLE TO SWITCH CAR & SPIN/SCALE UP ONTO PLANE) */}
+      <div className="absolute bottom-6 left-6 z-30 pointer-events-auto flex flex-col gap-2 max-w-[calc(100vw-400px)] hidden sm:flex">
+        <div className="flex items-center gap-3 px-3 py-1 rounded-full bg-black/85 border border-[#FF4D00]/40 backdrop-blur-md w-fit shadow-xl">
+          <div className="flex items-center gap-1.5">
+            <div className="w-2 h-2 rounded-full bg-[#FF4D00] animate-pulse" />
+            <span className="text-[10px] font-mono font-bold tracking-wider text-white uppercase">
+              SELECT CAR SPECIFICATION
+            </span>
+          </div>
           <span className="text-[9px] font-mono text-[#00E5FF]">
-            [TAP BUBBLE TO SPIN & SCALE ONTO PLANE]
+            [TAP TO SWAP VEHICLE & SPIN ONTO PLANE]
           </span>
         </div>
 
+        {/* Bubble Row */}
         <div className="flex items-center gap-2.5 p-2 rounded-2xl bg-black/85 border border-white/15 backdrop-blur-2xl shadow-[0_0_30px_rgba(0,0,0,0.85)] overflow-x-auto scrollbar-none">
           {carEditions.map((edition) => {
-            const isSelected = carColor === edition.color;
+            const isSelected = carModel === edition.model && carColor === edition.color;
             return (
               <button
                 key={edition.id}
-                onClick={() => {
-                  playUiSound('spin');
-                  setCarColor(edition.color);
-                }}
+                onClick={() => handleSelectEdition(edition)}
                 className={`group relative flex flex-col items-center gap-1 p-2 rounded-xl transition-all cursor-pointer shrink-0 ${
                   isSelected
                     ? 'bg-[#FF4D00]/25 border-2 border-[#FF4D00] shadow-[0_0_20px_rgba(255,77,0,0.6)] scale-105'
@@ -718,13 +861,41 @@ export function StudioShowroomCanvas({
                 GARAGE TUNING HUD
               </span>
             </div>
-            <span className="text-[10px] font-mono font-bold text-[#00E5FF] px-2 py-0.5 rounded bg-[#00E5FF]/10 border border-[#00E5FF]/40">
-              OEM CAR SPEC
-            </span>
+            {/* Quick Car Selector Toggle */}
+            <div className="flex items-center bg-black/60 rounded-lg p-0.5 border border-white/10">
+              <button
+                onClick={() => {
+                  playUiSound('spin');
+                  if (setCarModel) setCarModel('thar');
+                  setVehicleTab('thar');
+                }}
+                className={`px-2 py-0.5 rounded text-[9px] font-mono font-bold transition-all cursor-pointer ${
+                  carModel === 'thar' ? 'bg-[#FF4D00] text-white shadow' : 'text-gray-400 hover:text-white'
+                }`}
+              >
+                🚙 Thar
+              </button>
+              <button
+                onClick={() => {
+                  playUiSound('spin');
+                  if (setCarModel) setCarModel('ferrari');
+                  setVehicleTab('ferrari');
+                }}
+                className={`px-2 py-0.5 rounded text-[9px] font-mono font-bold transition-all cursor-pointer ${
+                  carModel === 'ferrari' ? 'bg-[#FF4D00] text-white shadow' : 'text-gray-400 hover:text-white'
+                }`}
+              >
+                🏎️ Supercar
+              </button>
+            </div>
           </div>
 
-          {/* STANDALONE 3D WHEEL & TYRE TURNTABLE (ALONE ON SCREEN IN PANEL) */}
-          <MiniWheelTurntable wheelType={wheelType} onOpenSandbox={onOpenSandbox} />
+          {/* STANDALONE 3D WHEEL & TYRE TURNTABLE (ALONE ON SCREEN IN PANEL WITH PART SWITCHER) */}
+          <MiniWheelTurntable
+            wheelType={wheelType}
+            setWheelType={setWheelType}
+            onOpenSandbox={onOpenSandbox}
+          />
 
           {/* CATEGORY NAVIGATION TABS */}
           <div className="grid grid-cols-3 gap-1.5 text-[10px] font-heading font-extrabold uppercase">
@@ -834,42 +1005,44 @@ export function StudioShowroomCanvas({
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-[10px] font-bold text-gray-400 uppercase font-mono">
-                  SELECT AUTOMOTIVE FINISH:
+                  SELECT {carModel === 'thar' ? 'THAR 4X4' : 'SUPERCAR'} FINISH:
                 </span>
                 <span className="text-[10px] text-[#FF4D00] font-mono font-bold">
-                  {carEditions.find((c) => c.color === carColor)?.name || 'Custom'}
+                  {carEditions.find((c) => c.model === carModel && c.color === carColor)?.name || 'Custom'}
                 </span>
               </div>
               <p className="text-[10px] text-gray-400 font-body">
-                Changes only the car body paint color in real-time with preserved reflections and specular highlights.
+                Changes the active car body paint finish in real-time with preserved reflections and specular highlights.
               </p>
               <div className="grid grid-cols-2 gap-2">
-                {carEditions.map((c) => {
-                  const isSelected = carColor === c.color;
-                  return (
-                    <button
-                      key={c.id}
-                      onClick={() => {
-                        playUiSound('spin');
-                        setCarColor(c.color);
-                      }}
-                      className={`p-2 rounded-xl border text-left flex items-center gap-2.5 transition-all cursor-pointer ${
-                        isSelected
-                          ? 'border-[#FF4D00] bg-[#FF4D00]/20 text-white font-bold shadow-[0_0_10px_rgba(255,77,0,0.5)]'
-                          : 'border-white/10 text-gray-300 hover:text-white bg-white/5'
-                      }`}
-                    >
-                      <span
-                        className="w-5 h-5 rounded-full shrink-0 border-2 border-white/40 shadow"
-                        style={{ backgroundColor: c.displayColor }}
-                      />
-                      <div className="leading-tight">
-                        <div className="text-[10px] font-mono font-bold truncate">{c.name}</div>
-                        <span className="text-[8px] text-[#FF4D00] font-mono">{c.badge}</span>
-                      </div>
-                    </button>
-                  );
-                })}
+                {carEditions
+                  .filter((c) => c.model === carModel)
+                  .map((c) => {
+                    const isSelected = carColor === c.color;
+                    return (
+                      <button
+                        key={c.id}
+                        onClick={() => {
+                          playUiSound('spin');
+                          setCarColor(c.color);
+                        }}
+                        className={`p-2 rounded-xl border text-left flex items-center gap-2.5 transition-all cursor-pointer ${
+                          isSelected
+                            ? 'border-[#FF4D00] bg-[#FF4D00]/20 text-white font-bold shadow-[0_0_10px_rgba(255,77,0,0.5)]'
+                            : 'border-white/10 text-gray-300 hover:text-white bg-white/5'
+                        }`}
+                      >
+                        <span
+                          className="w-5 h-5 rounded-full shrink-0 border-2 border-white/40 shadow"
+                          style={{ backgroundColor: c.displayColor }}
+                        />
+                        <div className="leading-tight">
+                          <div className="text-[10px] font-mono font-bold truncate">{c.name}</div>
+                          <span className="text-[8px] text-[#FF4D00] font-mono">{c.badge}</span>
+                        </div>
+                      </button>
+                    );
+                  })}
               </div>
             </div>
           )}
@@ -980,7 +1153,7 @@ export function StudioShowroomCanvas({
 
         {/* BOTTOM GAMEPAD CONTROLLER HINTS */}
         <div className="mt-2 text-center text-[10px] font-mono text-gray-400 bg-black/70 px-3 py-1.5 rounded-xl border border-white/10 backdrop-blur-md">
-          <span className="text-[#FF4D00] font-bold">[L-CLICK + DRAG]</span> 360° ORBIT • <span className="text-[#00E5FF] font-bold">[SCROLL]</span> ZOOM • <span className="text-yellow-400 font-bold">[BUBBLE]</span> SPIN & SPAWN
+          <span className="text-[#FF4D00] font-bold">[L-CLICK + DRAG]</span> 360° ORBIT • <span className="text-[#00E5FF] font-bold">[SCROLL]</span> ZOOM • <span className="text-yellow-400 font-bold">[BUBBLE]</span> SWAP CAR
         </div>
       </div>
 

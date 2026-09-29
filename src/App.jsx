@@ -74,6 +74,8 @@ export default function App() {
       {currentPage === 'showroom' && (
         <div className="pt-20 min-h-screen flex flex-col justify-between">
           <StudioShowroomCanvas
+            carModel={carModel}
+            setCarModel={setCarModel}
             carColor={carColor}
             setCarColor={setCarColor}
             wheelType={wheelType}
